@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1254 1254" role="img" aria-label="Caeser">
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#05030a"/>
+      <stop offset="0.48" stop-color="#17091d"/>
+      <stop offset="1" stop-color="#030b22"/>
+    </linearGradient>
+    <linearGradient id="edge" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#55417d"/>
+      <stop offset="0.52" stop-color="#d74384"/>
+      <stop offset="1" stop-color="#1767c9"/>
+    </linearGradient>
+    <linearGradient id="note" x1="0.12" y1="0.05" x2="0.88" y2="0.95">
+      <stop offset="0" stop-color="#ff496d"/>
+      <stop offset="0.38" stop-color="#ff2b9a"/>
+      <stop offset="0.72" stop-color="#8f45ff"/>
+      <stop offset="1" stop-color="#159cff"/>
+    </linearGradient>
+    <radialGradient id="pinkGlow" cx="0.58" cy="0.40" r="0.58">
+      <stop offset="0" stop-color="#ff1d62" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#ff1d62" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="blueGlow" cx="0.72" cy="0.84" r="0.56">
+      <stop offset="0" stop-color="#174dff" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#174dff" stop-opacity="0"/>
+    </radialGradient>
+    <filter id="softGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="24" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="noteGlow" x="-35%" y="-35%" width="170%" height="170%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="18" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1254" height="1254" rx="214" fill="#010104"/>
+  <rect x="42" y="42" width="1170" height="1170" rx="188" fill="url(#background)" stroke="url(#edge)" stroke-width="8"/>
+  <rect x="55" y="55" width="1144" height="1144" rx="176" fill="url(#pinkGlow)"/>
+  <rect x="55" y="55" width="1144" height="1144" rx="176" fill="url(#blueGlow)"/>
+
+  <g filter="url(#softGlow)" opacity="0.85">
+    <path d="M 485 750 V 392 L 850 292 V 650" fill="none" stroke="url(#note)" stroke-width="76" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M 485 392 L 850 292" fill="none" stroke="url(#note)" stroke-width="76" stroke-linecap="round"/>
+    <ellipse cx="395" cy="858" rx="137" ry="108" fill="url(#note)" transform="rotate(-18 395 858)"/>
+    <ellipse cx="760" cy="750" rx="137" ry="108" fill="url(#note)" transform="rotate(-18 760 750)"/>
+  </g>
+
+  <path d="M 485 750 V 392 L 850 292 V 650" fill="none" stroke="url(#note)" stroke-width="62" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M 485 392 L 850 292" fill="none" stroke="url(#note)" stroke-width="62" stroke-linecap="round"/>
+  <ellipse cx="395" cy="858" rx="124" ry="97" fill="url(#note)" transform="rotate(-18 395 858)"/>
+  <ellipse cx="760" cy="750" rx="124" ry="97" fill="url(#note)" transform="rotate(-18 760 750)"/>
+</svg>
