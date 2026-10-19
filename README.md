@@ -122,6 +122,10 @@ brew upgrade yt-dlp ffmpeg
 
 O aplicativo não implementa contorno de DRM. Use-o com conteúdo que você tenha autorização para baixar e respeite os termos do serviço de origem.
 
+## Licença
+
+Este projeto é open source e está disponível sob a [licença MIT](LICENSE). Você pode usar, modificar e distribuir o código, mantendo o aviso de copyright e a licença.
+
 ## Autor
 
 Projeto pessoal de **Caio Nolli**.
