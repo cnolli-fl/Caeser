@@ -6,9 +6,9 @@ Vídeos e músicas, do link à sua pasta. Aplicativo nativo em SwiftUI para macO
 
 O Caeser reúne as opções do yt-dlp, do FFmpeg e do spotDL em uma interface gráfica. Cole o endereço, escolha as opções e a pasta de destino e acompanhe a operação pela janela.
 
-![Tela do Caeser em uma versão anterior, com campo de URL, qualidade, formato, destino e logs](docs/images/caeser-interface.jpg)
+![Caeser 2.1.0 com seletor YouTube e Spotify, opções de download e download concluído](docs/images/caeser-interface.png)
 
-*Captura de uma versão anterior. A versão 2.1.0 inclui a opção Spotify, o seletor animado e os ícones Retina descritos abaixo.*
+*Interface da versão 2.1.0, com seletor YouTube/Spotify, ícones Retina e indicação de download concluído.*
 
 ## Proposta do projeto
 
