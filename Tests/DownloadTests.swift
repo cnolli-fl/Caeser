@@ -119,6 +119,7 @@ struct DownloadConfigurationTests {
         )
         let args = options.arguments
         #expect(args.contains("youtube-music") && args.contains("youtube"))
+        #expect(args[args.firstIndex(of: "--audio")! + 1] == "youtube")
         #expect(!args.contains("--user-auth"))
         #expect(args[args.firstIndex(of: "--bitrate")! + 1] == "0")
         #expect(args.contains("--save-errors"))
@@ -199,4 +200,46 @@ private final class LineCollector: @unchecked Sendable {
     private var storage: [String] = []
     var lines: [String] { lock.lock(); defer { lock.unlock() }; return storage }
     func append(_ line: String) { lock.lock(); defer { lock.unlock() }; storage.append(line) }
+}
+
+struct BundledDependencyTests {
+    @Test func prefersBundledToolsEvenWhenExternalToolsExist() throws {
+        let root = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let bundled = root.appendingPathComponent("Caeser with spaces.app/Contents/Resources/Tools")
+        let external = root.appendingPathComponent("homebrew/bin")
+        for directory in [bundled, external] {
+            try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+            let file = directory.appendingPathComponent("yt-dlp")
+            try Data("#!/bin/sh\nexit 0\n".utf8).write(to: file)
+            try FileManager.default.setAttributes([.posixPermissions: 0o755], ofItemAtPath: file.path)
+        }
+        #expect(DependencyLocator.findExecutable(
+            named: "yt-dlp", bundledDirectory: bundled, fallbackDirectories: [external.path]
+        ) == bundled.appendingPathComponent("yt-dlp"))
+        #expect(DependencyLocator.findExecutable(
+            named: "ffmpeg", bundledDirectory: bundled, fallbackDirectories: ["/usr/bin"]
+        ) == nil)
+        #expect(DependencyLocator.findExecutable(
+            named: "yt-dlp", bundledDirectory: nil, fallbackDirectories: [external.path]
+        ) == external.appendingPathComponent("yt-dlp"))
+    }
+
+    @Test func bundledEnvironmentDoesNotLeakHomebrewOrPythonSettings() {
+        let directory = URL(fileURLWithPath: "/Applications/Caeser Test.app/Contents/Resources/Tools")
+        let environment = DependencyLocator.processEnvironment(bundledDirectory: directory, baseEnvironment: [
+            "PATH": "/opt/homebrew/bin:/some/venv/bin", "HOME": "/Users/test",
+            "PYTHONHOME": "/external/python", "PYTHONPATH": "/external/packages",
+            "VIRTUAL_ENV": "/some/venv", "DYLD_LIBRARY_PATH": "/external/lib",
+            "SSL_CERT_FILE": "/missing/cert.pem"
+        ])
+        #expect(environment["PATH"] == directory.path + ":/usr/bin:/bin:/usr/sbin:/sbin")
+        #expect(environment["HOME"] == "/Users/test")
+        #expect(environment["PYTHONHOME"] == nil)
+        #expect(environment["PYTHONPATH"] == nil)
+        #expect(environment["VIRTUAL_ENV"] == nil)
+        #expect(environment["DYLD_LIBRARY_PATH"] == nil)
+        #expect(environment["SSL_CERT_FILE"] == nil)
+        #expect(environment["DENO_NO_UPDATE_CHECK"] == "1")
+    }
 }

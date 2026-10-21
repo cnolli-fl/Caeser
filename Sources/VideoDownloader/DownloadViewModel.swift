@@ -54,6 +54,10 @@ final class DownloadViewModel: ObservableObject {
     var dependenciesReady: Bool { dependencyInfo.isReady(for: source) }
     var dependencyMessage: String {
         let missing = dependencyInfo.missing(for: source)
+        if DependencyLocator.isBundledDistribution {
+            return missing.isEmpty ? "Tudo pronto para baixar · ferramentas incluídas"
+                : "Pacote incompleto: " + missing.joined(separator: " e ")
+        }
         return missing.isEmpty ? "Tudo pronto para baixar" : "Falta instalar: " + missing.joined(separator: " e ")
     }
     var canRevealDownload: Bool { succeeded && operation == .download && lastDestination != nil }
@@ -92,6 +96,11 @@ final class DownloadViewModel: ObservableObject {
         let url: URL
         do { url = try DownloadInput.validatedURL(urlText, source: source) }
         catch { showError(error.localizedDescription); return }
+
+        if DependencyLocator.isBundledDistribution && !dependenciesReady {
+            showError("O pacote do Caeser está incompleto. Baixe novamente o aplicativo completo; não é necessário instalar Homebrew.")
+            return
+        }
 
         guard let ffmpeg = dependencyInfo.ffmpeg else {
             showError("Instale o FFmpeg com brew install ffmpeg e clique em Verificar ferramentas.")
@@ -150,6 +159,13 @@ final class DownloadViewModel: ObservableObject {
 
     func installSpotifySupport() {
         guard !isBusy else { return }
+        if DependencyLocator.isBundledDistribution {
+            refreshDependencies()
+            if dependencyInfo.spotDL == nil {
+                showError("O suporte ao Spotify deveria estar incluído. Baixe novamente o pacote completo do Caeser.")
+            }
+            return
+        }
         guard let python = DependencyLocator.findExecutable(named: "python3") else {
             showError("Instale o Python com brew install python e tente instalar o suporte novamente.")
             return

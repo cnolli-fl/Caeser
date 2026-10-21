@@ -2,13 +2,25 @@
 
 ## 2.1.0 — 2026-10-21
 
+### Aplicativo pronto para instalar
+
+- Ferramentas dentro do aplicativo: yt-dlp, FFmpeg, FFprobe, spotDL e Deno.
+- spotDL recompilado com yt-dlp atualizado; busca no YouTube priorizada para maior compatibilidade sem login.
+- Uso sem Homebrew, Python, Xcode ou instalação inicial do suporte Spotify.
+- Ferramentas internas prioritárias e ambiente isolado das instalações externas.
+- Receita de distribuição `.dmg`/`.zip` com assinatura local gratuita, sem notarização.
+- Downloads de executáveis com SHA-256 fixado; FFmpeg/LAME compilados sem dependências do Homebrew.
+- Licenças, fontes correspondentes de FFmpeg/LAME e instruções de instalação no pacote.
+- Dois novos testes de localização das ferramentas e isolamento do ambiente (17 no total).
+- Instaladores DMG/ZIP e hashes SHA-256 na release do GitHub; Windows e Mac Intel não incluídos.
+
 ### Spotify via YouTube
 
 - Nova opção Spotify para links públicos de música, álbum e playlist.
 - Identificação automática ao colar um link de open.spotify.com ou uma URI spotify:.
-- Busca automática de correspondências no YouTube Music, com YouTube como alternativa.
+- Busca automática de correspondências no YouTube, com YouTube Music como alternativa de busca.
 - MP3 na melhor configuração de qualidade variável, com capa e informações da faixa.
-- Instalação opcional do spotDL em um ambiente separado, pelo próprio aplicativo.
+- Suporte já incluído nos instaladores; instalação opcional em ambiente separado para a compilação de desenvolvimento.
 - Nenhum pedido de login no fluxo padrão de links públicos.
 - Progresso por músicas processadas e tratamento de erros parciais em playlists.
 

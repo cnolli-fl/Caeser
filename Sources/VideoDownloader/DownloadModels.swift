@@ -152,7 +152,8 @@ struct SpotifyDownloadOptions {
         // with braces or percent signs must not become part of the template.
         return [
             "download", url.absoluteString,
-            "--audio", "youtube-music", "youtube",
+            // Prefer the regular YouTube provider, which is more reliable without login.
+            "--audio", "youtube", "youtube-music",
             "--format", "mp3", "--bitrate", "0",
             "--ffmpeg", ffmpeg.path,
             "--output", "{artists} - {title} [{track-id}].{output-ext}",

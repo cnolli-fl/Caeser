@@ -3,6 +3,8 @@
 .swiftpm/
 DerivedData/
 .tools/
+dist/
+.packaging-cache/
 *.xcuserstate
 **/xcuserdata/
 .spotdl/

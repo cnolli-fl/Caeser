@@ -6,6 +6,10 @@ Versão 2.1.0. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
 
 O Caeser foi criado para facilitar o caminho entre o link e o arquivo salvo: cole o endereço, escolha o formato e a pasta e clique em **Baixar**. Tudo em uma interface nativa para macOS 26, sem precisar montar comandos a cada download.
 
+[**Baixar Caeser 2.1.0 para Mac (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v2.1.0/Caeser-2.1.0-macOS-AppleSilicon.dmg) · [ZIP](https://github.com/cnolli-fl/Caeser/releases/download/v2.1.0/Caeser-2.1.0-macOS-AppleSilicon.zip) · [Notas da release](https://github.com/cnolli-fl/Caeser/releases/tag/v2.1.0)
+
+Requer **macOS 26 ou mais recente e chip Apple (M1 ou posterior)**. Ferramentas incluídas, sem Homebrew ou Python separado. Esta edição não é notarizada pela Apple; veja [como instalar e conferir a segurança](docs/INSTALACAO.md). Ainda não há versão para Windows ou Mac Intel.
+
 ![Caeser 2.1.0 com seletor YouTube e Spotify, opções de download e download concluído](docs/images/caeser-interface.png)
 
 *Interface da versão 2.1.0, com seletor YouTube/Spotify, ícones Retina e indicação de download concluído.*
@@ -22,7 +26,15 @@ Depois da configuração inicial, o fluxo é direto: **colar o link → escolher
 
 A velocidade de transferência depende da conexão, do tamanho do arquivo e do serviço de origem. No modo Spotify, a busca de correspondências e a conversão para MP3 também fazem parte do tempo total; não há um prazo fixo para todos os downloads.
 
-Por trás da interface, o Caeser usa yt-dlp, FFmpeg e, para links do Spotify, spotDL. Essas ferramentas são instaladas separadamente; nenhum binário de terceiros é incorporado ao aplicativo ou ao repositório.
+Por trás da interface, o Caeser usa yt-dlp, FFmpeg e, para links do Spotify, spotDL. A edição completa inclui essas ferramentas e o Deno dentro do aplicativo, sem precisar instalar Homebrew ou Python. O código-fonte continua sem binários de terceiros versionados no Git.
+
+## Aplicativo completo
+
+A receita de distribuição gera um `.dmg` e um `.zip` para **macOS 26 ou mais recente em Macs com chip Apple (M1 ou posterior)**. Basta mover Caeser.app para Aplicativos; yt-dlp, FFmpeg, FFprobe, Deno e spotDL já acompanham o pacote. Não é necessário Xcode, Python, Homebrew nem o aplicativo do Spotify para usá-lo.
+
+Esta edição tem assinatura local gratuita (ad-hoc), **sem Developer ID e sem notarização da Apple**. O macOS pode impedir a primeira abertura e exigir autorização manual. Isso não deve ser confundido com um app verificado pela Apple. Consulte [as instruções de instalação e segurança](docs/INSTALACAO.md); não desative as proteções globais do sistema.
+
+Os instaladores estão disponíveis na [release 2.1.0](https://github.com/cnolli-fl/Caeser/releases/tag/v2.1.0), junto com os hashes SHA-256 para conferência. O GitHub também mostra arquivos **Source code**, que são apenas o projeto para desenvolvedores — para instalar, escolha o `.dmg` ou o `.zip` chamado **Caeser-2.1.0-macOS-AppleSilicon**. A receita de empacotamento gera os arquivos localmente em `dist/`, sem publicá-los automaticamente.
 
 ## Recursos
 
@@ -31,7 +43,7 @@ Por trás da interface, o Caeser usa yt-dlp, FFmpeg e, para links do Spotify, sp
 - Formatos Automático, MP4, WebM e MP3.
 - Links públicos de músicas, álbuns e playlists do Spotify como referência para buscar o áudio no YouTube Music ou YouTube e salvar em MP3.
 - Seleção nativa e persistente da pasta de destino.
-- Detecção de ferramentas e instalação opcional do suporte ao Spotify.
+- Ferramentas incluídas na edição completa; no modo de desenvolvimento, detecção de ferramentas externas e instalação opcional do suporte ao Spotify.
 - Progresso, velocidade e estimativa de tempo quando informados pela ferramenta.
 - Registro técnico recolhível, cancelamento e erros na própria janela.
 
@@ -60,14 +72,14 @@ Sources/VideoDownloader/
 └── Resources/                 Logo original e marcas PNG 1×, 2× e 3×
 Assets.xcassets/               Ícone do aplicativo
 Design/BrandSources/           Fontes vetoriais das marcas
-Scripts/                      Gerador dos ícones
+Scripts/                      Ícones, preparação das ferramentas e empacotamento
 Tests/                        Testes automatizados
 VideoDownloader.xcodeproj/     Projeto do Xcode
 Package.swift                 Configuração do Swift Package Manager
 docs/images/                  Captura da interface
 ```
 
-## Requisitos
+## Requisitos para desenvolver
 
 - macOS 26 ou mais recente e Xcode com o SDK correspondente.
 - [Homebrew](https://brew.sh/).
@@ -83,7 +95,20 @@ brew install yt-dlp ffmpeg
 
 Para usar links do Spotify, mantenha o FFmpeg instalado, instale também o Python (`brew install python`), abra a opção **Spotify** e clique em **Instalar suporte ao Spotify**. Esse botão instala o spotDL, não o aplicativo do Spotify. O ambiente Python fica separado em `~/Library/Application Support/Caeser/Tools/spotdl`. A instalação precisa de internet e pode ser cancelada.
 
-O Caeser também reconhece `spotdl` em `~/.local/bin` (pipx), nas pastas do Homebrew ou no PATH. Nenhum executável de terceiros é incorporado ao aplicativo ou ao repositório.
+Na compilação de desenvolvimento sem ferramentas incorporadas, o Caeser também reconhece `spotdl` em `~/.local/bin` (pipx), nas pastas do Homebrew ou no PATH. Na edição completa, usa exclusivamente as ferramentas internas: um pacote incompleto não é mascarado pelo Homebrew instalado na máquina do desenvolvedor.
+
+### Gerar o pacote completo
+
+No Mac com chip Apple, com Xcode instalado:
+
+```bash
+bash Scripts/PrepareBundledTools.sh
+bash Scripts/PackageApp.sh
+```
+
+A primeira etapa baixa os executáveis yt-dlp/Deno e fontes de mídia com verificação SHA-256, compila FFmpeg/FFprobe e LAME sem bibliotecas do Homebrew e recompila spotDL com dependências Python fixadas e yt-dlp atualizado. Para preparar o pacote, o desenvolvedor precisa também de Python 3.14; os usuários do aplicativo não. A segunda compila o app em Release, inclui as ferramentas e os fontes/licenças, aplica assinatura local e gera `.dmg`, `.zip` e respectivos hashes em `dist/`. A primeira preparação demora mais por compilar as ferramentas. Arquivos gerados e caches não entram no Git.
+
+O helper `Scripts/CollectToolLicenses.py` extrai os avisos já presentes nos arquivos PyInstaller de yt-dlp e spotDL durante a preparação. `Scripts/VerifyBundledApp.sh` confere integridade, arquitetura, versões, JavaScript e conversão MP3 em um ambiente vazio. Veja [THIRD-PARTY.md](THIRD-PARTY.md) para versões, origens e licenças.
 
 ## Abrir no Xcode
 
@@ -143,7 +168,7 @@ O ícone está em `Assets.xcassets/AppIcon.appiconset`, derivado de `CaeserIconO
 
 ## Processos e testes
 
-Os argumentos são passados diretamente a `Process`, sem montar comandos de shell. stdout/stderr são drenados antes do resultado final, preservando UTF-8. O cancelamento encerra o grupo de processos quando disponível. O app procura ferramentas no Homebrew para Apple Silicon e Intel, no ambiente separado do spotDL e no PATH.
+Os argumentos são passados diretamente a `Process`, sem montar comandos de shell. stdout/stderr são drenados antes do resultado final, preservando UTF-8. O cancelamento encerra o grupo de processos quando disponível. A edição completa usa `Contents/Resources/Tools` com PATH controlado, sem herdar configurações Python ou bibliotecas externas. A compilação de desenvolvimento sem esse diretório continua procurando Homebrew, o ambiente separado do spotDL e PATH.
 
 Execute os testes:
 
@@ -151,7 +176,7 @@ Execute os testes:
 DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer swift test
 ```
 
-Os 15 testes cobrem links inválidos, URLs internacionais, URIs do Spotify, formatos, dependências, erros de playlist, preservação da saída, cancelamento e ícones nas escalas de tela.
+Os 17 testes cobrem links inválidos, URLs internacionais, URIs do Spotify, formatos, dependências, erros de playlist, preservação da saída, cancelamento, ícones nas escalas de tela, prioridade das ferramentas internas e isolamento do ambiente.
 
 Veja [CHANGELOG.md](CHANGELOG.md) para as mudanças e [DESIGN.md](DESIGN.md) para as decisões de interface.
 
@@ -159,13 +184,13 @@ Veja [CHANGELOG.md](CHANGELOG.md) para as mudanças e [DESIGN.md](DESIGN.md) par
 
 | Situação | O que conferir |
 | --- | --- |
-| Dependência não encontrada | Instale yt-dlp e FFmpeg pelo Homebrew e use **Verificar ferramentas**. Para Spotify, instale o suporte pela interface. |
+| Dependência não encontrada | Na edição completa, baixe novamente o pacote; as ferramentas já deveriam estar incluídas. Em desenvolvimento, instale yt-dlp/FFmpeg pelo Homebrew e o suporte Spotify pela interface. |
 | URL inválida | Confira o endereço completo; links de vídeo precisam começar com http:// ou https://. |
 | Erro ao baixar | Consulte o registro; disponibilidade e suporte ao site dependem da origem e das ferramentas. |
 | Falha ao salvar | Confira se a pasta de destino existe e permite gravação. |
 | Qualidade diferente da escolhida | A resolução selecionada é um teto; a origem precisa disponibilizar uma versão compatível. |
 
-Quando mudanças em um site impedirem o funcionamento do yt-dlp, atualizar as ferramentas pode ajudar:
+Na edição completa, quando as ferramentas precisarem de atualização, instale um novo pacote do Caeser. Não há atualizador automático. O comando abaixo só vale para a compilação de desenvolvimento que usa Homebrew:
 
 ```bash
 brew upgrade yt-dlp ffmpeg
@@ -175,14 +200,15 @@ brew upgrade yt-dlp ffmpeg
 
 - Uma operação de download por vez, sem fila independente de tarefas.
 - Álbuns e playlists públicas identificados por links do Spotify são processados pelo spotDL, com áudio buscado no YouTube Music/YouTube; playlists de vídeo não são baixadas pelo fluxo de vídeo.
-- Dependência de ferramentas externas instaladas no sistema.
+- Edição completa disponível pela receita de empacotamento apenas para Apple Silicon; compilação direta de desenvolvimento ainda usa ferramentas externas.
+- Sem Developer ID/notarização nesta distribuição gratuita; pode haver bloqueio na primeira abertura.
 - Sem fluxo de autenticação com contas de serviços na interface.
 
 O app não contorna DRM. Use os downloads conforme as permissões do conteúdo e dos serviços.
 
 ## Licença
 
-Este projeto é open source e está disponível sob a [licença MIT](LICENSE). Você pode usar, modificar e distribuir o código, mantendo o aviso de copyright e a licença. As marcas de terceiros seguem as condições descritas em [BRAND-ASSETS.md](BRAND-ASSETS.md).
+O código Swift deste projeto é open source sob a [licença MIT](LICENSE). Você pode usar, modificar e distribuir o código, mantendo o aviso de copyright e a licença. As ferramentas incluídas na edição completa mantêm as próprias licenças, descritas em [THIRD-PARTY.md](THIRD-PARTY.md), e os fontes de FFmpeg/LAME acompanham o app. As marcas de terceiros seguem as condições descritas em [BRAND-ASSETS.md](BRAND-ASSETS.md).
 
 ## Autor
 
