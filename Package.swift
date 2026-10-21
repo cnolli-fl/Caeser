@@ -19,6 +19,11 @@ let package = Package(
             resources: [
                 .process("Resources")
             ]
+        ),
+        .testTarget(
+            name: "CaeserTests",
+            dependencies: ["Caeser"],
+            path: "Tests"
         )
     ]
 )

@@ -1,72 +1,63 @@
+import Darwin
 import Foundation
 
-final class DownloadProcess {
+final class DownloadProcess: @unchecked Sendable {
     private let process = Process()
     private let outputPipe = Pipe()
-    private var outputBuffer = ""
-    private let lock = NSLock()
 
     func start(
         executableURL: URL,
         arguments: [String],
         environment: [String: String],
+        currentDirectoryURL: URL? = nil,
         output: @escaping @Sendable (String) -> Void,
         completion: @escaping @Sendable (ProcessOutcome) -> Void
     ) throws {
         process.executableURL = executableURL
         process.arguments = arguments
         process.environment = environment
+        process.currentDirectoryURL = currentDirectoryURL
+        process.standardInput = FileHandle.nullDevice
         process.standardOutput = outputPipe
         process.standardError = outputPipe
 
-        outputPipe.fileHandleForReading.readabilityHandler = { [weak self] handle in
-            let data = handle.availableData
-            guard !data.isEmpty else { return }
-            self?.receive(data: data, output: output)
-        }
+        try process.run()
+        try? outputPipe.fileHandleForWriting.close()
 
-        process.terminationHandler = { [weak self] process in
-            self?.flush(output: output)
-            self?.outputPipe.fileHandleForReading.readabilityHandler = nil
-            completion(.exited(process.terminationStatus))
-        }
-
-        DispatchQueue.global(qos: .userInitiated).async { [process] in
-            do {
-                try process.run()
-            } catch {
-                completion(.failed(error.localizedDescription))
+        // Keep bytes until a complete line arrives, preserving split UTF-8 characters.
+        // Drain the pipe before reporting completion so the last error cannot be lost.
+        DispatchQueue.global(qos: .userInitiated).async { [self] in
+            var buffer = Data()
+            let reader = outputPipe.fileHandleForReading
+            while true {
+                let chunk = reader.availableData
+                if chunk.isEmpty { break }
+                buffer.append(chunk)
+                while let boundary = buffer.firstIndex(where: { $0 == 10 || $0 == 13 }) {
+                    let line = String(decoding: buffer[..<boundary], as: UTF8.self)
+                    buffer.removeSubrange(...boundary)
+                    if !line.isEmpty { output(line) }
+                }
             }
+            if !buffer.isEmpty { output(String(decoding: buffer, as: UTF8.self)) }
+            process.waitUntilExit()
+            try? reader.close()
+            completion(.exited(process.terminationStatus))
         }
     }
 
     func cancel() {
         guard process.isRunning else { return }
-        process.terminate()
-    }
-
-    private func receive(data: Data, output: @escaping @Sendable (String) -> Void) {
-        guard let chunk = String(data: data, encoding: .utf8) else { return }
-        lock.lock()
-        outputBuffer.append(chunk)
-        let pieces = outputBuffer.components(separatedBy: .newlines)
-        outputBuffer = pieces.last ?? ""
-        let completeLines = pieces.dropLast()
-        lock.unlock()
-
-        for line in completeLines where !line.isEmpty {
-            output(line)
+        let pid = process.processIdentifier
+        if getpgid(pid) == pid {
+            kill(-pid, SIGTERM)
+        } else {
+            process.terminate()
         }
-    }
-
-    private func flush(output: @escaping @Sendable (String) -> Void) {
-        lock.lock()
-        let remaining = outputBuffer
-        outputBuffer = ""
-        lock.unlock()
-
-        if !remaining.isEmpty {
-            output(remaining)
+        DispatchQueue.global().asyncAfter(deadline: .now() + 3) { [self] in
+            guard process.isRunning else { return }
+            if getpgid(pid) == pid { kill(-pid, SIGKILL) }
+            else { kill(pid, SIGKILL) }
         }
     }
 }
