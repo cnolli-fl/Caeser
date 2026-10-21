@@ -2,9 +2,9 @@
 
 Versão 2.1.0. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
 
-Vídeos e músicas, do link à sua pasta. Aplicativo nativo em SwiftUI para macOS 26, com ícone original, SF Symbols e Liquid Glass nos controles.
+**Baixe vídeos e músicas no Mac de um jeito simples e muito rápido.**
 
-O Caeser reúne as opções do yt-dlp, do FFmpeg e do spotDL em uma interface gráfica. Cole o endereço, escolha as opções e a pasta de destino e acompanhe a operação pela janela.
+O Caeser foi criado para facilitar o caminho entre o link e o arquivo salvo: cole o endereço, escolha o formato e a pasta e clique em **Baixar**. Tudo em uma interface nativa para macOS 26, sem precisar montar comandos a cada download.
 
 ![Caeser 2.1.0 com seletor YouTube e Spotify, opções de download e download concluído](docs/images/caeser-interface.png)
 
@@ -12,16 +12,24 @@ O Caeser reúne as opções do yt-dlp, do FFmpeg e do spotDL em uma interface gr
 
 ## Proposta do projeto
 
-O projeto explora a integração de ferramentas de linha de comando com uma aplicação gráfica. A interface concentra as opções de download, enquanto ferramentas externas obtêm a mídia, convertem o áudio e combinam faixas quando necessário.
+O intuito do projeto é **facilitar e agilizar o download de vídeos e músicas**, reunindo o que você precisa em uma única janela. Dá para salvar um vídeo, extrair o áudio em MP3 ou usar um link do Spotify para encontrar as músicas no YouTube, sem fazer a busca manual de cada faixa.
 
-Os executáveis são instalados separadamente. Nenhum binário de terceiros é incorporado ao aplicativo ou ao repositório.
+A ideia é ser prático no dia a dia: poucas etapas para iniciar, pasta de destino lembrada pelo app, acompanhamento na própria tela e acesso ao arquivo pelo Finder quando terminar.
+
+### Rapidez no uso
+
+Depois da configuração inicial, o fluxo é direto: **colar o link → escolher as opções → baixar**. O Caeser automatiza a busca, o download e a conversão conforme a opção escolhida, tornando o processo rápido e evitando etapas manuais repetidas.
+
+A velocidade de transferência depende da conexão, do tamanho do arquivo e do serviço de origem. No modo Spotify, a busca de correspondências e a conversão para MP3 também fazem parte do tempo total; não há um prazo fixo para todos os downloads.
+
+Por trás da interface, o Caeser usa yt-dlp, FFmpeg e, para links do Spotify, spotDL. Essas ferramentas são instaladas separadamente; nenhum binário de terceiros é incorporado ao aplicativo ou ao repositório.
 
 ## Recursos
 
 - URLs HTTP e HTTPS, com validação antes de iniciar.
 - Qualidade de vídeo: melhor disponível, até 4K, 1440p, 1080p, 720p ou 480p.
 - Formatos Automático, MP4, WebM e MP3.
-- Links públicos de músicas, álbuns e playlists do Spotify, com áudio encontrado no YouTube.
+- Links públicos de músicas, álbuns e playlists do Spotify como referência para buscar o áudio no YouTube Music ou YouTube e salvar em MP3.
 - Seleção nativa e persistente da pasta de destino.
 - Detecção de ferramentas e instalação opcional do suporte ao Spotify.
 - Progresso, velocidade e estimativa de tempo quando informados pela ferramenta.
@@ -38,7 +46,7 @@ A qualidade de vídeo escolhida é um limite de resolução: o resultado depende
 | Foundation | URLs, arquivos, processos externos e leitura da saída. |
 | yt-dlp | Extração e download de vídeos e áudio. |
 | FFmpeg | Conversão de áudio e combinação de faixas. |
-| spotDL | Identificação de links do Spotify e busca do áudio no YouTube. |
+| spotDL | Leitura das informações das faixas a partir de links do Spotify, busca de correspondências no YouTube Music/YouTube e gravação do MP3 com metadados. |
 | Core Graphics e ImageIO | Geração dos PNGs das marcas nas escalas de tela. |
 
 ```text
@@ -63,7 +71,8 @@ docs/images/                  Captura da interface
 
 - macOS 26 ou mais recente e Xcode com o SDK correspondente.
 - [Homebrew](https://brew.sh/).
-- yt-dlp e FFmpeg para vídeos; spotDL 4.5.2 ou posterior para Spotify.
+- yt-dlp para vídeos e extração de áudio; FFmpeg para conversão e combinação de faixas nos dois modos.
+- Para usar links do Spotify: spotDL 4.5.2 ou posterior e Python para instalar o suporte pelo app.
 - Conexão com a internet para obter a mídia e instalar dependências.
 
 Instale as ferramentas de vídeo:
@@ -72,7 +81,7 @@ Instale as ferramentas de vídeo:
 brew install yt-dlp ffmpeg
 ```
 
-Para Spotify, instale também o Python (`brew install python`), abra a opção **Spotify** e clique em **Instalar suporte ao Spotify**. O app cria um ambiente Python separado em `~/Library/Application Support/Caeser/Tools/spotdl` e instala o spotDL pelo pip. A instalação precisa de internet e pode ser cancelada.
+Para usar links do Spotify, mantenha o FFmpeg instalado, instale também o Python (`brew install python`), abra a opção **Spotify** e clique em **Instalar suporte ao Spotify**. Esse botão instala o spotDL, não o aplicativo do Spotify. O ambiente Python fica separado em `~/Library/Application Support/Caeser/Tools/spotdl`. A instalação precisa de internet e pode ser cancelada.
 
 O Caeser também reconhece `spotdl` em `~/.local/bin` (pipx), nas pastas do Homebrew ou no PATH. Nenhum executável de terceiros é incorporado ao aplicativo ou ao repositório.
 
@@ -100,15 +109,21 @@ O [Package.swift](Package.swift), configurado para Swift tools 6.2, também perm
 
 MP4 e WebM usam o FFmpeg para mesclar vídeo e áudio. MP3 usa a melhor faixa disponível e `--audio-quality 0` (qualidade variável máxima da conversão). Converter não recupera qualidade que a fonte não possui. O fluxo de vídeo solicita um item por operação, sem baixar playlists.
 
-## Spotify via YouTube
+## Como funciona a opção Spotify
+
+**Você cola o link do Spotify; o Caeser encontra o áudio no YouTube Music ou YouTube e salva em MP3.** O link serve para identificar a música ou a lista de faixas. Não é um download direto dos arquivos de áudio do Spotify.
 
 1. Selecione **Spotify** ou cole o link; a origem é reconhecida automaticamente.
 2. Use um link público de música, álbum ou playlist de **open.spotify.com**. URLs com `intl-pt` e URIs `spotify:track:…` também são aceitas.
-3. Clique em **Baixar MP3**.
+3. Escolha a pasta de destino e clique em **Baixar MP3**.
 
-O spotDL identifica as músicas pelo Spotify, procura uma correspondência no YouTube Music (com YouTube como alternativa), baixa o áudio e adiciona capa e informações. O fluxo padrão de links públicos não pede login no Spotify. Bibliotecas privadas, músicas curtidas e links curtos como spotify.link não são suportados nesta versão.
+O trabalho é feito pelo [spotDL](https://github.com/spotDL/spotify-downloader): ele usa as informações das faixas, procura correspondências nas fontes de áudio configuradas e salva o arquivo com capa e metadados, como título, artista e álbum, quando disponíveis. O Caeser configura YouTube Music e YouTube como fontes.
 
-O áudio **vem do YouTube**, não do Spotify. A qualidade depende da fonte encontrada. O app pede MP3 com `--bitrate 0`, sem prometer um bitrate ou uma qualidade de origem que não existem. A correspondência é automática e pode selecionar outra versão da música. Faixas indisponíveis, limites dos serviços e mudanças nas APIs podem impedir o download.
+No fluxo padrão de links públicos, o Caeser não pede login na sua conta do Spotify. Isso não dá acesso a conteúdo privado: músicas curtidas, bibliotecas privadas e links curtos como spotify.link não fazem parte do fluxo desta versão.
+
+O MP3 usa qualidade variável com `--bitrate 0`. A qualidade de origem continua sendo a do áudio encontrado no YouTube; a conversão não recupera detalhes ausentes nem transforma a faixa em áudio sem perdas. Veja a [documentação de formatos e qualidade do spotDL](https://spotdl.readthedocs.io/en/latest/usage/#audio-formats-and-quality).
+
+A busca é automática e pode encontrar outra versão da música, como uma gravação ao vivo ou um remix. Se uma faixa não estiver disponível ou os serviços limitarem as consultas, ela pode falhar mesmo com um link válido.
 
 Em álbuns e playlists, o progresso indica músicas processadas. Uma falha é mostrada mesmo que outras músicas tenham sido salvas. Arquivos existentes são pulados; o app não sincroniza nem remove músicas da pasta.
 
@@ -159,7 +174,7 @@ brew upgrade yt-dlp ffmpeg
 ## Limites da versão atual
 
 - Uma operação de download por vez, sem fila independente de tarefas.
-- Playlists públicas do Spotify são processadas pelo spotDL; playlists de vídeo não são baixadas pelo fluxo de vídeo.
+- Álbuns e playlists públicas identificados por links do Spotify são processados pelo spotDL, com áudio buscado no YouTube Music/YouTube; playlists de vídeo não são baixadas pelo fluxo de vídeo.
 - Dependência de ferramentas externas instaladas no sistema.
 - Sem fluxo de autenticação com contas de serviços na interface.
 
