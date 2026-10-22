@@ -1,6 +1,6 @@
 # Caeser para Windows
 
-Pasta reservada para a versão Windows do Caeser. A versão macOS continua nos diretórios existentes, sem migração nem alteração do aplicativo publicado.
+Versão Windows do Caeser, separada do aplicativo SwiftUI. A versão macOS continua nos diretórios existentes, sem migração nem alteração do aplicativo publicado.
 
 **Estado atual:** implementação inicial em C#/.NET 10 e WinUI 3, em desenvolvimento. O código, os testes e a compilação automatizada estão nesta pasta; ainda não há uma release Windows estável. A compatibilidade precisa ser confirmada pelos testes, não apenas pelo código.
 
@@ -41,13 +41,39 @@ A identidade e o layout devem ser os mesmos. A barra de título, os botões de j
 - Distribuir as versões Windows de yt-dlp, FFmpeg/FFprobe, Deno e spotDL com os avisos de licença correspondentes. Não reutilizar os binários macOS.
 - Empacotar os runtimes necessários para que a pessoa não precise instalar Python, .NET ou ferramentas de desenvolvimento por conta própria.
 
-## Implementação e verificação previstas
+## Estrutura e desenvolvimento
 
-1. Criar a solução independente nesta pasta, separando interface, lógica de download, testes e empacotamento.
-2. Implementar a interface fiel à referência e transportar os comportamentos atuais.
-3. Preparar as ferramentas e o pacote Windows autocontido.
-4. Configurar compilação e testes em um runner Windows x64 no GitHub Actions.
-5. Conferir visualmente a interface, a instalação e o funcionamento nos sistemas de destino antes de declarar a versão estável.
+- Caeser.Windows.sln: solução para abrir no Visual Studio com suporte ao .NET 10 e WinUI.
+- Caeser.App: janela, temas, integração com o Windows e seletor animado.
+- Caeser.Core: validação, argumentos, progresso, preferências e execução segura de processos.
+- Caeser.Core.Tests: testes automatizados, sem depender da interface.
+- Caeser.ProcessProbe: programa auxiliar usado pelos testes de stdout/stderr e cancelamento.
+- Scripts e Packaging: ferramentas, fontes verificadas, construção e instalador.
+- DESIGN.md: referência de fidelidade visual e critérios de acessibilidade.
+
+No Windows, com o SDK .NET 10.0.402 instalado:
+
+    dotnet test Caeser.Core.Tests/Caeser.Core.Tests.csproj
+    pwsh -File Scripts/Build.ps1
+
+A interface é compilada somente no Windows. A lógica e seus testes também podem rodar no macOS; o teste específico de Job Objects é ignorado fora do Windows.
+
+O aplicativo compilado sozinho não contém as ferramentas de download. Para o pacote completo, o workflow constrói as ferramentas, verifica a conversão para MP3 e prepara a distribuição. Não basta copiar apenas Caeser.exe.
+
+## Compilação e pacote completo
+
+O workflow Caeser Windows, na branch codex/windows-port, está separado da release pública. Não possui permissão para publicar Releases.
+
+Etapas:
+
+1. Executar os testes da lógica e de subprocessos reais, incluindo os específicos do Windows.
+2. Compilar a interface autocontida e abrir a janela para os testes e capturas reais.
+3. Construir FFmpeg/LAME a partir dos fontes fixados e spotDL com o extrator atualizado.
+4. Verificar todas as ferramentas em um ambiente sem Python/FFmpeg/Deno externos.
+5. Gerar ZIP portátil, instalador por usuário e checksums SHA-256, identificados como Preview.
+6. Instalar, abrir e desinstalar a prévia apenas na VM descartável do GitHub Actions.
+
+O instalador e o ZIP, quando essas etapas passarem, ficam nos artefatos da execução, não na release v2.1.0. O pacote Preview não usa assinatura Authenticode; o sistema pode exibir um aviso de fornecedor desconhecido.
 
 Testes automatizados precisam cobrir validação de links, argumentos de formato/qualidade, parsing de progresso, erros do Spotify, saída UTF-8, caminhos com espaços e cancelamento dos subprocessos. Testar downloads reais separadamente: serviços externos podem bloquear conexões de servidores na nuvem.
 
@@ -65,6 +91,6 @@ Uma mesma release poderá oferecer arquivos diferentes para cada sistema. Os nom
 
 As notas da release e o README devem apresentar links separados para **Baixar para Mac** e **Baixar para Windows 10/11 x64**, com os requisitos de cada um. O GitHub lista esses arquivos na seção Assets; não é necessário criar outro repositório.
 
-Não anunciar Windows na release atual enquanto não houver um pacote construído e validado. Não substituir os arquivos macOS já publicados. A criação da pasta não realiza commit, push, execução de workflows ou publicação de release.
+Não anunciar Windows na release atual enquanto não houver um pacote construído e validado. Não substituir os arquivos macOS já publicados. Commits e testes são feitos apenas na branch de desenvolvimento autorizada; a publicação de uma release estável é uma etapa separada, após aprovação.
 
 Referência: [releases e arquivos de distribuição no GitHub](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases).
