@@ -6,7 +6,7 @@ param(
 $ErrorActionPreference = 'Stop'
 if (-not $IsWindows) { throw 'Este teste abre o aplicativo real em um desktop Windows.' }
 $application = Join-Path ([IO.Path]::GetFullPath($ApplicationDirectory)) 'Caeser.exe'
-$output = [IO.Path]::GetFullPath($OutputDirectory)
+$output = Join-Path ([IO.Path]::GetFullPath($OutputDirectory)) ('run-' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $output -Force | Out-Null
 $process = Start-Process -FilePath $application -ArgumentList @('--smoke-test', ('"' + $output + '"')) -PassThru
 if (-not $process.WaitForExit(60000)) {

@@ -53,9 +53,18 @@ public partial class App : Application
         {
             var directory = Path.GetFullPath(args[index + 1]);
             Directory.CreateDirectory(directory);
-            File.WriteAllText(Path.Combine(directory, "startup-error.txt"), error.ToString());
+            var details = new System.Text.StringBuilder(error.ToString());
+            for (Exception? current = error; current != null; current = current.InnerException)
+            {
+                details.AppendLine().AppendLine($"HRESULT: 0x{current.HResult:X8}");
+                foreach (System.Collections.DictionaryEntry entry in current.Data)
+                    if (entry.Value is string value)
+                        details.AppendLine($"{entry.Key}: {value}");
+            }
+            var message = details.ToString();
+            File.WriteAllText(Path.Combine(directory, "startup-error.txt"), message);
             File.WriteAllText(Path.Combine(directory, "result.json"),
-                JsonSerializer.Serialize(new { succeeded = false, error = error.ToString() }));
+                JsonSerializer.Serialize(new { succeeded = false, error = message }));
         }
         catch (IOException) { }
         catch (UnauthorizedAccessException) { }

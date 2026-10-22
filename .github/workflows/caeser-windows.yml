@@ -46,12 +46,73 @@ jobs:
         run: ./Scripts/Build.ps1
       - name: Abrir a interface e capturar os dois temas
         run: ./Scripts/TestUi.ps1
-      - name: Guardar resultado e capturas
+      - name: Guardar aplicativo compilado
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Caeser-Windows-build-${{ github.run_number }}
+          path: Windows/artifacts/app/
+          retention-days: 1
+      - name: Guardar diagnóstico e capturas
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: Caeser-Windows-preview-${{ github.run_number }}
+          name: Caeser-Windows-QA-${{ github.run_number }}
           path: |
-            Windows/artifacts/
+            Windows/artifacts/ui-smoke/
             Windows/TestResults/
+          retention-days: 7
+  package-preview:
+    needs: build-and-test
+    if: github.event_name != 'pull_request'
+    runs-on: windows-2025
+    timeout-minutes: 45
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: Windows
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: Caeser-Windows-build-${{ github.run_number }}
+          path: Windows/artifacts/app
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.14.7'
+          architecture: x64
+      - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2
+        with:
+          msystem: UCRT64
+          update: true
+          install: >-
+            make diffutils tar
+            mingw-w64-ucrt-x86_64-gcc
+            mingw-w64-ucrt-x86_64-pkgconf
+            mingw-w64-ucrt-x86_64-nasm
+      - name: Baixar e verificar ferramentas e fontes fixados
+        run: ./Scripts/DownloadTools.ps1
+      - name: Construir FFmpeg e LAME sem dependências externas
+        shell: msys2 {0}
+        run: bash Scripts/BuildMediaTools.sh .cache/media .tools/win-x64
+      - name: Construir spotDL com extrator atualizado
+        run: ./Scripts/BuildSpotDL.ps1
+      - name: Verificar ferramentas e gerar instalador e ZIP
+        run: ./Scripts/Package.ps1
+      - name: Testar instalação, abertura e desinstalação
+        run: ./Scripts/TestInstaller.ps1
+      - name: Guardar pacotes de prévia
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Caeser-Windows-Preview-${{ github.run_number }}
+          path: Windows/artifacts/dist/
+          retention-days: 7
+      - name: Guardar diagnóstico do pacote
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Caeser-Windows-package-QA-${{ github.run_number }}
+          path: |
+            Windows/artifacts/installed-ui/
+            Windows/artifacts/installer-test.log
+            Windows/.tools/win-x64/versions.json
           retention-days: 7
