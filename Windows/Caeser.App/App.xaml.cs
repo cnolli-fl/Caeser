@@ -8,7 +8,6 @@ public partial class App : Application
     private MainWindow? window;
     public App()
     {
-        Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "pt-BR";
         UnhandledException += (_, e) => RecordStartupFailure(e.Exception);
         if (Environment.GetCommandLineArgs().Contains("--smoke-test"))
         {
@@ -17,7 +16,14 @@ public partial class App : Application
             DebugSettings.IsBindingTracingEnabled = true;
             DebugSettings.BindingFailed += (_, e) => RecordTrace(e.Message);
         }
-        try { InitializeComponent(); }
+        try
+        {
+            // Use the Windows App SDK API: the similarly named UWP API
+            // requires package identity and fails in this unpackaged app.
+            Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "pt-BR";
+            System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+            InitializeComponent();
+        }
         catch (Exception e) { RecordStartupFailure(e); throw; }
     }
     private static void RecordTrace(string message)

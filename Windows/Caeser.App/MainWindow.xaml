@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:controls="using:Caeser.App.Controls"
     Title="Caeser">
-    <Grid x:Name="Root" Background="{ThemeResource CaeserBackground}" Loaded="Root_Loaded" SizeChanged="Root_SizeChanged">
+    <Grid x:Name="Root" Language="pt-BR" Background="{ThemeResource CaeserBackground}" Loaded="Root_Loaded" SizeChanged="Root_SizeChanged">
         <Grid.KeyboardAccelerators>
             <KeyboardAccelerator Key="Enter" Modifiers="Control" Invoked="DownloadShortcut" />
             <KeyboardAccelerator Key="L" Modifiers="Control" Invoked="LinkShortcut" />

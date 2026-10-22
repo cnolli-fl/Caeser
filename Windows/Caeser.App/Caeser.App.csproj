@@ -20,6 +20,7 @@
     <PublishSingleFile>false</PublishSingleFile>
     <PublishTrimmed>false</PublishTrimmed>
     <SatelliteResourceLanguages>pt-BR</SatelliteResourceLanguages>
+    <DefaultLanguage>pt-BR</DefaultLanguage>
   </PropertyGroup>
   <ItemGroup>
     <!-- Reference only the components we use, not AI/ML, Search or Widgets. -->
