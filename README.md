@@ -1,14 +1,16 @@
 # Caeser
 
-Windows **1.1.2** · macOS **2.1.0**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
+Windows **1.1.2** · macOS **2.1.1**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
 
 **Baixe vídeos e músicas no Mac ou Windows de um jeito simples e muito rápido.**
 
 O Caeser foi criado para facilitar o caminho entre o link e o arquivo salvo: cole o endereço, escolha o formato e a pasta e clique em **Baixar**. Com interface nativa para cada sistema, sem precisar montar comandos a cada download.
 
-[**Baixar Caeser 2.1.0 para Mac (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v2.1.0/Caeser-2.1.0-macOS-AppleSilicon.dmg) · [ZIP](https://github.com/cnolli-fl/Caeser/releases/download/v2.1.0/Caeser-2.1.0-macOS-AppleSilicon.zip) · [Notas da release](https://github.com/cnolli-fl/Caeser/releases/tag/v2.1.0)
+[**Baixar para Mac — 2.1.1 (.dmg, 105 MB)**](https://github.com/cnolli-fl/Caeser/releases/download/v2.1.1/Caeser-2.1.1-macOS-AppleSilicon.dmg)
 
-[**Baixar Caeser 1.1.2 para Windows (.exe, 166 MB)**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64-Setup.exe) · [ZIP portátil (215 MB)](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64.zip) · [Notas da release Windows](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v1.1.2)
+[**Baixar para Windows — 1.1.2 (.exe, 166 MB)**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64-Setup.exe)
+
+**Para usar o app, baixe somente o instalador do seu sistema.** As ferramentas já estão incluídas. O README é esta página; não é preciso baixá-lo. Os arquivos **Source code (.zip / .tar.gz)** são gerados automaticamente pelo GitHub e servem para desenvolver o projeto.
 
 **Mac:** macOS 26 ou mais recente e chip Apple (M1 ou posterior). **Windows:** Windows 10 22H2 ou Windows 11, x64 (Intel/AMD). As ferramentas já acompanham os dois pacotes; não é preciso instalar Homebrew, Python, FFmpeg ou yt-dlp separadamente.
 
@@ -36,23 +38,29 @@ Por trás da interface, o Caeser usa yt-dlp, FFmpeg e, para links do Spotify, sp
 
 ### Windows 1.1.2
 
-Baixe o instalador .exe e siga as etapas; a instalação é por usuário e não pede acesso de administrador. Outra opção é extrair o ZIP inteiro e abrir Caeser.exe, mantendo as demais pastas ao lado dele. Os arquivos Source code do GitHub não são o aplicativo pronto.
+Baixe o instalador .exe e siga as etapas; a instalação é por usuário e não pede acesso de administrador. O instalador é o único arquivo necessário para usar o Caeser.
 
 O pacote inclui yt-dlp, FFmpeg/FFprobe, Deno, spotDL e os runtimes necessários. A interface mantém a identidade visual do Mac com controles, seleção de pasta e atalhos próprios do Windows. O código fica separado em [Windows/](Windows/), com a solução para Visual Studio, scripts de construção e testes.
 
 A 1.1.2 corrige o fechamento ao clicar em Spotify e estabiliza o seletor por clique, arraste e teclado. O instalador ficou cerca de **57% menor** (382 → 166 MB) e o ZIP, **51% menor** (443 → 215 MB), com a pasta principal organizada em Caeser.exe, Aplicativo, Documentacao e LEIA-ME.txt. Interface e instalador em português; apenas o pequeno fallback interno en-US obrigatório do WinUI e as licenças originais são preservados.
 
-Os [fontes das ferramentas de terceiros](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64-Fontes-Terceiros.zip) ficam em um download separado e não são necessários para usar o app. Os avisos de licença continuam no pacote. A atualização remove os arquivos registrados pela instalação antiga, preservando preferências, downloads e arquivos extras do usuário.
+Os [fontes das ferramentas de terceiros](https://github.com/cnolli-fl/Caeser/releases/tag/fontes-terceiros) ficam na área para desenvolvedores e redistribuidores. Não são necessários para usar o app. Os avisos de licença continuam no pacote. A atualização remove os arquivos registrados pela instalação antiga, preservando preferências, downloads e arquivos extras do usuário.
 
 Passaram 40 testes automatizados da lógica, dos processos e das ferramentas incluídas, além da abertura nos dois temas, interação real com o seletor, download de áudio original servido localmente com conversão MP3 e atualização da 1.1.1, abertura e desinstalação no Windows do GitHub. Isso não substitui a validação em PCs reais com Windows 10/11 nem garante disponibilidade dos serviços externos. Os resultados e os limites estão nas [notas da release Windows](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v1.1.2).
 
-### Mac 2.1.0
+### Mac 2.1.1
 
-A receita de distribuição gera um `.dmg` e um `.zip` para **macOS 26 ou mais recente em Macs com chip Apple (M1 ou posterior)**. Basta mover Caeser.app para Aplicativos; yt-dlp, FFmpeg, FFprobe, Deno e spotDL já acompanham o pacote. Não é necessário Xcode, Python, Homebrew nem o aplicativo do Spotify para usá-lo.
+Baixe o instalador `.dmg`, abra e arraste Caeser.app para Aplicativos. Requer **macOS 26 ou mais recente em Macs com chip Apple (M1 ou posterior)**. yt-dlp, FFmpeg, FFprobe, Deno e spotDL já acompanham o pacote. Não é necessário Xcode, Python, Homebrew nem o aplicativo do Spotify para usá-lo.
 
 Esta edição tem assinatura local gratuita (ad-hoc), **sem Developer ID e sem notarização da Apple**. O macOS pode impedir a primeira abertura e exigir autorização manual. Isso não deve ser confundido com um app verificado pela Apple. Consulte [as instruções de instalação e segurança](docs/INSTALACAO.md); não desative as proteções globais do sistema.
 
-Os instaladores estão disponíveis na [release 2.1.0](https://github.com/cnolli-fl/Caeser/releases/tag/v2.1.0), junto com os hashes SHA-256 para conferência. O GitHub também mostra arquivos **Source code**, que são apenas o projeto para desenvolvedores — para instalar, escolha o `.dmg` ou o `.zip` chamado **Caeser-2.1.0-macOS-AppleSilicon**. A receita de empacotamento gera os arquivos localmente em `dist/`, sem publicá-los automaticamente.
+O instalador está na [release 2.1.1](https://github.com/cnolli-fl/Caeser/releases/tag/v2.1.1), com instruções e hash SHA-256 nas próprias notas. Os [fontes correspondentes das ferramentas](https://github.com/cnolli-fl/Caeser/releases/tag/fontes-terceiros) ficam na área para desenvolvedores, sem misturar com os instaladores.
+
+A atualização mantém o visual e as funções, mas reduz o pacote: yt-dlp e spotDL compartilham uma única cópia do Python para Apple Silicon, FFmpeg e FFprobe compartilham suas próprias bibliotecas e os fontes de compilação ficam em um ZIP separado. A interface é declarada como português brasileiro; só ficam os recursos neutros, um pequeno catálogo inglês obrigatório do parser de metadados e as licenças originais. Nenhum codec, extrator ou opção de qualidade é removido.
+
+No pacote validado localmente, o instalador passou de **165,3 para 105,4 MB** (36,2% menor) e o ZIP de **159,6 para 100,2 MB** (37,2% menor). Os avisos de licença foram agrupados em `Licenses.zip`; o app agora contém 29 arquivos regulares, contra 110 na edição anterior, sem contar pastas e links. Foram verificados os 17 testes automatizados, a interface, as ferramentas incluídas e um download local com conversão para MP3. O teste local não garante a disponibilidade futura dos serviços externos.
+
+Os ZIPs alternativos continuam sendo gerados para validação local. Os downloads públicos das releases de aplicativo oferecem apenas o instalador; hashes ficam nas notas, e fontes de terceiros na área separada. O código necessário para compilar, testar e manter o Caeser continua no repositório.
 
 ## Recursos
 
@@ -127,9 +135,11 @@ bash Scripts/PrepareBundledTools.sh
 bash Scripts/PackageApp.sh
 ```
 
-A primeira etapa baixa os executáveis yt-dlp/Deno e fontes de mídia com verificação SHA-256, compila FFmpeg/FFprobe e LAME sem bibliotecas do Homebrew e recompila spotDL com dependências Python fixadas e yt-dlp atualizado. Para preparar o pacote, o desenvolvedor precisa também de Python 3.14; os usuários do aplicativo não. A segunda compila o app em Release, inclui as ferramentas e os fontes/licenças, aplica assinatura local e gera `.dmg`, `.zip` e respectivos hashes em `dist/`. A primeira preparação demora mais por compilar as ferramentas. Arquivos gerados e caches não entram no Git.
+A primeira etapa verifica os downloads de referência e os fontes de mídia por SHA-256, compila FFmpeg/FFprobe com bibliotecas próprias compartilhadas e LAME e recompila yt-dlp/spotDL para arm64 com dependências Python fixadas. Para preparar o pacote, o desenvolvedor precisa também de Python 3.14; os usuários do aplicativo não. A segunda compila o app em Release, inclui apenas as ferramentas/bibliotecas e os avisos necessários, aplica assinatura local e verifica o app antes de gerar `.dmg`, `.zip`, um ZIP separado de fontes/receitas e respectivos hashes em `dist/`. A primeira preparação demora mais por compilar as ferramentas. Arquivos gerados e caches não entram no Git. O ZIP de fontes deve acompanhar a publicação dos binários, mas não é necessário para usar o app.
 
 O helper `Scripts/CollectToolLicenses.py` extrai os avisos já presentes nos arquivos PyInstaller de yt-dlp e spotDL durante a preparação. `Scripts/VerifyBundledApp.sh` confere integridade, arquitetura, versões, JavaScript e conversão MP3 em um ambiente vazio. Veja [THIRD-PARTY.md](THIRD-PARTY.md) para versões, origens e licenças.
+
+Depois de extrair o ZIP, `python3 Scripts/TestPackagedDownload.py /caminho/Caeser.app` verifica um download de áudio original servido somente em loopback e sua conversão MP3 usando exclusivamente as ferramentas do app. Isso não acessa músicas de terceiros nem comprova disponibilidade dos serviços externos.
 
 ## Abrir no Xcode
 

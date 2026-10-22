@@ -3,6 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "Caeser",
+    defaultLocalization: "pt-BR",
     platforms: [
         .macOS(.v26)
     ],

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Rebuild spotDL: upstream's v4.5.2 executable contains an older yt-dlp.
+# Rebuild both Python CLIs for arm64 with the same fixed dependency versions.
 set -euo pipefail
 task_root="$(cd "$(dirname "$0")/.." && pwd)"
 task_cache="${1:?Usage: BuildSpotDL.sh CACHE_DIRECTORY}"
@@ -14,9 +14,6 @@ task_python="$task_cache/spotdl-build/bin/python"
 "$task_python" -m pip install --no-cache-dir --disable-pip-version-check --no-input \
     -r "$task_root/Packaging/spotdl-requirements.txt"
 export PYINSTALLER_CONFIG_DIR="$task_cache/pyinstaller-cache"
-"$task_python" -m PyInstaller --noconfirm --clean --onefile --name spotdl-modern \
-    --distpath "$task_cache" --workpath "$task_cache/pyinstaller-build" --specpath "$task_cache" \
-    --collect-all spotdl --collect-all yt_dlp --collect-all yt_dlp_ejs \
-    --collect-all ytmusicapi --collect-all pykakasi --collect-all curl_cffi \
-    --collect-all spotapi --collect-all certifi --recursive-copy-metadata spotdl \
-    "$task_root/Scripts/SpotDLEntry.py"
+"$task_python" -m PyInstaller --noconfirm --clean \
+    --distpath "$task_cache" --workpath "$task_cache/pyinstaller-build" \
+    "$task_root/Packaging/MediaTools.spec"

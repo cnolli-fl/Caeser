@@ -16,6 +16,12 @@ yt-dlp, FFmpeg, FFprobe, Deno e o suporte ao Spotify já vêm incluídos. Não �
 instalar Homebrew, Python, Xcode, Spotify ou outras ferramentas para usar o app.
 Internet continua necessária para obter os vídeos, músicas e metadados.
 
+A versão 2.1.1 mantém apenas os arquivos de execução e os avisos necessários
+dentro de Caeser.app. A interface usa português brasileiro. Um pequeno catálogo
+inglês interno do parser de metadados e os textos originais das licenças são
+preservados; não são opções de idioma da interface. Não remova bibliotecas de
+Tools/Lib: são compartilhadas por FFmpeg e FFprobe.
+
 ## Primeira abertura e segurança
 
 Esta é uma distribuição gratuita com assinatura local (ad-hoc), sem certificado
@@ -43,6 +49,9 @@ As ferramentas ficam dentro do aplicativo. Quando precisarem de atualização,
 substitua o pacote completo por uma versão nova do Caeser; `brew upgrade` não
 atualiza as ferramentas desta edição. A versão não tem atualização automática.
 
-As licenças e os fontes de FFmpeg/LAME acompanham Caeser.app, em
-Contents/Resources/Tools. O código Swift do Caeser é MIT. Use os downloads conforme
+As licenças acompanham Caeser.app, agrupadas em Contents/Resources/Tools/Licenses.zip;
+basta descompactar esse arquivo para ler os textos originais. Na 2.1.1,
+os fontes de FFmpeg/LAME e as receitas das ferramentas ficam no ZIP separado
+Caeser-2.1.1-macOS-AppleSilicon-Fontes-Terceiros.zip, oferecido junto dos downloads.
+Você não precisa baixar esse arquivo para usar o app. O código Swift do Caeser é MIT. Use os downloads conforme
 as permissões do conteúdo e dos serviços; o app não contorna DRM.

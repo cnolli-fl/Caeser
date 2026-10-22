@@ -135,10 +135,10 @@
 				};
 				buildConfigurationList = A60000010000000000000001 /* Build configuration list for PBXProject "VideoDownloader" */;
 				compatibilityVersion = "Xcode 14.0";
-				developmentRegion = en;
+				developmentRegion = "pt-BR";
 				hasScannedForEncodings = 0;
 				knownRegions = (
-					en,
+					"pt-BR",
 					Base,
 				);
 				mainGroup = A40000010000000000000001;
@@ -192,10 +192,11 @@
 					CLANG_ENABLE_MODULES = YES;
 					ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 					CODE_SIGN_STYLE = Automatic;
-					CURRENT_PROJECT_VERSION = 2;
-					MARKETING_VERSION = 2.1.0;
+					CURRENT_PROJECT_VERSION = 3;
+					MARKETING_VERSION = 2.1.1;
 					GENERATE_INFOPLIST_FILE = YES;
 					INFOPLIST_KEY_CFBundleDisplayName = Caeser;
+					INFOPLIST_KEY_CFBundleDevelopmentRegion = "pt-BR";
 					INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
 					MACOSX_DEPLOYMENT_TARGET = 26.0;
 					PRODUCT_BUNDLE_IDENTIFIER = com.example.Caeser;
@@ -211,10 +212,11 @@
 					CLANG_ENABLE_MODULES = YES;
 					ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 					CODE_SIGN_STYLE = Automatic;
-					CURRENT_PROJECT_VERSION = 2;
-					MARKETING_VERSION = 2.1.0;
+					CURRENT_PROJECT_VERSION = 3;
+					MARKETING_VERSION = 2.1.1;
 					GENERATE_INFOPLIST_FILE = YES;
 					INFOPLIST_KEY_CFBundleDisplayName = Caeser;
+					INFOPLIST_KEY_CFBundleDevelopmentRegion = "pt-BR";
 					INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.video";
 					MACOSX_DEPLOYMENT_TARGET = 26.0;
 					PRODUCT_BUNDLE_IDENTIFIER = com.example.Caeser;

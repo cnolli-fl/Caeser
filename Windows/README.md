@@ -2,11 +2,11 @@
 
 Versão Windows do Caeser, separada do aplicativo SwiftUI. A versão macOS continua nos diretórios existentes, sem migração nem alteração do aplicativo publicado.
 
-**Versão Windows: 1.1.2.** Implementação nativa em C#/.NET 10 e WinUI 3. A numeração é independente da edição Mac 2.1.0.
+**Versão Windows: 1.1.2.** Implementação nativa em C#/.NET 10 e WinUI 3. A numeração é independente da edição Mac 2.1.1.
 
-[Baixar instalador (166 MB)](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64-Setup.exe) · [ZIP portátil (215 MB)](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64.zip) · [Release e checksums](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v1.1.2)
+[Baixar instalador (166 MB)](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64-Setup.exe) · [Instruções e hash de integridade](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v1.1.2)
 
-O instalador configura o app para seu usuário, sem exigir administrador. Para usar a edição portátil, extraia o ZIP inteiro e abra Caeser.exe. Não mova apenas o executável: as pastas e bibliotecas que o acompanham são necessárias.
+Baixe somente o instalador e siga as etapas. Ele configura o app para seu usuário, sem exigir administrador. O README é esta página; os arquivos Source code gerados pelo GitHub são para desenvolvimento.
 
 O pacote já inclui as ferramentas. Não é necessário instalar Python, .NET, FFmpeg, Deno ou yt-dlp separadamente. O instalador não tem assinatura Authenticode; o Windows pode avisar que o fornecedor é desconhecido.
 
@@ -18,7 +18,7 @@ A distribuição otimizada mantém apenas **Caeser.exe**, **Aplicativo**, **Docu
 
 Interface e instalador usam português brasileiro. Satélites de tradução não utilizados são excluídos da saída gerada. Além de pt-BR, são preservados apenas o pequeno fallback interno en-US exigido pelo carregador nativo do WinUI, os arquivos neutros do runtime e os textos originais das licenças. O projeto referencia somente os componentes Windows App SDK que usa, sem IA/ML, Search ou Widgets.
 
-Os [fontes das ferramentas](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64-Fontes-Terceiros.zip) ficam no download separado Caeser-1.1.2-Windows-x64-Fontes-Terceiros.zip, correspondente ao pacote, em vez de ocuparem espaço na instalação. Os avisos de licença continuam em Documentacao. Não é necessário baixar os fontes para usar o Caeser; quem redistribuir os binários deve disponibilizar também os fontes correspondentes, conforme [THIRD-PARTY.md](THIRD-PARTY.md).
+Os [fontes das ferramentas](https://github.com/cnolli-fl/Caeser/releases/download/fontes-terceiros/Caeser-1.1.2-Windows-x64-Fontes-Terceiros.zip) ficam na área Fontes de terceiros, no arquivo correspondente ao pacote, em vez de ocuparem espaço na instalação. Os avisos de licença continuam em Documentacao. Não é necessário baixar os fontes para usar o Caeser; quem redistribuir os binários deve disponibilizar também os fontes correspondentes, conforme [THIRD-PARTY.md](THIRD-PARTY.md).
 
 Ao atualizar uma instalação antiga, o instalador usa o desinstalador anterior para remover somente os arquivos registrados por ele. Não apaga a pasta inteira nem os downloads e preferências. O teste automatizado verifica a atualização da 1.1.1 publicada e a preservação de um arquivo extra do usuário, inclusive após desinstalar a nova versão.
 
@@ -95,7 +95,7 @@ Etapas:
 6. Extrair o ZIP em um caminho com espaços e acentos e abrir pelo launcher, validando o pacote que o usuário recebe.
 7. Instalar, conferir a versão instalada, abrir e desinstalar o app apenas na VM descartável do GitHub Actions.
 
-Os pacotes aprovados são publicados na release Windows windows-v1.1.2. A release Mac v2.1.0 e seus arquivos não são substituídos.
+O instalador aprovado é publicado na release Windows windows-v1.1.2. O Mac usa sua própria release; os instaladores de versões anteriores continuam disponíveis.
 
 A 1.1.2 foi validada no [workflow 39783492094](https://github.com/cnolli-fl/Caeser/actions/runs/39783492094): 39 testes de lógica/processos e mais 1 teste real das ferramentas incluídas, além da interação com a interface, abertura dos pacotes e atualização/desinstalação. Os pacotes publicados são os mesmos arquivos testados nesse workflow; as notas, os links e o changelog foram atualizados depois, sem modificar o código funcional.
 
@@ -105,17 +105,15 @@ As capturas são inspecionadas para conferir a aparência; o teste também verif
 
 ## Releases no GitHub
 
-Cada plataforma tem sua numeração. A distribuição Windows usa a tag windows-v1.1.2; o Mac permanece em v2.1.0. O README principal mantém links separados. Os nomes identificam plataforma e arquitetura:
+Cada plataforma tem sua numeração. A distribuição Windows usa a tag windows-v1.1.2; o Mac usa v2.1.1. O README principal mantém links separados. Os nomes dos instaladores públicos identificam plataforma e arquitetura:
 
 - `Caeser-X.Y.Z-macOS-AppleSilicon.dmg`
-- `Caeser-X.Y.Z-macOS-AppleSilicon.zip`
 - `Caeser-X.Y.Z-Windows-x64-Setup.exe`
-- `Caeser-X.Y.Z-Windows-x64.zip`, se houver uma distribuição portátil validada.
-- `Caeser-X.Y.Z-Windows-x64-Fontes-Terceiros.zip`, com os fontes correspondentes das ferramentas e as instruções de construção, publicado junto dos binários.
-- Arquivos de checksums identificados por plataforma.
+
+Os fontes correspondentes das ferramentas e as instruções de construção ficam na área pública Fontes de terceiros, com links diretos nas notas dos instaladores. Os hashes SHA-256 ficam nas próprias notas. ZIPs alternativos e arquivos de checksums continuam sendo gerados para validação local, mas não são anexados às releases de aplicativo.
 
 As notas da release e o README devem apresentar links separados para **Baixar para Mac** e **Baixar para Windows 10/11 x64**, com os requisitos de cada um. O GitHub lista esses arquivos na seção Assets; não é necessário criar outro repositório.
 
-A publicação Windows não renomeia arquivos de Mac nem reaproveita seus binários. Antes de publicar qualquer atualização, executar os testes, conferir versões e checksums e preservar os arquivos das releases anteriores.
+A publicação Windows não renomeia arquivos de Mac nem reaproveita seus binários. Antes de publicar qualquer atualização, executar os testes, conferir versões e checksums e preservar os instaladores das releases anteriores.
 
 Referência: [releases e arquivos de distribuição no GitHub](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases).

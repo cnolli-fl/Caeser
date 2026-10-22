@@ -1,5 +1,21 @@
 # Mudanças
 
+## macOS 2.1.1 — 2026-10-22
+
+- Distribuição menor sem mudar o design, as logos, os formatos ou a qualidade dos downloads.
+- Instalador DMG de 165,3 para 105,4 MB (36,2% menor); ZIP de 159,6 para 100,2 MB (37,2% menor).
+- Conteúdo do app de 226,5 para 157,7 MB, com 29 arquivos regulares em vez de 110; fontes separados e licenças agrupadas, sem apagar os avisos obrigatórios.
+- FFmpeg e FFprobe compartilham suas próprias bibliotecas, sem depender de Homebrew.
+- yt-dlp e spotDL compartilham uma única cópia do Python e das dependências, apenas para Apple Silicon; eliminados dados duplicados e a interface web independente do spotDL, não usada pelo app.
+- Interface declarada como português brasileiro. Removidos os demais catálogos de tradução, preservando o pequeno catálogo inglês interno obrigatório do parser de metadados e os textos originais das licenças.
+- Fontes de FFmpeg/LAME e receitas de compilação em um ZIP separado, disponível na área Fontes de terceiros; avisos de licença permanecem no app.
+- Empacotamento com lista explícita dos arquivos necessários, sem fontes/caches de compilação nem metadados extras do Finder no ZIP.
+- Avisos de terceiros preservados em um único `Licenses.zip`, evitando milhares de arquivos soltos dentro do aplicativo.
+- Verificação de assinatura, arquitetura, bibliotecas internas, extratores, MP3 e combinação de vídeo/áudio antes de gerar a distribuição.
+- Validação local: 17 testes automatizados, abertura e alternância YouTube/Spotify, chamada das duas ferramentas pelo Swift, download local convertido em MP3 e extração em caminho com espaços e acentos. Os 1.752 extratores e a lista de codecs permanecem iguais aos da distribuição anterior.
+- Downloads organizados: somente o instalador nas releases de aplicativo, hashes nas notas e fontes de terceiros em uma área separada, com links diretos.
+- ZIPs alternativos e arquivos de checksums retirados dos downloads públicos, com cópias locais preservadas. Os instaladores das versões anteriores e o aplicativo Windows 1.1.2 permanecem disponíveis.
+
 ## Windows 1.1.2 — 2026-10-22
 
 - Corrigido o fechamento ao passar o mouse e clicar em Spotify: o estado visual usava um recurso de tema inexistente no WinUI.
