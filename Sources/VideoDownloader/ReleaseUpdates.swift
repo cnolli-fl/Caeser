@@ -72,7 +72,7 @@ final class ReleaseUpdateModel: ObservableObject {
     private let currentVersion: String
     private let load: @Sendable () async throws -> Data
 
-    init(currentVersion: String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "3.0.0",
+    init(currentVersion: String = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "3.0.1",
          load: @escaping @Sendable () async throws -> Data = { try await ReleaseUpdateModel.loadReleases() }) {
         self.currentVersion = currentVersion
         self.load = load

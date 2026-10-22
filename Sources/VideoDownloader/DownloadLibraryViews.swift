@@ -152,54 +152,76 @@ struct DownloadHistoryView: View {
     @State private var confirmClear = false
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 5) {
                     Text("Histórico").font(.title2.weight(.semibold))
-                    Text("Seus últimos 100 downloads, salvos neste Mac.").font(.callout).foregroundStyle(.secondary)
+                    Text("Seus últimos downloads, salvos neste Mac.").font(.callout).foregroundStyle(.secondary)
                 }
                 Spacer()
-                Button("Concluído") { dismiss() }.keyboardShortcut(.cancelAction)
+                Text("\(model.history.count) de 100").font(.callout).foregroundStyle(.secondary).monospacedDigit()
             }
+            .padding(24)
+            Divider()
             if model.history.isEmpty {
                 ContentUnavailableView("Nenhum download ainda", systemImage: "clock.arrow.circlepath",
                                        description: Text("Os downloads concluídos, cancelados ou com erro aparecem aqui."))
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
-                    LazyVStack(alignment: .leading, spacing: 18) {
+                    LazyVStack(alignment: .leading, spacing: 0) {
                         ForEach(model.history) { item in
-                            HStack(alignment: .top, spacing: 12) {
-                                MediaArtwork(url: item.request.preview?.artworkURL, width: 44, height: 44)
-                                VStack(alignment: .leading, spacing: 5) {
-                                    Text(item.title).font(.body.weight(.medium)).lineLimit(2).help(item.title)
-                                    Label(item.status.title, systemImage: item.status.symbol)
-                                        .font(.callout).foregroundStyle(.secondary)
-                                    if item.status == .failed || item.status == .interrupted {
-                                        Text(item.detail).font(.callout).foregroundStyle(.secondary)
-                                    }
-                                    Text(item.finishedAt ?? item.createdAt, format: .dateTime.day().month().hour().minute())
-                                        .font(.callout).foregroundStyle(.secondary)
-                                }
-                                .frame(maxWidth: .infinity, alignment: .leading)
-                                Button("Mostrar no Finder", systemImage: "folder") { model.reveal(item) }
-                                    .labelStyle(.iconOnly).frame(width: 28, height: 28).help("Mostrar no Finder")
-                                Button(item.status == .completed ? "Baixar novamente" : "Tentar novamente",
-                                       systemImage: "arrow.clockwise") { model.retry(item); dismiss() }
-                                    .labelStyle(.iconOnly).frame(width: 28, height: 28).help("Adicionar novamente à fila")
-                            }
-                            .buttonStyle(.borderless)
-                            Divider()
+                            historyRow(item)
+                            if item.id != model.history.last?.id { Divider().padding(.leading, 80) }
                         }
                     }
                 }
-                Button("Limpar histórico…") { confirmClear = true }.buttonStyle(.borderless)
             }
+            Divider()
+            HStack {
+                Button("Limpar histórico…") { confirmClear = true }
+                    .buttonStyle(.borderless).disabled(model.history.isEmpty)
+                Spacer()
+                Button("Fechar") { dismiss() }.keyboardShortcut(.cancelAction)
+            }
+            .padding(.horizontal, 24).padding(.vertical, 16)
         }
-        .padding(24).frame(width: 580, height: 460)
+        .frame(width: 600, height: model.history.isEmpty ? 320 : min(520, 144 + CGFloat(model.history.count) * 100))
         .alert("Limpar o histórico?", isPresented: $confirmClear) {
             Button("Cancelar", role: .cancel) { }
             Button("Limpar histórico", role: .destructive) { model.clearHistory() }
         } message: { Text("Só os registros serão removidos. Os arquivos baixados continuam na sua pasta.") }
+    }
+
+    private func historyRow(_ item: QueueItem) -> some View {
+        HStack(spacing: 12) {
+            MediaArtwork(url: item.request.preview?.artworkURL, width: 44, height: 44)
+            VStack(alignment: .leading, spacing: 5) {
+                Text(item.title).font(.body.weight(.semibold)).lineLimit(2).help(item.title)
+                HStack(spacing: 6) {
+                    Label(item.status.title, systemImage: item.status.symbol)
+                    Text("·")
+                    Text(item.finishedAt ?? item.createdAt, format: .dateTime.day().month().hour().minute())
+                        .monospacedDigit()
+                }
+                .font(.callout).foregroundStyle(.secondary).lineLimit(1)
+                if item.status == .failed || item.status == .interrupted {
+                    Text(item.detail).font(.callout).foregroundStyle(.secondary)
+                        .lineLimit(1).help(item.detail)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            HStack(spacing: 4) {
+                Button("Mostrar no Finder", systemImage: "folder") { model.reveal(item) }
+                    .help("Mostrar no Finder")
+                Button(item.status == .completed ? "Baixar novamente" : "Tentar novamente",
+                       systemImage: "arrow.clockwise") { model.retry(item); dismiss() }
+                    .help(item.status == .completed ? "Baixar novamente" : "Tentar novamente")
+            }
+            .labelStyle(.iconOnly).buttonStyle(.borderless).controlSize(.regular)
+        }
+        .padding(.horizontal, 24).padding(.vertical, 14)
+        .accessibilityElement(children: .contain)
     }
 }
 

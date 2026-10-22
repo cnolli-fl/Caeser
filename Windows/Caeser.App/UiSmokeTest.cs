@@ -99,9 +99,24 @@ internal static class UiSmokeTest
             root.RequestedTheme = theme;
             await Task.Delay(300);
             await CaptureAsync(root, directory, $"features-{theme.ToString().ToLowerInvariant()}.png");
+            var history = model.History.ToList();
+            history[0].Title = "Um título comprido para conferir o alinhamento do histórico e das ações sem aumentar a janela";
+            history.Add(new() { Request = history[0].Request, Title = "Música que não pôde ser baixada", State = QueueState.Failed,
+                Detail = "Não foi possível acessar este conteúdo. Este texto longo não deve empurrar os botões para fora da janela." });
+            foreach (var empty in new[] { false, true })
+            {
+                var dialog = ((MainWindow)window).CreateHistoryDialog(empty ? [] : history, _ => { });
+                var shown = dialog.ShowAsync();
+                await Task.Delay(400);
+                var content = (FrameworkElement)dialog.Content;
+                if (content.ActualWidth > root.ActualWidth || content.ActualHeight > root.ActualHeight || content.ActualWidth < 240)
+                    throw new InvalidOperationException("O histórico ultrapassou a área da janela.");
+                await CaptureAsync(dialog, directory, $"history-{(empty ? "empty" : "items")}-{theme.ToString().ToLowerInvariant()}.png");
+                dialog.Hide(); await shown;
+            }
         }
         var files = Directory.GetFiles(directory, "*.png");
-        if (files.Length != 6 || files.Any(f => new FileInfo(f).Length < 2000))
+        if (files.Length != 10 || files.Any(f => new FileInfo(f).Length < 2000))
             throw new InvalidOperationException("A captura real da interface está incompleta.");
         await File.WriteAllTextAsync(Path.Combine(directory, "result.json"), JsonSerializer.Serialize(new
         {
