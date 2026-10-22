@@ -2,13 +2,27 @@
 
 Versão Windows do Caeser, separada do aplicativo SwiftUI. A versão macOS continua nos diretórios existentes, sem migração nem alteração do aplicativo publicado.
 
-**Versão Windows: 1.1.1.** Implementação nativa em C#/.NET 10 e WinUI 3. A numeração é independente da edição Mac 2.1.0.
+**Versão Windows: 1.1.2.** Implementação nativa em C#/.NET 10 e WinUI 3. A numeração é independente da edição Mac 2.1.0.
 
-[Baixar instalador](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.1/Caeser-1.1.1-Windows-x64-Setup.exe) · [ZIP portátil](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.1/Caeser-1.1.1-Windows-x64.zip) · [Release e checksums](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v1.1.1)
+[Baixar instalador (166 MB)](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64-Setup.exe) · [ZIP portátil (215 MB)](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64.zip) · [Release e checksums](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v1.1.2)
 
 O instalador configura o app para seu usuário, sem exigir administrador. Para usar a edição portátil, extraia o ZIP inteiro e abra Caeser.exe. Não mova apenas o executável: as pastas e bibliotecas que o acompanham são necessárias.
 
 O pacote já inclui as ferramentas. Não é necessário instalar Python, .NET, FFmpeg, Deno ou yt-dlp separadamente. O instalador não tem assinatura Authenticode; o Windows pode avisar que o fornecedor é desconhecido.
+
+### O que mudou na 1.1.2
+
+Corrigido o fechamento ao interagir com Spotify. O seletor mantém o visual original, com clique, arraste nas duas direções, navegação por teclado e respeito a Reduzir Movimento. O instalador ficou cerca de 57% menor e o ZIP, 51% menor em relação à 1.1.1.
+
+A distribuição otimizada mantém apenas **Caeser.exe**, **Aplicativo**, **Documentacao** e **LEIA-ME.txt** na pasta principal. Abra Caeser.exe e mantenha as pastas ao lado dele. As bibliotecas e ferramentas necessárias ficam dentro de Aplicativo, sem removê-las nem mudar seus caminhos internos.
+
+Interface e instalador usam português brasileiro. Satélites de tradução não utilizados são excluídos da saída gerada. Além de pt-BR, são preservados apenas o pequeno fallback interno en-US exigido pelo carregador nativo do WinUI, os arquivos neutros do runtime e os textos originais das licenças. O projeto referencia somente os componentes Windows App SDK que usa, sem IA/ML, Search ou Widgets.
+
+Os [fontes das ferramentas](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64-Fontes-Terceiros.zip) ficam no download separado Caeser-1.1.2-Windows-x64-Fontes-Terceiros.zip, correspondente ao pacote, em vez de ocuparem espaço na instalação. Os avisos de licença continuam em Documentacao. Não é necessário baixar os fontes para usar o Caeser; quem redistribuir os binários deve disponibilizar também os fontes correspondentes, conforme [THIRD-PARTY.md](THIRD-PARTY.md).
+
+Ao atualizar uma instalação antiga, o instalador usa o desinstalador anterior para remover somente os arquivos registrados por ele. Não apaga a pasta inteira nem os downloads e preferências. O teste automatizado verifica a atualização da 1.1.1 publicada e a preservação de um arquivo extra do usuário, inclusive após desinstalar a nova versão.
+
+Caso haja uma falha inesperada, o último relatório fica em `%LOCALAPPDATA%\Caeser\Logs\ultima-falha.txt`. Nenhum relatório é enviado automaticamente.
 
 ## Plataforma
 
@@ -54,10 +68,11 @@ A identidade e o layout devem ser os mesmos. A barra de título, os botões de j
 - Caeser.Core: validação, argumentos, progresso, preferências e execução segura de processos.
 - Caeser.Core.Tests: testes automatizados, sem depender da interface.
 - Caeser.ProcessProbe: programa auxiliar usado pelos testes de stdout/stderr e cancelamento.
+- Caeser.Launcher: entrada nativa pequena que abre a interface em Aplicativo, sem exigir outro runtime.
 - Scripts e Packaging: ferramentas, fontes verificadas, construção e instalador.
 - DESIGN.md: referência de fidelidade visual e critérios de acessibilidade.
 
-No Windows, com o SDK .NET 10.0.402 instalado:
+No Windows, com o SDK .NET 10.0.402 e Visual Studio/Build Tools com as ferramentas C++ x64 instalados (o pequeno launcher nativo usa MSVC e o compilador de recursos do Windows):
 
     dotnet test Caeser.Core.Tests/Caeser.Core.Tests.csproj
     pwsh -File Scripts/Build.ps1
@@ -76,10 +91,13 @@ Etapas:
 2. Compilar a interface autocontida e abrir a janela para os testes e capturas reais.
 3. Construir FFmpeg/LAME a partir dos fontes fixados e spotDL com o extrator atualizado.
 4. Verificar todas as ferramentas em um ambiente sem Python/FFmpeg/Deno externos e baixar um áudio original de teste, servido somente em loopback, convertendo-o para MP3 com a mesma lógica do aplicativo.
-5. Conferir a versão do aplicativo e gerar ZIP portátil, instalador por usuário e checksums SHA-256.
-6. Instalar, conferir a versão instalada, abrir e desinstalar o app apenas na VM descartável do GitHub Actions.
+5. Conferir a versão do aplicativo e gerar ZIP portátil, instalador por usuário, arquivo separado de fontes de terceiros e checksums SHA-256.
+6. Extrair o ZIP em um caminho com espaços e acentos e abrir pelo launcher, validando o pacote que o usuário recebe.
+7. Instalar, conferir a versão instalada, abrir e desinstalar o app apenas na VM descartável do GitHub Actions.
 
-Os pacotes aprovados são publicados na release Windows windows-v1.1.1. A release Mac v2.1.0 e seus arquivos não são substituídos.
+Os pacotes aprovados são publicados na release Windows windows-v1.1.2. A release Mac v2.1.0 e seus arquivos não são substituídos.
+
+A 1.1.2 foi validada no [workflow 39783492094](https://github.com/cnolli-fl/Caeser/actions/runs/39783492094): 39 testes de lógica/processos e mais 1 teste real das ferramentas incluídas, além da interação com a interface, abertura dos pacotes e atualização/desinstalação. Os pacotes publicados são os mesmos arquivos testados nesse workflow; as notas, os links e o changelog foram atualizados depois, sem modificar o código funcional.
 
 Testes automatizados precisam cobrir validação de links, argumentos de formato/qualidade, parsing de progresso, erros do Spotify, saída UTF-8, caminhos com espaços e cancelamento dos subprocessos. Testar downloads reais separadamente: serviços externos podem bloquear conexões de servidores na nuvem.
 
@@ -87,12 +105,13 @@ As capturas são inspecionadas para conferir a aparência; o teste também verif
 
 ## Releases no GitHub
 
-Cada plataforma tem sua numeração. A distribuição Windows usa a tag windows-v1.1.1; o Mac permanece em v2.1.0. O README principal mantém links separados. Os nomes identificam plataforma e arquitetura:
+Cada plataforma tem sua numeração. A distribuição Windows usa a tag windows-v1.1.2; o Mac permanece em v2.1.0. O README principal mantém links separados. Os nomes identificam plataforma e arquitetura:
 
 - `Caeser-X.Y.Z-macOS-AppleSilicon.dmg`
 - `Caeser-X.Y.Z-macOS-AppleSilicon.zip`
 - `Caeser-X.Y.Z-Windows-x64-Setup.exe`
 - `Caeser-X.Y.Z-Windows-x64.zip`, se houver uma distribuição portátil validada.
+- `Caeser-X.Y.Z-Windows-x64-Fontes-Terceiros.zip`, com os fontes correspondentes das ferramentas e as instruções de construção, publicado junto dos binários.
 - Arquivos de checksums identificados por plataforma.
 
 As notas da release e o README devem apresentar links separados para **Baixar para Mac** e **Baixar para Windows 10/11 x64**, com os requisitos de cada um. O GitHub lista esses arquivos na seção Assets; não é necessário criar outro repositório.

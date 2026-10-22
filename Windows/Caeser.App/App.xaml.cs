@@ -16,7 +16,14 @@ public partial class App : Application
             DebugSettings.IsBindingTracingEnabled = true;
             DebugSettings.BindingFailed += (_, e) => RecordTrace(e.Message);
         }
-        try { InitializeComponent(); }
+        try
+        {
+            // Use the Windows App SDK API: the similarly named UWP API
+            // requires package identity and fails in this unpackaged app.
+            Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "pt-BR";
+            System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = System.Globalization.CultureInfo.GetCultureInfo("pt-BR");
+            InitializeComponent();
+        }
         catch (Exception e) { RecordStartupFailure(e); throw; }
     }
     private static void RecordTrace(string message)
@@ -46,6 +53,17 @@ public partial class App : Application
     }
     private static void RecordStartupFailure(Exception error)
     {
+        // Normal launches need a useful report too. Never suppress an unknown
+        // XAML exception: record it without pretending that the app recovered.
+        try
+        {
+            var logs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Caeser", "Logs");
+            Directory.CreateDirectory(logs);
+            File.WriteAllText(Path.Combine(logs, "ultima-falha.txt"),
+                $"Caeser {typeof(App).Assembly.GetName().Version} · {DateTimeOffset.Now:O}{Environment.NewLine}{error}");
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
         var args = Environment.GetCommandLineArgs();
         var index = Array.IndexOf(args, "--smoke-test");
         if (index < 0 || index + 1 >= args.Length) return;

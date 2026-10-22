@@ -1,5 +1,18 @@
 # Mudanças
 
+## Windows 1.1.2 — 2026-10-22
+
+- Corrigido o fechamento ao passar o mouse e clicar em Spotify: o estado visual usava um recurso de tema inexistente no WinUI.
+- Seletor estabilizado para cliques rápidos, arraste nas duas direções, teclado e movimento reduzido, preservando o design e as logos originais.
+- Instalador reduzido de 382 para 166 MB (cerca de 57%); ZIP portátil de 443 para 215 MB (cerca de 51%).
+- Pasta principal organizada em Caeser.exe, Aplicativo, Documentacao e LEIA-ME.txt, com um pequeno launcher nativo.
+- Interface e instalador em português brasileiro; removidos satélites de idiomas não utilizados e componentes de IA/ML, Search e Widgets, mantendo o fallback en-US obrigatório do WinUI.
+- Fontes correspondentes das ferramentas publicados em ZIP separado; avisos de licença mantidos na instalação.
+- Atualização da 1.1.1 limpa apenas os arquivos registrados pelo instalador antigo, preservando preferências, downloads e arquivos extras do usuário.
+- Relatório local da última falha inesperada, sem envio automático.
+- Validação no Windows: 40 testes da lógica/processos/ferramentas, interação real com a interface nos dois temas, MP3, ZIP extraído em caminho com acentos e espaços, atualização da 1.1.1 e desinstalação com preservação de arquivo do usuário.
+- Mac 2.1.0 e os arquivos das releases anteriores preservados.
+
 ## Windows 1.1.1 — 2026-10-22
 
 - Primeira distribuição Windows x64, com instalador por usuário e ZIP portátil.

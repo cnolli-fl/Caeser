@@ -1,6 +1,6 @@
 # Caeser
 
-Windows **1.1.1** · macOS **2.1.0**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
+Windows **1.1.2** · macOS **2.1.0**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
 
 **Baixe vídeos e músicas no Mac ou Windows de um jeito simples e muito rápido.**
 
@@ -8,7 +8,7 @@ O Caeser foi criado para facilitar o caminho entre o link e o arquivo salvo: col
 
 [**Baixar Caeser 2.1.0 para Mac (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v2.1.0/Caeser-2.1.0-macOS-AppleSilicon.dmg) · [ZIP](https://github.com/cnolli-fl/Caeser/releases/download/v2.1.0/Caeser-2.1.0-macOS-AppleSilicon.zip) · [Notas da release](https://github.com/cnolli-fl/Caeser/releases/tag/v2.1.0)
 
-[**Baixar Caeser 1.1.1 para Windows (.exe)**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.1/Caeser-1.1.1-Windows-x64-Setup.exe) · [ZIP portátil](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.1/Caeser-1.1.1-Windows-x64.zip) · [Notas da release Windows](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v1.1.1)
+[**Baixar Caeser 1.1.2 para Windows (.exe, 166 MB)**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64-Setup.exe) · [ZIP portátil (215 MB)](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64.zip) · [Notas da release Windows](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v1.1.2)
 
 **Mac:** macOS 26 ou mais recente e chip Apple (M1 ou posterior). **Windows:** Windows 10 22H2 ou Windows 11, x64 (Intel/AMD). As ferramentas já acompanham os dois pacotes; não é preciso instalar Homebrew, Python, FFmpeg ou yt-dlp separadamente.
 
@@ -34,13 +34,17 @@ Por trás da interface, o Caeser usa yt-dlp, FFmpeg e, para links do Spotify, sp
 
 ## Aplicativo completo
 
-### Windows 1.1.1
+### Windows 1.1.2
 
 Baixe o instalador .exe e siga as etapas; a instalação é por usuário e não pede acesso de administrador. Outra opção é extrair o ZIP inteiro e abrir Caeser.exe, mantendo as demais pastas ao lado dele. Os arquivos Source code do GitHub não são o aplicativo pronto.
 
 O pacote inclui yt-dlp, FFmpeg/FFprobe, Deno, spotDL e os runtimes necessários. A interface mantém a identidade visual do Mac com controles, seleção de pasta e atalhos próprios do Windows. O código fica separado em [Windows/](Windows/), com a solução para Visual Studio, scripts de construção e testes.
 
-Foram automatizados testes da lógica e dos processos, abertura nos dois temas, troca YouTube/Spotify, download de áudio original servido localmente com conversão MP3 e instalação/desinstalação no Windows do GitHub. Isso não substitui a validação em PCs reais com Windows 10/11 nem garante disponibilidade dos serviços externos. Os resultados e os limites estão nas [notas da release Windows](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v1.1.1).
+A 1.1.2 corrige o fechamento ao clicar em Spotify e estabiliza o seletor por clique, arraste e teclado. O instalador ficou cerca de **57% menor** (382 → 166 MB) e o ZIP, **51% menor** (443 → 215 MB), com a pasta principal organizada em Caeser.exe, Aplicativo, Documentacao e LEIA-ME.txt. Interface e instalador em português; apenas o pequeno fallback interno en-US obrigatório do WinUI e as licenças originais são preservados.
+
+Os [fontes das ferramentas de terceiros](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64-Fontes-Terceiros.zip) ficam em um download separado e não são necessários para usar o app. Os avisos de licença continuam no pacote. A atualização remove os arquivos registrados pela instalação antiga, preservando preferências, downloads e arquivos extras do usuário.
+
+Passaram 40 testes automatizados da lógica, dos processos e das ferramentas incluídas, além da abertura nos dois temas, interação real com o seletor, download de áudio original servido localmente com conversão MP3 e atualização da 1.1.1, abertura e desinstalação no Windows do GitHub. Isso não substitui a validação em PCs reais com Windows 10/11 nem garante disponibilidade dos serviços externos. Os resultados e os limites estão nas [notas da release Windows](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v1.1.2).
 
 ### Mac 2.1.0
 

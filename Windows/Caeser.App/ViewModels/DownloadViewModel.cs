@@ -67,9 +67,9 @@ public sealed class DownloadViewModel : INotifyPropertyChanged
         set { if (source != value && !IsBusy) { source = value; Error = null; Changed(); } }
     }
     public Choice<VideoQuality> Quality
-    { get => quality; set { if (value != null) { quality = value; Changed(); } } }
+    { get => quality; set { if (value != null && quality != value) { quality = value; Changed(); } } }
     public Choice<VideoFormat> Format
-    { get => format; set { if (value != null) { format = value; Changed(); } } }
+    { get => format; set { if (value != null && format != value) { format = value; Changed(); } } }
     public string Destination { get; private set; }
     public string? LastDestination { get; private set; }
     public bool IsBusy { get; private set; }
