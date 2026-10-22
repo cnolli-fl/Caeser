@@ -22,6 +22,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.26100.9169" />
+    <PackageReference Include="Microsoft.Windows.SDK.BuildTools.MSIX" Version="1.7.261008100" PrivateAssets="all" />
     <ProjectReference Include="..\Caeser.Core\Caeser.Core.csproj" />
     <Content Include="Assets\**" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\Sources\VideoDownloader\Resources\CaeserLogo.png" Link="Assets\CaeserLogo.png" CopyToOutputDirectory="PreserveNewest" />
@@ -31,5 +32,8 @@
     <Content Include="..\..\Sources\VideoDownloader\Resources\SpotifyMark.png" Link="Assets\SpotifyMark.scale-100.png" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\Sources\VideoDownloader\Resources\SpotifyMark@2x.png" Link="Assets\SpotifyMark.scale-200.png" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\Sources\VideoDownloader\Resources\SpotifyMark@3x.png" Link="Assets\SpotifyMark.scale-300.png" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="$(ApplicationManifest)" />
   </ItemGroup>
 </Project>
