@@ -92,8 +92,16 @@ internal static class UiSmokeTest
         model.UrlText = "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT";
         if (model.Source != DownloadSource.Spotify)
             throw new InvalidOperationException("O reconhecimento automático de Spotify falhou.");
+        model.UrlText = "";
+        model.ConfigureFeatureSmoke();
+        foreach (var theme in new[] { ElementTheme.Dark, ElementTheme.Light })
+        {
+            root.RequestedTheme = theme;
+            await Task.Delay(300);
+            await CaptureAsync(root, directory, $"features-{theme.ToString().ToLowerInvariant()}.png");
+        }
         var files = Directory.GetFiles(directory, "*.png");
-        if (files.Length != 4 || files.Any(f => new FileInfo(f).Length < 2000))
+        if (files.Length != 6 || files.Any(f => new FileInfo(f).Length < 2000))
             throw new InvalidOperationException("A captura real da interface está incompleta.");
         await File.WriteAllTextAsync(Path.Combine(directory, "result.json"), JsonSerializer.Serialize(new
         {

@@ -35,9 +35,12 @@ public sealed partial class DownloadViewModel
     public string UpdateMessage { get; private set; } = "";
     private DateTimeOffset lastUpdateCheck = DateTimeOffset.MinValue;
     private bool checkingUpdates;
+    private DispatcherQueueTimer? updatesTimer;
     private void InitializeLibrary()
     {
         dispatcher = DispatcherQueue.GetForCurrentThread();
+        updatesTimer = dispatcher.CreateTimer(); updatesTimer.Interval = TimeSpan.FromHours(6);
+        updatesTimer.Tick += async (_, _) => await CheckUpdatesAsync(); updatesTimer.Start();
         try { library = libraryStore.Load(); RestorePreferences(); RefreshLibrary(); }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException or JsonException)
         { Append("Não consegui restaurar o histórico: " + e.Message); }
@@ -135,6 +138,23 @@ public sealed partial class DownloadViewModel
         library.Items.Add(new() { Request = item.Request, Title = item.Title, Preview = item.Preview }); Persist(); RefreshLibrary(); PumpQueue();
     }
     public void ClearHistory() { library.Items.RemoveAll(i => !i.Pending); Persist(); Changed(); }
+    internal void ConfigureFeatureSmoke()
+    {
+        previewCancellation?.Cancel();
+        var url = new Uri("https://youtube.com/watch?v=caeser-ui-fixture");
+        Preview = new(url, "Áudio de teste · Caeser", "Prévia de demonstração para teste da interface", null, 183);
+        PreviewBusy = false;
+        library = new DesktopLibrary { Paused = true, Items = [
+            new() { Request = new(url, Destination, DownloadSource.Video, Format: VideoFormat.Mp3), Title = "Primeiro download de teste" },
+            new() { Request = new(new Uri("https://youtube.com/watch?v=caeser-ui-second"), Destination, DownloadSource.Video), Title = "Segundo download de teste" },
+            new() { Request = new(url, Destination, DownloadSource.Video), Title = "Download anterior", State = QueueState.Completed, Detail = "Concluído" }
+        ] };
+        RefreshLibrary();
+        if (QueueItems.Count != 2 || History.Count() != 1 || PreviewVisibility != Visibility.Visible)
+            throw new InvalidOperationException("As novas funções não atualizaram a interface.");
+        Move(QueueItems[1], -1);
+        if (QueueItems[0].Title != "Segundo download de teste") throw new InvalidOperationException("A ordem da fila não mudou.");
+    }
     private void ReceiveLibraryLine(string line)
     {
         if (activeItem == null) return;

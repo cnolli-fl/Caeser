@@ -30,6 +30,7 @@ public sealed partial class MainWindow
             if (update != null && result != ContentDialogResult.None)
                 await Launcher.LaunchUriAsync(result == ContentDialogResult.Primary ? update.Download : update.Page);
         }
+        catch (Exception error) { ViewModel.ReportError("Não consegui abrir a atualização: " + error.Message); }
         finally { desktopDialog = false; }
     }
     private async void History_Click(object sender, RoutedEventArgs e)

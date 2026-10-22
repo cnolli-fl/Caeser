@@ -9,14 +9,16 @@ public sealed record MediaPreview(Uri OriginalUrl, string Title, string Creator,
         ? TimeSpan.FromSeconds(Duration.Value).ToString(Duration >= 3600 ? @"h\:mm\:ss" : @"m\:ss") : "";
 }
 public enum QueueState { Waiting, Downloading, Completed, Failed, Cancelled, Interrupted }
-public sealed class LibraryItem
+public sealed class LibraryItem : System.ComponentModel.INotifyPropertyChanged
 {
+    public event System.ComponentModel.PropertyChangedEventHandler? PropertyChanged;
+    private string title = "", detail = "Na fila";
     public Guid Id { get; set; } = Guid.NewGuid();
     public required DownloadRequest Request { get; set; }
     public MediaPreview? Preview { get; set; }
-    public string Title { get; set; } = "";
+    public string Title { get => title; set { title = value; PropertyChanged?.Invoke(this, new(nameof(Title))); } }
     public QueueState State { get; set; }
-    public string Detail { get; set; } = "Na fila";
+    public string Detail { get => detail; set { detail = value; PropertyChanged?.Invoke(this, new(nameof(Description))); } }
     public List<string> Files { get; set; } = [];
     public DateTimeOffset Created { get; set; } = DateTimeOffset.Now;
     public bool Pending => State is QueueState.Waiting or QueueState.Downloading;

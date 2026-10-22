@@ -26,6 +26,7 @@ public sealed partial class MainWindow : Window
         AppWindow.Resize(new SizeInt32(860, 850));
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "Caeser.ico"));
         AppWindow.Closing += Window_Closing;
+        Activated += async (_, e) => { if (e.WindowActivationState != WindowActivationState.Deactivated) await ViewModel.CheckUpdatesAsync(); };
     }
     private async void Root_Loaded(object sender, RoutedEventArgs e)
     {

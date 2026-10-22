@@ -5,7 +5,7 @@
   #error OutputDirectory must point to the artifact directory
 #endif
 #ifndef AppVersion
-  #define AppVersion "1.1.2"
+  #define AppVersion "2.0.0"
 #endif
 
 [Setup]

@@ -76,7 +76,7 @@
                                 <TextBox x:Name="UrlBox" Text="{Binding UrlText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     PlaceholderText="{Binding Placeholder}" FontSize="14" MinHeight="34" CornerRadius="8"
                                     AutomationProperties.Name="{Binding LinkLabel}" AutomationProperties.AutomationId="download-url"
-                                    KeyDown="Url_KeyDown" />
+                                    AcceptsReturn="True" TextWrapping="Wrap" MaxHeight="120" />
                                 <TextBlock Text="{Binding LinkHelp}" Style="{StaticResource CaeserHelp}" />
                                 <StackPanel Orientation="Horizontal" Spacing="10" Visibility="{Binding PreviewBusyVisibility}">
                                     <ProgressRing Width="18" Height="18" IsActive="{Binding PreviewBusy}" />

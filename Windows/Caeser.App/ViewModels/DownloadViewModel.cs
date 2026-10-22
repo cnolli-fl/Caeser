@@ -147,7 +147,15 @@ public sealed partial class DownloadViewModel : INotifyPropertyChanged
             var result = await session.RunAsync(request, line => pending.Enqueue(line), cancellation.Token);
             FlushOutput();
             if (result.Cancelled) { Status = "Download cancelado"; item.State = QueueState.Cancelled; }
-            else if (result.Succeeded) { Succeeded = true; Status = "Download concluído"; item.State = QueueState.Completed; }
+            else if (result.Succeeded)
+            {
+                Succeeded = true; Status = "Download concluído"; item.State = QueueState.Completed;
+                if (request.Source == DownloadSource.Spotify && request.Url.AbsolutePath.Contains("/track/"))
+                {
+                    var suffix = $"[{request.Url.Segments.Last()}].mp3";
+                    item.Files = Directory.EnumerateFiles(request.Destination).Where(f => f.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)).ToList();
+                }
+            }
             else
             {
                 Error = result.Error ?? "Não consegui concluir o download. Confira os detalhes.";
