@@ -54,7 +54,7 @@ public static partial class DownloadInput
 
 public sealed record DownloadRequest(
     Uri Url, string Destination, DownloadSource Source,
-    VideoQuality Quality = VideoQuality.Best, VideoFormat Format = VideoFormat.Automatic)
+    VideoQuality Quality = VideoQuality.Best, VideoFormat Format = VideoFormat.Automatic, Uri? MatchedUrl = null)
 {
     public IReadOnlyList<string> VideoArguments(string toolsDirectory)
     {
@@ -62,6 +62,8 @@ public sealed record DownloadRequest(
         {
             "--ignore-config", "--newline", "--progress", "--no-playlist",
             "--windows-filenames",
+            "--no-overwrites", "--no-simulate", "--print", "before_dl:CAESER_TITLE:%(title)j",
+            "--print", "after_move:CAESER_FILE:%(filepath)j",
             "--ffmpeg-location", toolsDirectory,
             "--js-runtimes", $"deno:{Path.Combine(toolsDirectory, "deno.exe")}",
             "--paths", Destination, "-o", "%(title)s.%(ext)s",
@@ -81,7 +83,7 @@ public sealed record DownloadRequest(
 
     public IReadOnlyList<string> SpotifyArguments(string ffmpeg, string errorReport) =>
     [
-        "download", Url.AbsoluteUri,
+        "download", PreviewService.IsYouTube(MatchedUrl) ? $"{MatchedUrl!.AbsoluteUri}|{Url.AbsoluteUri}" : Url.AbsoluteUri,
         "--audio", "youtube", "youtube-music",
         "--format", "mp3", "--bitrate", "0",
         "--ffmpeg", ffmpeg,

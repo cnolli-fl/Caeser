@@ -43,6 +43,7 @@ public sealed partial class MainWindow : Window
             allowClose = true;
             Close();
         }
+        else await ViewModel.CheckUpdatesAsync();
     }
     private void Root_SizeChanged(object sender, SizeChangedEventArgs e)
     {
@@ -62,11 +63,11 @@ public sealed partial class MainWindow : Window
         if (ViewModel != null) ViewModel.Source = SourceBar.SelectedSource;
     }
     private async void Download_Click(object sender, RoutedEventArgs e)
-    { if (ViewModel.IsBusy) ViewModel.Cancel(); else await ViewModel.StartAsync(); }
+    { await ViewModel.StartAsync(); }
     private async void DownloadShortcut(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs e)
-    { e.Handled = true; if (!ViewModel.IsBusy) await ViewModel.StartAsync(); }
+    { e.Handled = true; await ViewModel.StartAsync(); }
     private void LinkShortcut(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs e)
-    { if (ViewModel.IsBusy) return; UrlBox.Focus(FocusState.Keyboard); UrlBox.SelectAll(); e.Handled = true; }
+    { UrlBox.Focus(FocusState.Keyboard); UrlBox.SelectAll(); e.Handled = true; }
     private void CancelShortcut(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs e)
     { if (ViewModel.IsBusy) { ViewModel.Cancel(); e.Handled = true; } }
     private async void Url_KeyDown(object sender, KeyRoutedEventArgs e)

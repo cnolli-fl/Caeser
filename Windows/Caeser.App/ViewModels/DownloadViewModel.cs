@@ -8,7 +8,7 @@ namespace Caeser.App.ViewModels;
 
 public sealed record Choice<T>(string Label, T Value);
 
-public sealed class DownloadViewModel : INotifyPropertyChanged
+public sealed partial class DownloadViewModel : INotifyPropertyChanged
 {
     private readonly SettingsStore settings = new();
     private readonly ToolLocator tools = new(AppContext.BaseDirectory);
@@ -32,6 +32,7 @@ public sealed class DownloadViewModel : INotifyPropertyChanged
         timer.Interval = TimeSpan.FromMilliseconds(100);
         timer.Tick += (_, _) => FlushOutput();
         RefreshTools();
+        InitializeLibrary();
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
@@ -57,19 +58,20 @@ public sealed class DownloadViewModel : INotifyPropertyChanged
         {
             if (text == value) return;
             text = value; Error = null;
-            if (DownloadInput.IsSpotify(value)) source = DownloadSource.Spotify;
+            if (DownloadInput.IsSpotify(value) && source != DownloadSource.Spotify) { SavePreferences(); source = DownloadSource.Spotify; RestorePreferences(); }
+            SchedulePreview();
             Changed();
         }
     }
     public DownloadSource Source
     {
         get => source;
-        set { if (source != value && !IsBusy) { source = value; Error = null; Changed(); } }
+        set { if (source != value) { SavePreferences(); source = value; RestorePreferences(); Error = null; SchedulePreview(); Changed(); } }
     }
     public Choice<VideoQuality> Quality
-    { get => quality; set { if (value != null && quality != value) { quality = value; Changed(); } } }
+    { get => quality; set { if (value != null && quality != value) { quality = value; SavePreferences(); Changed(); } } }
     public Choice<VideoFormat> Format
-    { get => format; set { if (value != null && format != value) { format = value; Changed(); } } }
+    { get => format; set { if (value != null && format != value) { format = value; SavePreferences(); Changed(); } } }
     public string Destination { get; private set; }
     public string? LastDestination { get; private set; }
     public bool IsBusy { get; private set; }
@@ -82,14 +84,14 @@ public sealed class DownloadViewModel : INotifyPropertyChanged
     public string Eta => progress.Eta;
     public string Logs => log.Count == 0 ? "O andamento e os detalhes do download aparecem aqui." : string.Join('\n', log);
     public bool HasLogs => log.Count > 0;
-    public bool CanStart => IsBusy || !string.IsNullOrWhiteSpace(text);
-    public string ActionTitle => IsBusy ? "Cancelar" : Error != null ? "Tentar novamente" :
+    public bool CanStart => !string.IsNullOrWhiteSpace(text);
+    public string ActionTitle => IsBusy || library.Paused || text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length > 1 ? "Adicionar à fila" :
         Source == DownloadSource.Spotify || Format.Value == VideoFormat.Mp3 ? "Baixar MP3" : "Baixar";
-    public string ActionGlyph => IsBusy ? "\uE711" : Error != null ? "\uE72C" : "\uE896";
+    public string ActionGlyph => "\uE896";
     public string LinkLabel => Source == DownloadSource.Spotify ? "Link do Spotify" : "Link do vídeo";
     public string Placeholder => Source == DownloadSource.Spotify ? "https://open.spotify.com/track/…" : "https://www.youtube.com/watch?v=…";
     public string LinkHelp => Source == DownloadSource.Spotify ? "Música, álbum ou playlist pública. Sem entrar na sua conta." :
-        "Cole um link do YouTube ou de outro site compatível.";
+        "Cole um link ou vários, um por linha.";
     public Visibility VideoVisibility => Show(Source == DownloadSource.Video);
     public Visibility SpotifyVisibility => Show(Source == DownloadSource.Spotify);
     public Visibility QualityVisibility => Show(Format.Value != VideoFormat.Mp3);
@@ -113,60 +115,59 @@ public sealed class DownloadViewModel : INotifyPropertyChanged
     }
     public void ChooseDestination(string destination)
     {
-        if (IsBusy) return;
         Destination = destination;
         try { settings.SaveDestination(destination); }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         { Append("Não consegui lembrar a pasta para a próxima abertura: " + e.Message); }
-        Changed();
+        SavePreferences(); Changed();
     }
     public void ClearLogs() { if (!IsBusy) { log.Clear(); Changed(); } }
     public void ReportError(string message) { Error = message; Status = "Precisa de atenção"; Succeeded = false; Changed(); }
 
     public Task StartAsync()
     {
-        if (IsBusy) return activeTask ?? Task.CompletedTask;
-        activeTask = RunAsync();
-        return activeTask;
+        EnqueueInput();
+        return Task.CompletedTask;
     }
-    private async Task RunAsync()
+    private async Task RunAsync(LibraryItem item)
     {
-        Uri url;
-        try { url = DownloadInput.Validate(UrlText, Source); }
-        catch (ArgumentException e) { ReportError(e.Message); return; }
+        var request = item.Request;
         Error = null; IsBusy = true; HasResult = false; Succeeded = false;
-        progress = new(); log.Clear(); activeSource = Source;
+        progress = new(); log.Clear(); activeSource = request.Source;
         cancellation = new();
-        LastDestination = Destination;
-        Status = Source == DownloadSource.Spotify ? "Identificando as músicas do Spotify…" : "Preparando download…";
-        Append(Source == DownloadSource.Spotify ?
+        LastDestination = request.Destination;
+        Status = request.Source == DownloadSource.Spotify ? "Identificando as músicas do Spotify…" : "Preparando download…";
+        Append(request.Source == DownloadSource.Spotify ?
             "Spotify identifica as músicas. O áudio será buscado no YouTube e salvo em MP3." : "Iniciando yt-dlp…");
         Append($"Destino: {Destination}");
         Changed(); timer.Start();
         try
         {
             var session = new DownloadSession(tools, new ProcessRunner());
-            var request = new DownloadRequest(url, Destination, Source, Quality.Value, Format.Value);
             var result = await session.RunAsync(request, line => pending.Enqueue(line), cancellation.Token);
             FlushOutput();
-            if (result.Cancelled) { Status = "Download cancelado"; }
-            else if (result.Succeeded) { Succeeded = true; Status = "Download concluído"; }
+            if (result.Cancelled) { Status = "Download cancelado"; item.State = QueueState.Cancelled; }
+            else if (result.Succeeded) { Succeeded = true; Status = "Download concluído"; item.State = QueueState.Completed; }
             else
             {
                 Error = result.Error ?? "Não consegui concluir o download. Confira os detalhes.";
                 Status = "Precisa de atenção";
+                item.State = QueueState.Failed;
             }
             Append(Error ?? Status);
         }
         catch (Exception e)
         {
             Error = "Não consegui concluir o download: " + e.Message;
+            item.State = QueueState.Failed;
             Status = "Precisa de atenção"; Append(Error);
         }
         finally
         {
             timer.Stop(); cancellation.Dispose(); cancellation = null;
             IsBusy = false; HasResult = true; Changed();
+            item.Detail = Error ?? Status; activeItem = null; Persist(); RefreshLibrary();
+            dispatcher.TryEnqueue(PumpQueue);
         }
     }
     public void Cancel()
@@ -176,6 +177,7 @@ public sealed class DownloadViewModel : INotifyPropertyChanged
     }
     public async Task CancelAndWaitAsync()
     {
+        library.Paused = true; Persist();
         Cancel();
         if (activeTask != null) await activeTask;
     }
@@ -185,6 +187,7 @@ public sealed class DownloadViewModel : INotifyPropertyChanged
         while (pending.TryDequeue(out var line))
         {
             var clean = progress.Receive(line, activeSource);
+            ReceiveLibraryLine(line);
             if (clean.Length == 0) continue;
             Append(clean); changed = true;
         }

@@ -17,7 +17,15 @@
                 <TextBlock Text="Caeser" FontWeight="SemiBold" FontSize="14" Margin="20,0,0,0"
                     VerticalAlignment="Center" Foreground="{ThemeResource CaeserForeground}" />
             </Grid>
-            <Button x:Name="PrimaryAction" Grid.Column="1" Style="{StaticResource AccentButtonStyle}"
+            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+            <Button Content="Atualizar" Visibility="{Binding UpdateVisibility}" Click="Updates_Click" VerticalAlignment="Center" />
+            <Button Click="History_Click" VerticalAlignment="Center" AutomationProperties.Name="Histórico" ToolTipService.ToolTip="Histórico">
+                <FontIcon Glyph="&#xE81C;" FontSize="16" />
+            </Button>
+            <Button Click="Updates_Click" VerticalAlignment="Center" AutomationProperties.Name="Verificar atualizações" ToolTipService.ToolTip="Verificar atualizações">
+                <FontIcon Glyph="&#xE895;" FontSize="16" />
+            </Button>
+            <Button x:Name="PrimaryAction" Style="{StaticResource AccentButtonStyle}"
                 Background="{ThemeResource CaeserAccent}" Foreground="{ThemeResource CaeserOnAccent}"
                 BorderBrush="{ThemeResource CaeserBorder}" CornerRadius="20" Padding="18,7" Margin="0,5,12,5"
                 IsEnabled="{Binding CanStart}" Click="Download_Click" ToolTipService.ToolTip="Baixar: Ctrl+Enter · Cancelar: Esc"
@@ -27,6 +35,7 @@
                     <TextBlock Text="{Binding ActionTitle}" FontSize="14" />
                 </StackPanel>
             </Button>
+            </StackPanel>
         </Grid>
         <ScrollViewer x:Name="MainScroll" Grid.Row="1" HorizontalScrollBarVisibility="Disabled"
             HorizontalScrollMode="Disabled" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto">
@@ -48,7 +57,7 @@
                     </Grid>
                     <Border Background="{ThemeResource CaeserSurface}" BorderBrush="{ThemeResource CaeserBorder}"
                         BorderThickness="0.5" CornerRadius="20" Padding="24">
-                        <ContentControl IsEnabled="{Binding IsIdle}" HorizontalContentAlignment="Stretch" IsTabStop="False">
+                        <ContentControl HorizontalContentAlignment="Stretch" IsTabStop="False">
                         <StackPanel Spacing="22">
                             <TextBlock Text="Novo download" Style="{StaticResource CaeserHeading}" AutomationProperties.HeadingLevel="Level2" />
                             <controls:SourceSelector x:Name="SourceBar" SelectionChanged="Source_Changed" />
@@ -69,6 +78,25 @@
                                     AutomationProperties.Name="{Binding LinkLabel}" AutomationProperties.AutomationId="download-url"
                                     KeyDown="Url_KeyDown" />
                                 <TextBlock Text="{Binding LinkHelp}" Style="{StaticResource CaeserHelp}" />
+                                <StackPanel Orientation="Horizontal" Spacing="10" Visibility="{Binding PreviewBusyVisibility}">
+                                    <ProgressRing Width="18" Height="18" IsActive="{Binding PreviewBusy}" />
+                                    <TextBlock Text="Buscando prévia…" Style="{StaticResource CaeserHelp}" />
+                                </StackPanel>
+                                <TextBlock Text="{Binding PreviewMessage}" Visibility="{Binding PreviewMessageVisibility}" Style="{StaticResource CaeserHelp}" />
+                                <Border Padding="14" CornerRadius="14" Background="{ThemeResource CaeserSelector}" Visibility="{Binding PreviewVisibility}">
+                                    <StackPanel Spacing="10">
+                                        <Grid ColumnSpacing="14">
+                                            <Grid.ColumnDefinitions><ColumnDefinition Width="84" /><ColumnDefinition /></Grid.ColumnDefinitions>
+                                            <Border Width="84" Height="64" CornerRadius="10"><Image Source="{Binding PreviewArtwork}" Stretch="UniformToFill" /></Border>
+                                            <StackPanel Grid.Column="1" Spacing="5">
+                                                <TextBlock Text="{Binding PreviewTitle}" Style="{StaticResource CaeserBody}" FontWeight="SemiBold" TextWrapping="Wrap" />
+                                                <TextBlock Text="{Binding PreviewCreator}" Style="{StaticResource CaeserHelp}" />
+                                            </StackPanel>
+                                        </Grid>
+                                        <TextBlock Text="{Binding PreviewMatch}" Style="{StaticResource CaeserHelp}" />
+                                        <Button Content="Conferir no YouTube" Click="Match_Click" Visibility="{Binding MatchVisibility}" Style="{StaticResource CaeserLink}" />
+                                    </StackPanel>
+                                </Border>
                             </StackPanel>
                             <Border Height="0.5" Background="{ThemeResource CaeserBorder}" />
                             <Grid x:Name="OptionsGrid" Visibility="{Binding VideoVisibility}" ColumnSpacing="24" RowSpacing="16">
@@ -122,6 +150,35 @@
                         </StackPanel>
                         </ContentControl>
                     </Border>
+                    <StackPanel Visibility="{Binding QueueVisibility}" Spacing="14" Margin="4,0">
+                        <Grid>
+                            <TextBlock Text="{Binding QueueTitle}" Style="{StaticResource CaeserHeading}" FontSize="15" />
+                            <Button Content="{Binding PauseTitle}" Click="Pause_Click" Style="{StaticResource CaeserLink}" HorizontalAlignment="Right" />
+                        </Grid>
+                        <Expander Header="Organizar fila" IsExpanded="True" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Background="Transparent" BorderThickness="0">
+                            <ScrollViewer MaxHeight="280" VerticalScrollBarVisibility="Auto">
+                            <ItemsControl ItemsSource="{Binding QueueItems}">
+                                <ItemsControl.ItemTemplate><DataTemplate>
+                                    <Grid Margin="0,6" ColumnSpacing="10">
+                                        <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                                        <StackPanel Spacing="5">
+                                            <TextBlock Text="{Binding Title}" TextWrapping="Wrap" FontSize="14" FontWeight="SemiBold" />
+                                            <TextBlock Text="{Binding Description}" Style="{StaticResource CaeserHelp}" />
+                                        </StackPanel>
+                                        <Button Grid.Column="1" Content="•••" AutomationProperties.Name="Organizar download" VerticalAlignment="Top">
+                                            <Button.Flyout><MenuFlyout>
+                                                <MenuFlyoutItem Text="Mover para cima" Click="QueueUp_Click" Tag="{Binding}" />
+                                                <MenuFlyoutItem Text="Mover para baixo" Click="QueueDown_Click" Tag="{Binding}" />
+                                                <MenuFlyoutItem Text="Remover da fila" Click="QueueRemove_Click" Tag="{Binding}" />
+                                            </MenuFlyout></Button.Flyout>
+                                        </Button>
+                                    </Grid>
+                                </DataTemplate></ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            </ScrollViewer>
+                        </Expander>
+                        <Button Content="Cancelar download atual" Click="CancelCurrent_Click" Visibility="{Binding BusyVisibility}" Style="{StaticResource CaeserLink}" />
+                    </StackPanel>
                     <StackPanel Visibility="{Binding ActivityVisibility}" Spacing="12" Margin="4,0">
                         <Grid ColumnSpacing="10">
                             <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
