@@ -1,0 +1,63 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <ResourceDictionary.ThemeDictionaries>
+        <ResourceDictionary x:Key="Default">
+            <SolidColorBrush x:Key="CaeserBackground" Color="#202020" />
+            <SolidColorBrush x:Key="CaeserSurface" Color="#222222" />
+            <SolidColorBrush x:Key="CaeserSelector" Color="#2A2A2A" />
+            <SolidColorBrush x:Key="CaeserBorder" Color="#3D3D3D" />
+            <SolidColorBrush x:Key="CaeserForeground" Color="#F2F2F7" />
+            <SolidColorBrush x:Key="CaeserSecondary" Color="#B5B5BA" />
+            <SolidColorBrush x:Key="CaeserAccent" Color="#7445C4" />
+            <SolidColorBrush x:Key="CaeserOnAccent" Color="White" />
+            <SolidColorBrush x:Key="CaeserGlow" Color="#2B1635" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="Light">
+            <SolidColorBrush x:Key="CaeserBackground" Color="#F5F5F5" />
+            <SolidColorBrush x:Key="CaeserSurface" Color="#FFFFFF" />
+            <SolidColorBrush x:Key="CaeserSelector" Color="#EAEAEA" />
+            <SolidColorBrush x:Key="CaeserBorder" Color="#D5D5D8" />
+            <SolidColorBrush x:Key="CaeserForeground" Color="#1C1C1E" />
+            <SolidColorBrush x:Key="CaeserSecondary" Color="#59595C" />
+            <SolidColorBrush x:Key="CaeserAccent" Color="#7445C4" />
+            <SolidColorBrush x:Key="CaeserOnAccent" Color="White" />
+            <SolidColorBrush x:Key="CaeserGlow" Color="#F0E8F7" />
+        </ResourceDictionary>
+        <ResourceDictionary x:Key="HighContrast">
+            <SolidColorBrush x:Key="CaeserBackground" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="CaeserSurface" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="CaeserSelector" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="CaeserBorder" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="CaeserForeground" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="CaeserSecondary" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="CaeserAccent" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="CaeserOnAccent" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="CaeserGlow" Color="{ThemeResource SystemColorWindowColor}" />
+        </ResourceDictionary>
+    </ResourceDictionary.ThemeDictionaries>
+    <Style x:Key="CaeserHeading" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="17" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Foreground" Value="{ThemeResource CaeserForeground}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style x:Key="CaeserBody" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="{ThemeResource CaeserForeground}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style x:Key="CaeserHelp" TargetType="TextBlock">
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="{ThemeResource CaeserSecondary}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+    <Style x:Key="CaeserLink" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="BorderThickness" Value="0" />
+        <Setter Property="Padding" Value="8,4" />
+        <Setter Property="MinHeight" Value="30" />
+        <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
+        <Setter Property="CornerRadius" Value="8" />
+    </Style>
+</ResourceDictionary>

@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+.vs/
+.tools/
+.cache/
+artifacts/
+TestResults/
+*.user
+*.suo
+__pycache__/

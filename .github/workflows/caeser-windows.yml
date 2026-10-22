@@ -1,0 +1,50 @@
+name: Caeser Windows
+on:
+  push:
+    branches: [codex/windows-port]
+    paths:
+      - 'Windows/**'
+      - '.github/workflows/caeser-windows.yml'
+      - 'Sources/VideoDownloader/Resources/**'
+  pull_request:
+    paths:
+      - 'Windows/**'
+      - '.github/workflows/caeser-windows.yml'
+      - 'Sources/VideoDownloader/Resources/**'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: caeser-windows-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  build-and-test:
+    runs-on: windows-2025
+    timeout-minutes: 25
+    defaults:
+      run:
+        shell: pwsh
+        working-directory: Windows
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: '1'
+      DOTNET_NOLOGO: '1'
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - uses: actions/setup-dotnet@26b0ec14cb23fa6904739307f278c14f94c95bf1 # v5
+        with:
+          global-json-file: Windows/global.json
+      - name: Testar lógica e processos reais
+        run: dotnet test Caeser.Core.Tests/Caeser.Core.Tests.csproj -c Release --logger "trx;LogFileName=windows.trx" --results-directory TestResults
+      - name: Compilar aplicativo autocontido
+        run: ./Scripts/Build.ps1
+      - name: Abrir a interface e capturar os dois temas
+        run: ./Scripts/TestUi.ps1
+      - name: Guardar resultado e capturas
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: Caeser-Windows-preview-${{ github.run_number }}
+          path: |
+            Windows/artifacts/
+            Windows/TestResults/
+          retention-days: 7
