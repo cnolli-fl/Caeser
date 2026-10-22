@@ -60,7 +60,7 @@ public sealed record DownloadRequest(
     {
         var args = new List<string>
         {
-            "--ignore-config", "--newline", "--progress", "--no-playlist",
+            "--ignore-config", "--newline", "--no-quiet", "--progress", "--no-playlist",
             "--windows-filenames",
             "--no-overwrites", "--no-simulate", "--print", "before_dl:CAESER_TITLE:%(title)j",
             "--print", "after_move:CAESER_FILE:%(filepath)j",
@@ -68,7 +68,7 @@ public sealed record DownloadRequest(
             "--js-runtimes", $"deno:{Path.Combine(toolsDirectory, "deno.exe")}",
             "--paths", Destination, "-o", "%(title)s.%(ext)s",
             "--progress-template",
-            "download:%(progress._percent_str)s|%(progress._downloaded_bytes_str)s|%(progress._total_bytes_str)s|%(progress._speed_str)s|%(progress._eta)s",
+            "download:download:%(progress._percent_str)s|%(progress._downloaded_bytes_str)s|%(progress._total_bytes_str)s|%(progress._speed_str)s|%(progress._eta)s",
             "-f", FormatSelector()
         };
         switch (Format)

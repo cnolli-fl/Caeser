@@ -4,6 +4,14 @@ using Xunit;
 
 public sealed class DesktopTests
 {
+    [Fact] public void TrackingFinalFilesDoesNotSilenceConversionOrProgress()
+    {
+        var request = new DownloadRequest(new Uri("https://youtube.com/watch?v=test"), Path.GetTempPath(), DownloadSource.Video, Format: VideoFormat.Mp3);
+        var args = request.VideoArguments(Path.GetTempPath());
+        Assert.Contains("--no-quiet", args);
+        Assert.Contains("download:download:%(progress._percent_str)s|%(progress._downloaded_bytes_str)s|%(progress._total_bytes_str)s|%(progress._speed_str)s|%(progress._eta)s", args);
+        Assert.Contains("after_move:CAESER_FILE:%(filepath)j", args);
+    }
     [Fact] public void MixedBatchKeepsSettingsAndPinsOnlyMatchingPreview()
     {
         var spotify = new Uri("https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT");
