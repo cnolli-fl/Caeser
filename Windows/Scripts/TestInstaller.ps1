@@ -38,7 +38,15 @@ try {
     if (-not (Test-Path $sentinel)) { throw 'A atualização apagou um arquivo não registrado do usuário.' }
     & (Join-Path $PSScriptRoot 'TestUi.ps1') -ApplicationDirectory $destination -OutputDirectory (Join-Path $windowsRoot 'artifacts\installed-ui')
 } finally {
-    $uninstaller = Join-Path $destination 'unins000.exe'
+    # Inno reserves a new uninsNNN name before PrepareToInstall runs. During
+    # an upgrade the current uninstaller is often unins001, not unins000.
+    # Resolve the registered executable and validate the exact test directory.
+    $registration = Get-ItemProperty -LiteralPath 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall\{8362D1BB-D499-462E-9633-409161F21111}_is1' -ErrorAction Stop
+    $uninstaller = ([string]$registration.UninstallString).Trim('"')
+    if ([IO.Path]::GetFullPath([IO.Path]::GetDirectoryName($uninstaller)).TrimEnd('\') -ne [IO.Path]::GetFullPath($destination).TrimEnd('\')) {
+        throw 'O desinstalador registrado não pertence à instalação temporária deste teste.'
+    }
+    if ([IO.Path]::GetFileName($uninstaller) -notmatch '^unins\d+\.exe$') { throw 'Nome inesperado de desinstalador.' }
     if (Test-Path $uninstaller) {
         $remove = Start-Process -FilePath $uninstaller -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART') -PassThru
         if (-not $remove.WaitForExit(60000)) { $remove.Kill($true); throw 'A desinstalação não terminou.' }

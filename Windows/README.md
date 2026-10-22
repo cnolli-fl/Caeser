@@ -70,7 +70,7 @@ A identidade e o layout devem ser os mesmos. A barra de título, os botões de j
 - Scripts e Packaging: ferramentas, fontes verificadas, construção e instalador.
 - DESIGN.md: referência de fidelidade visual e critérios de acessibilidade.
 
-No Windows, com o SDK .NET 10.0.402 instalado:
+No Windows, com o SDK .NET 10.0.402 e Visual Studio/Build Tools com as ferramentas C++ x64 instalados (o pequeno launcher nativo usa MSVC e o compilador de recursos do Windows):
 
     dotnet test Caeser.Core.Tests/Caeser.Core.Tests.csproj
     pwsh -File Scripts/Build.ps1
