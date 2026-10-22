@@ -155,7 +155,14 @@ public sealed partial class SourceSelector : UserControl
         {
             if (Math.Abs(dx) < 5 || Math.Abs(dx) < Math.Abs(point.Y - pressed.Value.Y)) return;
             transferringCapture = true;
-            try { dragging = CapturePointer(e.Pointer); }
+            try
+            {
+                // CapturePointer cannot steal capture from a RadioButton.
+                // Release only our two children before capturing the drag.
+                YouTubeButton.ReleasePointerCapture(e.Pointer);
+                SpotifyButton.ReleasePointerCapture(e.Pointer);
+                dragging = CapturePointer(e.Pointer);
+            }
             finally { transferringCapture = false; }
             TracePointer($"capture={dragging}, pressed={pressed}");
         }
