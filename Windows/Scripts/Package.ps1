@@ -64,7 +64,7 @@ foreach ($unused in @('onnxruntime.dll', 'DirectML.dll', 'Microsoft.Windows.Widg
     if (Test-Path (Join-Path $portable ('Aplicativo\' + $unused))) { throw "Componente não utilizado ainda foi empacotado: $unused" }
 }
 $languages = @(Get-ChildItem (Join-Path $portable 'Aplicativo') -Directory | Where-Object { $_.Name -match '^[a-z]{2,3}(-[a-zA-Z0-9]{2,8})*$' })
-if (@($languages | Where-Object { $_.Name -ne 'pt-BR' }).Count -gt 0) { throw 'O pacote ainda contém pastas de tradução de outros idiomas.' }
+if (@($languages | Where-Object { $_.Name -notin @('pt-BR', 'en-US') }).Count -gt 0) { throw 'O pacote ainda contém traduções além de português e do fallback interno obrigatório do WinUI.' }
 $compiler = Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Inno Setup 6\ISCC.exe'
 if (-not (Test-Path $compiler)) { throw 'Instale o Inno Setup 6 no computador de desenvolvimento.' }
 & $compiler "/DSourceDirectory=$candidate" "/DOutputDirectory=$dist" "/DAppVersion=$version" (Join-Path $windowsRoot 'Packaging\Caeser.iss')

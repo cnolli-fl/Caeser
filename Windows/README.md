@@ -10,11 +10,11 @@ O instalador configura o app para seu usuário, sem exigir administrador. Para u
 
 O pacote já inclui as ferramentas. Não é necessário instalar Python, .NET, FFmpeg, Deno ou yt-dlp separadamente. O instalador não tem assinatura Authenticode; o Windows pode avisar que o fornecedor é desconhecido.
 
-### Atualização em desenvolvimento (ainda não publicada)
+### Correção 1.1.2 em desenvolvimento (ainda não publicada)
 
 A distribuição otimizada mantém apenas **Caeser.exe**, **Aplicativo**, **Documentacao** e **LEIA-ME.txt** na pasta principal. Abra Caeser.exe e mantenha as pastas ao lado dele. As bibliotecas e ferramentas necessárias ficam dentro de Aplicativo, sem removê-las nem mudar seus caminhos internos.
 
-Interface e instalador usam português brasileiro. Satélites de tradução não utilizados são excluídos da saída gerada; arquivos neutros do runtime e os textos originais das licenças são preservados. O projeto referencia somente os componentes Windows App SDK que usa, sem IA/ML, Search ou Widgets.
+Interface e instalador usam português brasileiro. Satélites de tradução não utilizados são excluídos da saída gerada. Além de pt-BR, são preservados apenas o pequeno fallback interno en-US exigido pelo carregador nativo do WinUI, os arquivos neutros do runtime e os textos originais das licenças. O projeto referencia somente os componentes Windows App SDK que usa, sem IA/ML, Search ou Widgets.
 
 Os fontes das ferramentas ficam no download separado Caeser-VERSAO-Windows-x64-Fontes-Terceiros.zip, correspondente ao pacote, em vez de ocuparem espaço na instalação. Os avisos de licença continuam em Documentacao. Não é necessário baixar os fontes para usar o Caeser.
 

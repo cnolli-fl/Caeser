@@ -19,7 +19,9 @@ try {
     # The native WinUI payload does not honor SatelliteResourceLanguages.
     # Remove only generated language satellites, never neutral DLL/PRI files.
     foreach ($directory in Get-ChildItem $OutputDirectory -Directory) {
-        if ($directory.Name -notmatch '^[a-z]{2,3}(-[a-zA-Z0-9]{2,8})*$' -or $directory.Name -eq 'pt-BR') { continue }
+        # WinUI's neutral resource loader requires en-US even when the app is
+        # Portuguese. Keep that tiny internal fallback, not all other locales.
+        if ($directory.Name -notmatch '^[a-z]{2,3}(-[a-zA-Z0-9]{2,8})*$' -or $directory.Name -in @('pt-BR', 'en-US')) { continue }
         $satellites = @(Get-ChildItem $directory.FullName -Recurse -File)
         if ($satellites.Count -gt 0 -and @($satellites | Where-Object { $_.Name -notmatch '(\.mui|\.resources\.dll)$' }).Count -eq 0) {
             $satellites | Remove-Item -Force
