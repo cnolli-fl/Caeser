@@ -2,15 +2,25 @@
 
 Versão Windows do Caeser, separada do aplicativo SwiftUI. A versão macOS continua nos diretórios existentes, sem migração nem alteração do aplicativo publicado.
 
-**Versão Windows: 1.1.2.** Implementação nativa em C#/.NET 10 e WinUI 3. A numeração é independente da edição Mac 2.1.1.
+**Versão Windows: 2.0.0.** Implementação nativa em C#/.NET 10 e WinUI 3. A numeração é independente da edição Mac 3.0.0.
 
-[Baixar instalador (166 MB)](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64-Setup.exe) · [Instruções e hash de integridade](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v1.1.2)
+[Baixar instalador](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.0.0/Caeser-2.0.0-Windows-x64-Setup.exe) · [Novidades e instruções](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.0.0)
 
 Baixe somente o instalador e siga as etapas. Ele configura o app para seu usuário, sem exigir administrador. O README é esta página; os arquivos Source code gerados pelo GitHub são para desenvolvimento.
 
 O pacote já inclui as ferramentas. Não é necessário instalar Python, .NET, FFmpeg, Deno ou yt-dlp separadamente. O instalador não tem assinatura Authenticode; o Windows pode avisar que o fornecedor é desconhecido.
 
-### O que mudou na 1.1.2
+### Novidades na 2.0.0
+
+- Prévia automática com capa, título, autor e duração quando disponíveis. Para música individual do Spotify, mostra a correspondência no YouTube e usa o mesmo vídeo no download.
+- Fila de até 100 pendentes, com até 50 links por entrada. Pode misturar origens, organizar/remover pendentes, cancelar o atual e pausar antes do próximo. Cada item conserva formato, qualidade e destino.
+- Histórico dos últimos 100 downloads e recuperação da fila pausada após reabrir. Limpar o histórico preserva seus arquivos.
+- Preferências por origem e aviso de novas releases estáveis de Windows. O botão oferece o instalador oficial; a instalação continua manual.
+- Mesmo design clean, identidade violeta, logos e componentes nativos. Os downloads MP3 mantêm a qualidade máxima de conversão.
+
+Prévias dependem dos serviços. Se uma prévia falhar, ainda é possível adicionar o link à fila. Spotify fornece os metadados; o áudio vem do YouTube. Cole vários links, um por linha, e use Ctrl+Enter para adicionar.
+
+### Mantido da 1.1.2
 
 Corrigido o fechamento ao interagir com Spotify. O seletor mantém o visual original, com clique, arraste nas duas direções, navegação por teclado e respeito a Reduzir Movimento. O instalador ficou cerca de 57% menor e o ZIP, 51% menor em relação à 1.1.1.
 
