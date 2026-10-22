@@ -46,7 +46,8 @@
                     </Grid>
                     <Border Background="{ThemeResource CaeserSurface}" BorderBrush="{ThemeResource CaeserBorder}"
                         BorderThickness="0.5" CornerRadius="20" Padding="24">
-                        <StackPanel Spacing="22" IsEnabled="{Binding IsIdle}">
+                        <ContentControl IsEnabled="{Binding IsIdle}" HorizontalContentAlignment="Stretch" IsTabStop="False">
+                        <StackPanel Spacing="22">
                             <TextBlock Text="Novo download" Style="{StaticResource CaeserHeading}" AutomationProperties.HeadingLevel="Level2" />
                             <controls:SourceSelector x:Name="SourceBar" SelectionChanged="Source_Changed" />
                             <StackPanel Spacing="9">
@@ -117,6 +118,7 @@
                                 <Button Grid.Column="2" Content="Alterar…" MinHeight="30" CornerRadius="8" Click="Folder_Click" />
                             </Grid>
                         </StackPanel>
+                        </ContentControl>
                     </Border>
                     <StackPanel Visibility="{Binding ActivityVisibility}" Spacing="12" Margin="4,0">
                         <Grid ColumnSpacing="10">

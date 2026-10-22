@@ -35,6 +35,13 @@ jobs:
           global-json-file: Windows/global.json
       - name: Testar lógica e processos reais
         run: dotnet test Caeser.Core.Tests/Caeser.Core.Tests.csproj -c Release --logger "trx;LogFileName=windows.trx" --results-directory TestResults
+      - name: Validar scripts PowerShell
+        run: |
+          Get-ChildItem Scripts -Filter *.ps1 | ForEach-Object {
+            $parseErrors = $null
+            [void][System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$null, [ref]$parseErrors)
+            if ($parseErrors) { throw ($parseErrors | Out-String) }
+          }
       - name: Compilar aplicativo autocontido
         run: ./Scripts/Build.ps1
       - name: Abrir a interface e capturar os dois temas

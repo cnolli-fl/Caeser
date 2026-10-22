@@ -1,0 +1,5 @@
+# Shared, pinned spotDL/yt-dlp dependencies from the tested macOS package.
+-r ../../Packaging/spotdl-requirements.txt
+# Windows-only PyInstaller support.
+pefile==2024.8.26
+pywin32-ctypes==0.2.3
