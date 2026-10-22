@@ -6,6 +6,6 @@ Aplicada Apple Design: `sheets.md › Desktop (macOS)` orienta tamanho apropriad
 
 Mac: testes de proporções com 0, 1, 12 e 100 registros, títulos e erros longos, além da suíte de lógica existente. Revisão do aplicativo aberto com dados demonstrativos em domínio isolado `Caeser-UITests-…`, confirmação de limpeza cancelada e saída por Escape. O modo demonstrativo é exclusivo de Debug e não integra a distribuição Release.
 
-Windows: teste da interface real inclui histórico vazio e preenchido em claro/escuro, com títulos e erros longos, além dos testes anteriores de seletor, teclado, prévia e fila. O empacotamento mantém teste de ferramentas, conversão real MP3, ZIP portátil e instalação/atualização/desinstalação no runner Windows. Não equivale a teste manual em cada PC Windows 10/11.
+Windows: teste da interface real inclui histórico vazio e preenchido em claro/escuro, com títulos e erros longos, além dos testes anteriores de seletor, teclado, prévia e fila. As capturas foram revisadas e uma verificação adicional impede texto secundário preto no tema escuro. Recursos de cor são resolvidos pelo tema do diálogo, não pelo tema global do aplicativo. O empacotamento mantém teste de ferramentas, conversão real MP3, ZIP portátil e instalação/atualização/desinstalação no runner Windows. Não equivale a teste manual em cada PC Windows 10/11.
 
 Prévia e downloads dependem dos serviços externos, sem mudança nessa atualização. Atualizações são oferecidas separadamente por plataforma e a instalação continua manual.
