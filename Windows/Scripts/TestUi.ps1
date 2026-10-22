@@ -14,7 +14,12 @@ if (-not $process.WaitForExit(60000)) {
     throw 'O aplicativo não concluiu o teste de interface em 60 segundos.'
 }
 $resultFile = Join-Path $output 'result.json'
-if (-not (Test-Path $resultFile)) { throw "O aplicativo encerrou sem confirmar o teste. Código: $($process.ExitCode)" }
+if (-not (Test-Path $resultFile)) {
+    Get-WinEvent -FilterHashtable @{ LogName = 'Application'; StartTime = (Get-Date).AddMinutes(-2) } -ErrorAction SilentlyContinue |
+        Where-Object { $_.ProviderName -in @('Application Error', '.NET Runtime', 'Windows Error Reporting') } |
+        Select-Object -First 4 TimeCreated, ProviderName, Message | Format-List
+    throw "O aplicativo encerrou sem confirmar o teste. Código: $($process.ExitCode)"
+}
 $result = Get-Content -Raw $resultFile | ConvertFrom-Json
 if (-not $result.succeeded) { throw "Falha no teste de interface: $($result.error)" }
 if (@(Get-ChildItem $output -Filter '*.png').Count -ne 4) { throw 'As quatro capturas de tema/origem não foram geradas.' }
