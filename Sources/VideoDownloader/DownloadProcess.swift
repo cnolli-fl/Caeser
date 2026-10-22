@@ -1,7 +1,14 @@
 import Darwin
 import Foundation
 
-final class DownloadProcess: @unchecked Sendable {
+protocol DownloadRunning: AnyObject, Sendable {
+    func start(executableURL: URL, arguments: [String], environment: [String: String],
+               currentDirectoryURL: URL?, output: @escaping @Sendable (String) -> Void,
+               completion: @escaping @Sendable (ProcessOutcome) -> Void) throws
+    func cancel()
+}
+
+final class DownloadProcess: DownloadRunning, @unchecked Sendable {
     private let process = Process()
     private let outputPipe = Pipe()
 

@@ -5,10 +5,12 @@ import SwiftUI
 @MainActor
 struct ContentView: View {
     @ObservedObject var viewModel: DownloadViewModel
+    @ObservedObject var updates: ReleaseUpdateModel
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(\.accessibilityReduceTransparency) private var reduceTransparency
     @Environment(\.colorSchemeContrast) private var contrast
     @Environment(\.colorScheme) private var colorScheme
+    @Environment(\.scenePhase) private var scenePhase
     @FocusState private var linkFocused: Bool
     @State private var showDetails = false
 
@@ -19,8 +21,16 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 26) {
                     header
                     downloadForm
-                    if viewModel.isBusy || viewModel.hasResult || viewModel.errorMessage != nil {
+                    if !viewModel.queuedItems.isEmpty {
+                        DownloadQueueView(model: viewModel)
+                    }
+                    if viewModel.isInstalling || (viewModel.queuedItems.isEmpty &&
+                        (viewModel.hasResult || viewModel.errorMessage != nil)) {
                         activity
+                    }
+                    if let message = viewModel.persistenceMessage {
+                        Label(message, systemImage: "exclamationmark.circle")
+                            .font(.callout).foregroundStyle(.secondary)
                     }
                     details
                 }
@@ -30,9 +40,21 @@ struct ContentView: View {
             }
         }
         .tint(.purple)
+        .sheet(isPresented: $viewModel.showsHistory) { DownloadHistoryView(model: viewModel) }
+        .sheet(isPresented: $updates.showsDetails) { ReleaseUpdateView(model: updates) }
         .toolbar {
+            ToolbarItem(placement: .automatic) {
+                if updates.available != nil {
+                    Button("Atualizar", systemImage: "arrow.down.circle") { updates.showsDetails = true }
+                        .labelStyle(.titleAndIcon).help("Uma nova versão do Caeser está disponível")
+                }
+            }
+            ToolbarItem(placement: .automatic) {
+                Button("Histórico", systemImage: "clock.arrow.circlepath") { viewModel.showsHistory = true }
+                    .help("Ver o histórico de downloads")
+            }
             ToolbarItem(placement: .primaryAction) {
-                if viewModel.isBusy {
+                if viewModel.isInstalling {
                     Button("Cancelar", systemImage: "xmark") { viewModel.cancelDownload() }
                         .labelStyle(.titleAndIcon)
                         .keyboardShortcut(.cancelAction)
@@ -50,10 +72,18 @@ struct ContentView: View {
             }
         }
         .onAppear { linkFocused = true; viewModel.refreshDependencies() }
+        .task {
+            await updates.check()
+            while !Task.isCancelled {
+                do { try await Task.sleep(for: .seconds(21_600)) } catch { return }
+                await updates.check()
+            }
+        }
+        .onChange(of: scenePhase) { if scenePhase == .active { Task { await updates.check() } } }
     }
 
     private var downloadActionTitle: String {
-        if viewModel.errorMessage != nil && viewModel.dependenciesReady { return "Tentar novamente" }
+        if viewModel.isDownloading || viewModel.isQueuePaused || viewModel.inputLinkCount > 1 { return "Adicionar à fila" }
         return viewModel.effectiveFormat == .mp3 ? "Baixar MP3" : "Baixar"
     }
 
@@ -113,19 +143,41 @@ struct ContentView: View {
                     .help("Colar um link da área de transferência")
                 }
                 TextField(viewModel.source == .spotify ? "https://open.spotify.com/track/…" : "https://www.youtube.com/watch?v=…",
-                          text: $viewModel.urlText)
+                          text: $viewModel.urlText, axis: .vertical)
+                    .lineLimit(1...4)
                     .textFieldStyle(.roundedBorder)
                     .controlSize(.large)
                     .font(.body)
                     .focused($linkFocused)
                     .accessibilityLabel(viewModel.source == .spotify ? "Link do Spotify" : "Link do vídeo")
                     .onSubmit { viewModel.startDownload() }
-                Text(viewModel.source == .spotify
+                Text(viewModel.inputLinkCount > 1 ? "\(viewModel.inputLinkCount) links · cada um entra na fila com estas opções." : viewModel.source == .spotify
                      ? "Música, álbum ou playlist pública. Sem entrar na sua conta."
-                     : "Cole um link do YouTube ou de outro site compatível.")
+                     : "Cole um link ou vários, um por linha.")
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
+                if let message = viewModel.inputMessage {
+                    Label(message, systemImage: "info.circle").font(.callout).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                if viewModel.isLoadingPreview {
+                    HStack(spacing: 10) {
+                        ProgressView().controlSize(.small)
+                        Text("Buscando prévia…").font(.callout).foregroundStyle(.secondary)
+                    }
+                    .frame(minHeight: 32).accessibilityElement(children: .combine)
+                } else if let preview = viewModel.preview {
+                    MediaPreviewView(preview: preview, source: viewModel.source)
+                } else if let error = viewModel.previewError {
+                    HStack(alignment: .top, spacing: 12) {
+                        Text(error).font(.callout).foregroundStyle(.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Spacer(minLength: 0)
+                        Button("Tentar prévia") { viewModel.schedulePreview(immediate: true) }
+                            .buttonStyle(.borderless).frame(minHeight: 28)
+                    }
+                }
             }
 
             Divider()
@@ -152,7 +204,7 @@ struct ContentView: View {
                 .strokeBorder(Color(nsColor: .separatorColor).opacity(contrast == .increased ? 1 : 0.45),
                               lineWidth: contrast == .increased ? 1.5 : 0.5)
         }
-        .disabled(viewModel.isBusy)
+        .disabled(viewModel.isInstalling)
     }
 
     private var spotifyExplanation: some View {

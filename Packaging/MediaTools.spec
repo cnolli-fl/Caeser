@@ -15,11 +15,12 @@ for module in modules:
 
 def keep_data(destination):
     parts = PurePosixPath(destination).parts
-    # ytmusicapi's default parser explicitly loads en; keep this tiny mandatory
-    # internal catalog as well as Portuguese. Do not change API response parsing.
+    # ytmusicapi defaults to en, and spotDL's YouTubeMusic provider explicitly
+    # constructs YTMusic(language="de"). These tiny parser catalogs are runtime
+    # dependencies, not interface languages. Keep both as well as Portuguese.
     if 'locales' in parts and parts[0] == 'ytmusicapi':
         index = parts.index('locales') + 1
-        return index >= len(parts) or parts[index] in ('pt', 'pt_BR', 'pt-BR', 'en')
+        return index >= len(parts) or parts[index] in ('pt', 'pt_BR', 'pt-BR', 'en', 'de')
     # The app uses spotDL's CLI, not its independent browser/server frontend.
     if parts[:3] == ('spotdl', 'web', 'static'):
         return False

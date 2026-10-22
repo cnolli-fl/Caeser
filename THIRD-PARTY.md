@@ -19,8 +19,11 @@ O código das ferramentas não é alterado; as versões ficam fixadas em
 `Packaging/spotdl-requirements.txt`. A receita
 `Packaging/MediaTools.spec` não duplica os arquivos Python já compilados, remove
 os recursos da interface web independente do spotDL (não usada pelo Caeser) e
-mantém os catálogos português e o pequeno catálogo inglês necessário ao parser
-do ytmusicapi. Nenhum extrator, codec ou dicionário de títulos é removido. O Deno
+mantém os catálogos português, inglês e alemão necessários aos parsers do
+ytmusicapi e do provedor YouTube Music do spotDL. São arquivos internos pequenos,
+não opções de idioma da interface. O teste `--caeser-runtime-check` exercita esses
+construtores sem rede para evitar remover dependências obrigatórias na embalagem.
+Nenhum extrator, codec ou dicionário de títulos é removido. O Deno
 permite ao yt-dlp resolver os desafios JavaScript do YouTube. Não se instala nem
 altera Homebrew, Python ou ferramentas do sistema no computador do usuário.
 

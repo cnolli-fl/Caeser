@@ -1,5 +1,14 @@
 # Mudanças
 
+## macOS 3.0.0 — 2026-10-22
+
+- Prévia de vídeos e músicas, incluindo a correspondência Spotify → YouTube usada no download.
+- Fila persistente com progresso individual, ordem editável, pausa entre downloads e recuperação após reabrir.
+- Histórico local e preferências por origem, mantendo o design atual.
+- Aviso de novas releases Mac e botão para baixar o instalador oficial.
+- Preservado o catálogo interno obrigatório do provedor YouTube Music; nova checagem de runtime no pacote.
+- Evolução aprovada a partir do candidato 2.2.0; Windows continua na 1.1.2. Detalhes em [Validação das novas funções](docs/VALIDACAO-2.2.0.md).
+
 ## macOS 2.1.1 — 2026-10-22
 
 - Distribuição menor sem mudar o design, as logos, os formatos ou a qualidade dos downloads.

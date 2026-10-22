@@ -21,6 +21,10 @@
 			A10000010000000000000012 /* YouTubeMark@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000014 /* YouTubeMark@3x.png */; };
 			A10000010000000000000013 /* SpotifyMark@2x.png in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000015 /* SpotifyMark@2x.png */; };
 			A10000010000000000000014 /* SpotifyMark@3x.png in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000016 /* SpotifyMark@3x.png */; };
+			A10000010000000000000017 /* DownloadLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000017 /* DownloadLibrary.swift */; };
+			A10000010000000000000018 /* MediaPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000018 /* MediaPreview.swift */; };
+			A10000010000000000000019 /* ReleaseUpdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000019 /* ReleaseUpdates.swift */; };
+			A10000010000000000000020 /* DownloadLibraryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000020 /* DownloadLibraryViews.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -40,6 +44,10 @@
 			A20000010000000000000014 /* YouTubeMark@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "YouTubeMark@3x.png"; sourceTree = "<group>"; };
 			A20000010000000000000015 /* SpotifyMark@2x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "SpotifyMark@2x.png"; sourceTree = "<group>"; };
 			A20000010000000000000016 /* SpotifyMark@3x.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = "SpotifyMark@3x.png"; sourceTree = "<group>"; };
+			A20000010000000000000017 /* DownloadLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadLibrary.swift; sourceTree = "<group>"; };
+			A20000010000000000000018 /* MediaPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPreview.swift; sourceTree = "<group>"; };
+			A20000010000000000000019 /* ReleaseUpdates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseUpdates.swift; sourceTree = "<group>"; };
+			A20000010000000000000020 /* DownloadLibraryViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadLibraryViews.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +80,10 @@
 					A20000010000000000000004 /* DependencyLocator.swift */,
 					A20000010000000000000005 /* DownloadProcess.swift */,
 					A20000010000000000000006 /* DownloadViewModel.swift */,
+					A20000010000000000000017 /* DownloadLibrary.swift */,
+					A20000010000000000000018 /* MediaPreview.swift */,
+					A20000010000000000000019 /* ReleaseUpdates.swift */,
+					A20000010000000000000020 /* DownloadLibraryViews.swift */,
 					A40000010000000000000004 /* Resources */,
 				);
 				path = Sources/VideoDownloader;
@@ -180,6 +192,10 @@
 					A10000010000000000000004 /* DependencyLocator.swift in Sources */,
 					A10000010000000000000005 /* DownloadProcess.swift in Sources */,
 					A10000010000000000000006 /* DownloadViewModel.swift in Sources */,
+					A10000010000000000000017 /* DownloadLibrary.swift in Sources */,
+					A10000010000000000000018 /* MediaPreview.swift in Sources */,
+					A10000010000000000000019 /* ReleaseUpdates.swift in Sources */,
+					A10000010000000000000020 /* DownloadLibraryViews.swift in Sources */,
 				);
 				runOnlyForDeploymentPostprocessing = 0;
 			};
@@ -192,8 +208,8 @@
 					CLANG_ENABLE_MODULES = YES;
 					ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 					CODE_SIGN_STYLE = Automatic;
-					CURRENT_PROJECT_VERSION = 3;
-					MARKETING_VERSION = 2.1.1;
+					CURRENT_PROJECT_VERSION = 5;
+					MARKETING_VERSION = 3.0.0;
 					GENERATE_INFOPLIST_FILE = YES;
 					INFOPLIST_KEY_CFBundleDisplayName = Caeser;
 					INFOPLIST_KEY_CFBundleDevelopmentRegion = "pt-BR";
@@ -212,8 +228,8 @@
 					CLANG_ENABLE_MODULES = YES;
 					ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 					CODE_SIGN_STYLE = Automatic;
-					CURRENT_PROJECT_VERSION = 3;
-					MARKETING_VERSION = 2.1.1;
+					CURRENT_PROJECT_VERSION = 5;
+					MARKETING_VERSION = 3.0.0;
 					GENERATE_INFOPLIST_FILE = YES;
 					INFOPLIST_KEY_CFBundleDisplayName = Caeser;
 					INFOPLIST_KEY_CFBundleDevelopmentRegion = "pt-BR";

@@ -7,13 +7,25 @@ final class DownloadViewModel: ObservableObject {
     @Published var urlText = "" {
         didSet {
             errorMessage = nil
-            if DownloadInput.isSpotify(urlText) { source = .spotify }
+            inputMessage = nil
+            if DownloadBatch.links(in: urlText).count == 1, DownloadInput.isSpotify(urlText), source != .spotify {
+                source = .spotify
+            } else { schedulePreview() }
         }
     }
-    @Published var source: DownloadSource = .video { didSet { errorMessage = nil } }
-    @Published var quality: VideoQuality = .best
-    @Published var format: VideoFormat = .automatic
-    @Published var destinationURL: URL
+    @Published var source: DownloadSource = .video {
+        didSet { guard source != oldValue else { return }; errorMessage = nil; loadPreferences(); schedulePreview() }
+    }
+    @Published var quality: VideoQuality = .best { didSet { savePreferences() } }
+    @Published var format: VideoFormat = .automatic { didSet { savePreferences() } }
+    @Published var destinationURL: URL { didSet { savePreferences() } }
+    @Published private(set) var preview: MediaPreview?
+    @Published private(set) var isLoadingPreview = false
+    @Published private(set) var previewError: String?
+    @Published private(set) var inputMessage: String?
+    @Published private(set) var library = DownloadLibrary()
+    @Published var showsHistory = false
+    @Published private(set) var persistenceMessage: String?
     @Published private(set) var isDownloading = false
     @Published private(set) var isInstalling = false
     @Published private(set) var progress: Double?
@@ -27,7 +39,16 @@ final class DownloadViewModel: ObservableObject {
     @Published private(set) var succeeded = false
     @Published var errorMessage: String?
 
-    private var downloadProcess: DownloadProcess?
+    private var downloadProcess: (any DownloadRunning)?
+    private var previewTask: Task<Void, Never>?
+    private var previewID = UUID()
+    private var activeID: UUID?
+    private var runID = UUID()
+    private var restoringPreferences = false
+    private let defaults: UserDefaults
+    private let locateTools: () -> DependencyInfo
+    private let makeProcess: () -> any DownloadRunning
+    private let previewLoader: @Sendable (URL, DownloadSource, DependencyInfo) async throws -> MediaPreview
     private var wasCancelled = false
     private var activeSource: DownloadSource = .video
     private var activeTool = "yt-dlp"
@@ -39,17 +60,36 @@ final class DownloadViewModel: ObservableObject {
 
     private enum Operation { case download, createEnvironment, installSpotify }
 
-    init() {
-        let saved = UserDefaults.standard.string(forKey: "downloadDestination")
+    init(defaults: UserDefaults = .standard,
+         locateTools: @escaping () -> DependencyInfo = DependencyLocator.locate,
+         makeProcess: @escaping () -> any DownloadRunning = { DownloadProcess() },
+         previewLoader: @escaping @Sendable (URL, DownloadSource, DependencyInfo) async throws -> MediaPreview = {
+             try await MediaPreviewService().fetch(url: $0, source: $1, tools: $2)
+         }) {
+        self.defaults = defaults
+        self.locateTools = locateTools
+        self.makeProcess = makeProcess
+        self.previewLoader = previewLoader
+        let saved = defaults.string(forKey: "downloadDestination")
         destinationURL = saved.map { URL(fileURLWithPath: $0, isDirectory: true) }
             ?? FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
             ?? FileManager.default.homeDirectoryForCurrentUser
+        dependencyInfo = locateTools()
+        loadPreferences()
+        if let data = defaults.data(forKey: "downloadLibrary.v1") {
+            do {
+                library = try JSONDecoder().decode(DownloadLibrary.self, from: data)
+                library.recoverAfterLaunch()
+            } catch {
+                persistenceMessage = "Não consegui restaurar a fila anterior. Seus arquivos baixados continuam na pasta de destino."
+            }
+        }
     }
 
     var isBusy: Bool { isDownloading || isInstalling }
     var effectiveFormat: VideoFormat { source == .spotify ? .mp3 : format }
     var canStartDownload: Bool {
-        !isBusy && !urlText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        !isInstalling && !urlText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
     var dependenciesReady: Bool { dependencyInfo.isReady(for: source) }
     var dependencyMessage: String {
@@ -62,17 +102,81 @@ final class DownloadViewModel: ObservableObject {
     }
     var canRevealDownload: Bool { succeeded && operation == .download && lastDestination != nil }
 
-    func refreshDependencies() { dependencyInfo = DependencyLocator.locate() }
+    var queuedItems: [QueueItem] { library.pending }
+    var history: [QueueItem] { library.history }
+    var isQueuePaused: Bool { library.isPaused }
+    var inputLinkCount: Int { DownloadBatch.links(in: urlText).count }
+
+    func refreshDependencies() { dependencyInfo = locateTools() }
+
+    private func loadPreferences() {
+        restoringPreferences = true
+        defer { restoringPreferences = false }
+        if let data = defaults.data(forKey: "preferences.\(source.rawValue)"),
+           let preferences = try? JSONDecoder().decode(DownloadPreferences.self, from: data) {
+            quality = preferences.quality
+            format = preferences.format
+            destinationURL = preferences.destination
+        } else {
+            quality = .best
+            format = .automatic
+            destinationURL = defaults.string(forKey: "downloadDestination").map { URL(fileURLWithPath: $0, isDirectory: true) }
+                ?? FileManager.default.urls(for: .downloadsDirectory, in: .userDomainMask).first
+                ?? FileManager.default.homeDirectoryForCurrentUser
+        }
+    }
+
+    private func savePreferences() {
+        guard !restoringPreferences else { return }
+        let preferences = DownloadPreferences(quality: quality, format: format, destination: destinationURL)
+        if let data = try? JSONEncoder().encode(preferences) {
+            defaults.set(data, forKey: "preferences.\(source.rawValue)")
+        }
+    }
+
+    private func persistLibrary() {
+        library.trimHistory()
+        do {
+            defaults.set(try JSONEncoder().encode(library), forKey: "downloadLibrary.v1")
+            persistenceMessage = nil
+        } catch {
+            persistenceMessage = "Não consegui salvar a fila. Mantenha o app aberto até os downloads terminarem."
+        }
+    }
+
+    func schedulePreview(immediate: Bool = false) {
+        previewTask?.cancel()
+        previewID = UUID()
+        preview = nil
+        previewError = nil
+        isLoadingPreview = false
+        guard inputLinkCount == 1, let url = try? DownloadInput.validatedURL(urlText, source: source) else { return }
+        let id = previewID, selectedSource = source, tools = locateTools(), loader = previewLoader
+        isLoadingPreview = true
+        previewTask = Task { [weak self] in
+            do {
+                if !immediate { try await Task.sleep(for: .milliseconds(800)) }
+                let result = try await loader(url, selectedSource, tools)
+                guard !Task.isCancelled, let self, self.previewID == id else { return }
+                self.preview = result
+                self.isLoadingPreview = false
+            } catch {
+                guard !Task.isCancelled, let self, self.previewID == id else { return }
+                self.previewError = (error as? PreviewError)?.localizedDescription ?? PreviewError.unavailable.localizedDescription
+                self.isLoadingPreview = false
+            }
+        }
+    }
 
     func pasteLink() {
-        guard !isBusy else { return }
+        guard !isInstalling else { return }
         if let value = NSPasteboard.general.string(forType: .string) {
             urlText = value.trimmingCharacters(in: .whitespacesAndNewlines)
         }
     }
 
     func chooseDestination() {
-        guard !isBusy else { return }
+        guard !isInstalling else { return }
         let panel = NSOpenPanel()
         panel.title = "Escolha a pasta de destino"
         panel.canChooseFiles = false
@@ -82,7 +186,7 @@ final class DownloadViewModel: ObservableObject {
         panel.directoryURL = destinationURL
         guard panel.runModal() == .OK, let selectedURL = panel.url else { return }
         destinationURL = selectedURL
-        UserDefaults.standard.set(selectedURL.path, forKey: "downloadDestination")
+        defaults.set(selectedURL.path, forKey: "downloadDestination")
     }
 
     func revealDownload() {
@@ -90,21 +194,107 @@ final class DownloadViewModel: ObservableObject {
     }
 
     func startDownload() {
-        guard !isBusy else { return }
+        guard canStartDownload else { return }
+        do {
+            let requests = try DownloadBatch.requests(text: urlText, source: source, quality: quality,
+                                                      format: format, destination: destinationURL, preview: preview)
+            var additions: [QueueItem] = []
+            var skipped = 0
+            for request in requests {
+                let existing = library.items + additions
+                if existing.contains(where: { $0.request.duplicateKey == request.duplicateKey &&
+                    ($0.status.isPending || ($0.status == .completed && !$0.files.isEmpty &&
+                        $0.files.allSatisfy { FileManager.default.fileExists(atPath: $0.path) })) }) {
+                    skipped += 1
+                } else { additions.append(QueueItem(request: request)) }
+            }
+            guard queuedItems.count + additions.count <= 100 else { throw LibraryError.queueFull }
+            library.items += additions
+            savePreferences()
+            persistLibrary()
+            urlText = ""
+            inputMessage = skipped > 0 ? "\(skipped) link(s) já estavam na fila ou no histórico. Para repetir um download, use o Histórico." : nil
+            startNextIfNeeded()
+        } catch { inputMessage = error.localizedDescription }
+    }
+
+    func toggleQueuePause() {
+        library.isPaused.toggle()
+        persistLibrary()
+        startNextIfNeeded()
+    }
+
+    func removeFromQueue(_ id: UUID) {
+        library.items.removeAll { $0.id == id && $0.status == .waiting }
+        persistLibrary()
+    }
+
+    func moveInQueue(_ id: UUID, earlier: Bool) {
+        library.moveWaiting(id, earlier: earlier)
+        persistLibrary()
+    }
+
+    func retry(_ item: QueueItem) {
+        guard !library.items.contains(where: { $0.status.isPending && $0.request.duplicateKey == item.request.duplicateKey }),
+              queuedItems.count < 100 else { return }
+        library.items.append(QueueItem(request: item.request))
+        persistLibrary()
+        startNextIfNeeded()
+    }
+
+    func reveal(_ item: QueueItem) {
+        let existing = item.files.filter { FileManager.default.fileExists(atPath: $0.path) }
+        if !existing.isEmpty { NSWorkspace.shared.activateFileViewerSelecting(existing) }
+        else { NSWorkspace.shared.open(item.request.destination) }
+    }
+
+    func clearHistory() {
+        // This removes records only, never any downloaded file.
+        library.items.removeAll { !$0.status.isPending }
+        persistLibrary()
+    }
+
+    func stopForQuit() {
+        previewTask?.cancel()
+        library.isPaused = true
+        persistLibrary()
+        downloadProcess?.cancel()
+    }
+
+    private func startNextIfNeeded() {
+        guard !isBusy, !library.isPaused,
+              let item = library.items.first(where: { $0.status == .waiting }) else { return }
+        activeID = item.id
+        updateActive { $0.status = .downloading; $0.detail = "Preparando download…" }
+        persistLibrary()
+        if !startItem(item) {
+            updateActive { $0.status = .failed; $0.detail = errorMessage ?? "Não consegui iniciar o download."; $0.finishedAt = Date() }
+            activeID = nil
+            hasResult = true
+            persistLibrary()
+            Task { [weak self] in self?.startNextIfNeeded() }
+        }
+    }
+
+    private func updateActive(_ change: (inout QueueItem) -> Void) {
+        guard let index = library.items.firstIndex(where: { $0.id == activeID }) else { return }
+        change(&library.items[index])
+    }
+
+    private func startItem(_ item: QueueItem) -> Bool {
+        let request = item.request
+        let source = request.source, destinationURL = request.destination
+        let quality = request.quality, format = request.format, url = request.url
         errorMessage = nil
         refreshDependencies()
-        let url: URL
-        do { url = try DownloadInput.validatedURL(urlText, source: source) }
-        catch { showError(error.localizedDescription); return }
-
-        if DependencyLocator.isBundledDistribution && !dependenciesReady {
+        if DependencyLocator.isBundledDistribution && !dependencyInfo.isReady(for: source) {
             showError("O pacote do Caeser está incompleto. Baixe novamente o aplicativo completo; não é necessário instalar Homebrew.")
-            return
+            return false
         }
 
         guard let ffmpeg = dependencyInfo.ffmpeg else {
             showError("Instale o FFmpeg com brew install ffmpeg e clique em Verificar ferramentas.")
-            return
+            return false
         }
         let executable: URL
         var arguments: [String]
@@ -112,12 +302,12 @@ final class DownloadViewModel: ObservableObject {
             try FileManager.default.createDirectory(at: destinationURL, withIntermediateDirectories: true)
             guard FileManager.default.isWritableFile(atPath: destinationURL.path) else {
                 showError("Esta pasta não permite salvar arquivos. Escolha outra pasta de destino.")
-                return
+                return false
             }
             if source == .spotify {
                 guard let spotDL = dependencyInfo.spotDL else {
                     showError("Instale o suporte ao Spotify no botão abaixo e tente novamente.")
-                    return
+                    return false
                 }
                 executable = spotDL
                 let directory = FileManager.default.temporaryDirectory
@@ -126,12 +316,13 @@ final class DownloadViewModel: ObservableObject {
                 errorReportDirectory = directory
                 arguments = SpotifyDownloadOptions(
                     url: url, ffmpeg: ffmpeg,
-                    errorReport: directory.appendingPathComponent("errors.txt")
+                    errorReport: directory.appendingPathComponent("errors.txt"),
+                    matchedURL: PreviewParser.youtubeURL(request.preview?.matchedURL?.absoluteString)
                 ).arguments
             } else {
                 guard let ytDLP = dependencyInfo.ytDLP else {
                     showError("Instale o yt-dlp com brew install yt-dlp e clique em Verificar ferramentas.")
-                    return
+                    return false
                 }
                 executable = ytDLP
                 arguments = DownloadOptions(url: url, destination: destinationURL, quality: quality, format: format).arguments
@@ -140,7 +331,7 @@ final class DownloadViewModel: ObservableObject {
             }
         } catch {
             showError("Não consegui preparar a pasta de destino: \(error.localizedDescription)")
-            return
+            return false
         }
 
         activeSource = source
@@ -155,10 +346,11 @@ final class DownloadViewModel: ObservableObject {
             : "Iniciando yt-dlp…")
         appendLog("Destino: \(destinationURL.path)")
         run(executable: executable, arguments: arguments)
+        return true
     }
 
     func installSpotifySupport() {
-        guard !isBusy else { return }
+        guard !isBusy, queuedItems.isEmpty else { return }
         if DependencyLocator.isBundledDistribution {
             refreshDependencies()
             if dependencyInfo.spotDL == nil {
@@ -193,6 +385,7 @@ final class DownloadViewModel: ObservableObject {
         guard isBusy else { return }
         wasCancelled = true
         statusMessage = "Cancelando…"
+        updateActive { $0.detail = "Cancelando…" }
         downloadProcess?.cancel()
     }
 
@@ -222,18 +415,26 @@ final class DownloadViewModel: ObservableObject {
     }
 
     private func run(executable: URL, arguments: [String]) {
-        let process = DownloadProcess()
+        let process = makeProcess()
+        let id = UUID()
+        runID = id
         downloadProcess = process
         do {
             try process.start(
                 executableURL: executable, arguments: arguments,
                 environment: DependencyLocator.processEnvironment(),
-                currentDirectoryURL: isInstalling ? DependencyLocator.spotifyEnvironment.deletingLastPathComponent() : destinationURL,
+                currentDirectoryURL: isInstalling ? DependencyLocator.spotifyEnvironment.deletingLastPathComponent() : lastDestination,
                 output: { [weak self] line in
-                    DispatchQueue.main.async { self?.receive(line: line) }
+                    DispatchQueue.main.async {
+                        guard let self, self.runID == id else { return }
+                        self.receive(line: line)
+                    }
                 },
                 completion: { [weak self] outcome in
-                    DispatchQueue.main.async { self?.finish(outcome: outcome) }
+                    DispatchQueue.main.async {
+                        guard let self, self.runID == id else { return }
+                        self.finish(outcome: outcome)
+                    }
                 }
             )
         } catch { finish(outcome: .failed(error.localizedDescription)) }
@@ -251,6 +452,20 @@ final class DownloadViewModel: ObservableObject {
         guard !clean.isEmpty else { return }
         appendLog(clean)
         guard !wasCancelled, !isInstalling else { return }
+        defer { updateActive { $0.progress = progress; $0.detail = statusMessage } }
+
+        if clean.hasPrefix("CAESER_TITLE:"),
+           let data = clean.dropFirst("CAESER_TITLE:".count).data(using: .utf8),
+           let title = try? JSONDecoder().decode(String.self, from: data) {
+            updateActive { $0.title = title }
+            return
+        }
+        if clean.hasPrefix("CAESER_FILE:"),
+           let data = clean.dropFirst("CAESER_FILE:".count).data(using: .utf8),
+           let path = try? JSONDecoder().decode(String.self, from: data), path.hasPrefix("/") {
+            updateActive { if !$0.files.contains(URL(fileURLWithPath: path)) { $0.files.append(URL(fileURLWithPath: path)) } }
+            return
+        }
 
         if activeSource == .spotify {
             let event = SpotifyLogEvent(line: clean)
@@ -309,6 +524,27 @@ final class DownloadViewModel: ObservableObject {
             if let directory = errorReportDirectory { try? FileManager.default.removeItem(at: directory) }
             errorReportDirectory = nil
             refreshDependencies()
+            if !installing, activeID != nil {
+                // spotDL logs completion rather than machine-readable final paths. A single
+                // track's stable Spotify ID identifies its output without guessing a title.
+                if succeeded, activeSource == .spotify,
+                   let item = library.items.first(where: { $0.id == activeID }),
+                   item.request.url.path.contains("/track/"),
+                   let files = try? FileManager.default.contentsOfDirectory(at: item.request.destination,
+                                                                          includingPropertiesForKeys: nil) {
+                    let suffix = "[\(item.request.url.lastPathComponent)].mp3"
+                    updateActive { $0.files = files.filter { $0.lastPathComponent.hasSuffix(suffix) } }
+                }
+                updateActive {
+                    $0.status = wasCancelled ? .cancelled : (succeeded ? .completed : .failed)
+                    $0.progress = succeeded ? 1 : nil
+                    $0.detail = errorMessage ?? statusMessage
+                    $0.finishedAt = Date()
+                }
+                activeID = nil
+                persistLibrary()
+                Task { [weak self] in self?.startNextIfNeeded() }
+            }
         }
         if wasCancelled {
             progress = nil

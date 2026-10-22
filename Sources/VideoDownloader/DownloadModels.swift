@@ -1,6 +1,6 @@
 import Foundation
 
-enum DownloadSource: String, CaseIterable, Identifiable, Sendable {
+enum DownloadSource: String, CaseIterable, Identifiable, Sendable, Codable {
     case video = "YouTube"
     case spotify = "Spotify"
 
@@ -51,7 +51,7 @@ enum DownloadInput {
     }
 }
 
-enum VideoQuality: String, CaseIterable, Identifiable {
+enum VideoQuality: String, CaseIterable, Identifiable, Codable, Sendable {
     case best = "Melhor disponível"
     case p2160 = "Até 4K (2160p)"
     case p1440 = "Até 1440p"
@@ -73,7 +73,7 @@ enum VideoQuality: String, CaseIterable, Identifiable {
     }
 }
 
-enum VideoFormat: String, CaseIterable, Identifiable {
+enum VideoFormat: String, CaseIterable, Identifiable, Codable, Sendable {
     case automatic = "Automático"
     case mp4 = "MP4"
     case webm = "WebM"
@@ -94,6 +94,10 @@ struct DownloadOptions {
             "--newline",
             "--progress",
             "--no-playlist",
+            "--no-overwrites",
+            "--no-simulate",
+            "--print", "before_dl:CAESER_TITLE:%(title)j",
+            "--print", "after_move:CAESER_FILE:%(filepath)j",
             "--paths", destination.path,
             "-o", "%(title)s.%(ext)s",
             "--progress-template",
@@ -146,12 +150,13 @@ struct SpotifyDownloadOptions {
     let url: URL
     let ffmpeg: URL
     let errorReport: URL
+    var matchedURL: URL? = nil
 
     var arguments: [String] {
         // Resolve the template in the subprocess working directory. A folder named
         // with braces or percent signs must not become part of the template.
         return [
-            "download", url.absoluteString,
+            "download", matchedURL.map { "\($0.absoluteString)|\(url.absoluteString)" } ?? url.absoluteString,
             // Prefer the regular YouTube provider, which is more reliable without login.
             "--audio", "youtube", "youtube-music",
             "--format", "mp3", "--bitrate", "0",
@@ -166,7 +171,7 @@ struct SpotifyDownloadOptions {
     }
 }
 
-struct DependencyInfo {
+struct DependencyInfo: Sendable {
     let ytDLP: URL?
     let ffmpeg: URL?
     let spotDL: URL?

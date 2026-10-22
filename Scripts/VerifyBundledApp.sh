@@ -32,6 +32,7 @@ run_clean "$task_tools/yt-dlp" --version
 run_clean "$task_tools/yt-dlp" --list-extractors > "$task_test/extractors.txt"
 test "$(wc -l < "$task_test/extractors.txt")" -gt 1000
 run_clean "$task_tools/spotdl" --version
+run_clean "$task_tools/spotdl" --caeser-runtime-check
 run_clean "$task_tools/spotdl" download --help > "$task_test/spotify-help.txt"
 run_clean "$task_tools/deno" eval 'if (1 + 1 !== 2) throw new Error("runtime failure"); console.log("Deno JavaScript OK")'
 run_clean "$task_tools/ffmpeg" -hide_banner -loglevel error -f lavfi \

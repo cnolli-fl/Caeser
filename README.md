@@ -1,12 +1,14 @@
 # Caeser
 
-Windows **1.1.2** · macOS **2.1.1**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
+Windows **1.1.2** · macOS **3.0.0**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
+
+Novidades no Mac **3.0.0**: prévia, fila de downloads, histórico, preferências por origem e aviso de atualização. O design continua clean, com a mesma identidade visual. Veja a [validação das novas funções](docs/VALIDACAO-2.2.0.md).
 
 **Baixe vídeos e músicas no Mac ou Windows de um jeito simples e muito rápido.**
 
 O Caeser foi criado para facilitar o caminho entre o link e o arquivo salvo: cole o endereço, escolha o formato e a pasta e clique em **Baixar**. Com interface nativa para cada sistema, sem precisar montar comandos a cada download.
 
-[**Baixar para Mac — 2.1.1 (.dmg, 105 MB)**](https://github.com/cnolli-fl/Caeser/releases/download/v2.1.1/Caeser-2.1.1-macOS-AppleSilicon.dmg)
+[**Baixar para Mac — 3.0.0 (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v3.0.0/Caeser-3.0.0-macOS-AppleSilicon.dmg)
 
 [**Baixar para Windows — 1.1.2 (.exe, 166 MB)**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.2/Caeser-1.1.2-Windows-x64-Setup.exe)
 
