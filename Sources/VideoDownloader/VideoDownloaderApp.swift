@@ -11,7 +11,24 @@ struct CaeserApp: App {
         // UI checks use an isolated preferences domain, never the person's real history.
         let suite = ProcessInfo.processInfo.environment["CAESER_TEST_SUITE"]
         let defaults = suite.flatMap { $0.hasPrefix("Caeser-UITests-") ? UserDefaults(suiteName: $0) : nil } ?? .standard
-        _viewModel = StateObject(wrappedValue: DownloadViewModel(defaults: defaults))
+        if let fixture = ProcessInfo.processInfo.environment["CAESER_TEST_HISTORY"],
+           suite?.hasPrefix("Caeser-UITests-") == true {
+            var library = DownloadLibrary()
+            let count = fixture == "empty" ? 0 : fixture == "one" ? 1 : 12
+            for index in 0..<count {
+                let request = DownloadRequest(url: URL(string: "https://youtube.com/watch?v=fixture\(index)")!, source: .video,
+                    quality: .best, format: .mp3, destination: FileManager.default.temporaryDirectory)
+                var item = QueueItem(request: request)
+                item.title = index.isMultiple(of: 2) ? "Um título comprido para conferir o alinhamento do histórico e das ações sem aumentar a janela" : "Uma música de teste"
+                item.status = index.isMultiple(of: 3) ? .failed : .completed
+                item.detail = "Não foi possível acessar este conteúdo. Este texto longo não deve empurrar as ações para fora da janela."
+                library.items.append(item)
+            }
+            defaults.set(try? JSONEncoder().encode(library), forKey: "downloadLibrary.v1")
+        }
+        let model = DownloadViewModel(defaults: defaults)
+        model.showsHistory = ProcessInfo.processInfo.environment["CAESER_TEST_HISTORY"] != nil && suite?.hasPrefix("Caeser-UITests-") == true
+        _viewModel = StateObject(wrappedValue: model)
         #else
         _viewModel = StateObject(wrappedValue: DownloadViewModel())
         #endif

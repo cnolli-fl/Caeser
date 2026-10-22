@@ -58,7 +58,7 @@ public sealed partial class MainWindow
 
     internal ContentDialog CreateHistoryDialog(IReadOnlyList<LibraryItem> items, Action<LibraryItem> retry)
     {
-        var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "Histórico", CloseButtonText = "Fechar",
+        var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, RequestedTheme = Root.ActualTheme, Title = "Histórico", CloseButtonText = "Fechar",
             SecondaryButtonText = items.Count > 0 ? "Limpar histórico…" : "", DefaultButton = ContentDialogButton.Close };
         dialog.Resources["ContentDialogMaxWidth"] = 620d;
         var body = new StackPanel { Spacing = 16, Width = Math.Min(548, Math.Max(240, Root.ActualWidth - 96)) };
