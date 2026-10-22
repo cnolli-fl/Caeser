@@ -3,6 +3,7 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media.Animation;
+using Microsoft.UI.Dispatching;
 using Windows.Foundation;
 using Windows.System;
 using Windows.UI.ViewManagement;
@@ -21,6 +22,7 @@ public sealed partial class SourceSelector : UserControl
     }
     public event EventHandler? SelectionChanged;
     private Storyboard? animation;
+    private DispatcherQueueTimer? animationDeadline;
     private Point? pressed;
     private double initial;
     private bool dragging;
@@ -92,6 +94,7 @@ public sealed partial class SourceSelector : UserControl
         var current = ThumbTranslation.X;
         var previous = animation;
         animation = null;
+        animationDeadline?.Stop(); animationDeadline = null;
         previous?.Stop();
         ThumbTranslation.X = current;
     }
@@ -101,7 +104,7 @@ public sealed partial class SourceSelector : UserControl
         StopAnimation();
         if (!animate || !(MotionEnabledOverride ?? settings.AnimationsEnabled) || !IsLoaded || Math.Abs(current - target) < 0.1)
         { ThumbTranslation.X = target; return; }
-        var next = new Storyboard();
+        var next = new Storyboard { FillBehavior = FillBehavior.Stop };
         var move = new DoubleAnimation
         {
             From = current, To = target, Duration = TimeSpan.FromMilliseconds(280),
@@ -110,15 +113,26 @@ public sealed partial class SourceSelector : UserControl
         Storyboard.SetTarget(move, Thumb);
         Storyboard.SetTargetProperty(move, "(UIElement.RenderTransform).(TranslateTransform.X)");
         next.Children.Add(move);
-        next.Completed += (_, _) =>
+        void Finish()
         {
             if (animation != next) return;
+            animationDeadline?.Stop(); animationDeadline = null;
             animation = null; next.Stop(); ThumbTranslation.X = target;
-        };
+        }
+        next.Completed += (_, _) => Finish();
         // Keep the base value correct even when Windows skips or disables an
         // animation. The explicit From value still starts at the visible point.
         ThumbTranslation.X = target;
-        animation = next; next.Begin();
+        // Some remote desktops suspend compositor clocks or skip Completed.
+        // Keep UI state bounded: never leave a selected source under the wrong
+        // indicator, even when animations are disabled mid-flight.
+        var deadline = DispatcherQueue.CreateTimer();
+        deadline.IsRepeating = false;
+        deadline.Interval = TimeSpan.FromMilliseconds(300);
+        deadline.Tick += (_, _) => Finish();
+        animation = next; animationDeadline = deadline;
+        next.Begin();
+        if (animation == next) deadline.Start();
     }
     private void YouTube_Checked(object sender, RoutedEventArgs e)
     {
