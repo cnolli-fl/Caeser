@@ -27,21 +27,32 @@
                                     <VisualState x:Name="Disabled">
                                         <VisualState.Setters><Setter Target="HitArea.Opacity" Value="0.5" /></VisualState.Setters>
                                     </VisualState>
-                                </VisualStateGroup>
-                                <VisualStateGroup x:Name="CheckStates">
-                                    <VisualState x:Name="Unchecked">
-                                        <VisualState.Setters>
-                                            <Setter Target="Label.Foreground" Value="{ThemeResource CaeserForeground}" />
-                                            <Setter Target="Mark.Foreground" Value="{ThemeResource CaeserForeground}" />
-                                        </VisualState.Setters>
-                                    </VisualState>
                                     <VisualState x:Name="Checked">
                                         <VisualState.Setters>
                                             <Setter Target="Label.Foreground" Value="{ThemeResource CaeserOnAccent}" />
                                             <Setter Target="Mark.Foreground" Value="{ThemeResource CaeserOnAccent}" />
                                         </VisualState.Setters>
                                     </VisualState>
-                                    <VisualState x:Name="Indeterminate" />
+                                    <VisualState x:Name="CheckedPointerOver">
+                                        <VisualState.Setters>
+                                            <Setter Target="HitArea.Background" Value="{ThemeResource ControlSubtleFillColorSecondaryBrush}" />
+                                            <Setter Target="Label.Foreground" Value="{ThemeResource CaeserOnAccent}" />
+                                            <Setter Target="Mark.Foreground" Value="{ThemeResource CaeserOnAccent}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedPressed">
+                                        <VisualState.Setters>
+                                            <Setter Target="Label.Foreground" Value="{ThemeResource CaeserOnAccent}" />
+                                            <Setter Target="Mark.Foreground" Value="{ThemeResource CaeserOnAccent}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
+                                    <VisualState x:Name="CheckedDisabled">
+                                        <VisualState.Setters>
+                                            <Setter Target="HitArea.Opacity" Value="0.5" />
+                                            <Setter Target="Label.Foreground" Value="{ThemeResource CaeserOnAccent}" />
+                                            <Setter Target="Mark.Foreground" Value="{ThemeResource CaeserOnAccent}" />
+                                        </VisualState.Setters>
+                                    </VisualState>
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
                             <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">

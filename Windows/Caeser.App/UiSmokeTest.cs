@@ -5,8 +5,10 @@ using Caeser.App.ViewModels;
 using Caeser.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Automation.Peers;
 using Microsoft.UI.Xaml.Automation.Provider;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Windows.Foundation;
 using Windows.Graphics.Imaging;
@@ -89,6 +91,25 @@ internal static class UiSmokeTest
         }, new JsonSerializerOptions { WriteIndented = true }));
         if (bounds.Any(p => p.Value.Width < 1 || p.Value.Left < -1 || p.Value.Right > root.ActualWidth + 1))
             throw new InvalidOperationException("A interface ultrapassou a largura da janela. Consulte layout.json.");
+        var selector = (SourceSelector)root.FindName("SourceBar");
+        foreach (var name in new[] { "YouTubeButton", "SpotifyButton" })
+        {
+            var button = (ToggleButton)selector.FindName(name);
+            var label = FindVisual<TextBlock>(button, "Label");
+            var mark = FindVisual<BitmapIcon>(button, "Mark");
+            if (label?.Foreground is not SolidColorBrush text || mark?.Foreground is not SolidColorBrush icon)
+                throw new InvalidOperationException("O seletor não apresentou a marca e o texto esperados.");
+            var expectedRed = button.IsChecked == true ? 255 : root.ActualTheme == ElementTheme.Light ? 28 : 242;
+            if (text.Color.R != expectedRed || icon.Color.R != expectedRed)
+                throw new InvalidOperationException($"Contraste incorreto em {name}: tema {root.ActualTheme}, selecionado {button.IsChecked}.");
+        }
+    }
+    private static T? FindVisual<T>(DependencyObject parent, string name) where T : FrameworkElement
+    {
+        if (parent is T element && element.Name == name) return element;
+        for (var i = 0; i < VisualTreeHelper.GetChildrenCount(parent); i++)
+            if (FindVisual<T>(VisualTreeHelper.GetChild(parent, i), name) is { } found) return found;
+        return null;
     }
     private static async Task CaptureAsync(FrameworkElement root, string directory, string name)
     {

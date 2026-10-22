@@ -2,7 +2,7 @@
 
 Versão Windows do Caeser, separada do aplicativo SwiftUI. A versão macOS continua nos diretórios existentes, sem migração nem alteração do aplicativo publicado.
 
-**Estado atual:** implementação inicial em C#/.NET 10 e WinUI 3, em desenvolvimento. O código, os testes e a compilação automatizada estão nesta pasta; ainda não há uma release Windows estável. A compatibilidade precisa ser confirmada pelos testes, não apenas pelo código.
+**Estado atual:** prévia de desenvolvimento em C#/.NET 10 e WinUI 3. O código, os testes e a construção do instalador estão nesta pasta; ainda não há uma release Windows estável. A compatibilidade precisa ser confirmada pelos testes, não apenas pelo código.
 
 ## Plataforma
 
@@ -69,7 +69,7 @@ Etapas:
 1. Executar os testes da lógica e de subprocessos reais, incluindo os específicos do Windows.
 2. Compilar a interface autocontida e abrir a janela para os testes e capturas reais.
 3. Construir FFmpeg/LAME a partir dos fontes fixados e spotDL com o extrator atualizado.
-4. Verificar todas as ferramentas em um ambiente sem Python/FFmpeg/Deno externos.
+4. Verificar todas as ferramentas em um ambiente sem Python/FFmpeg/Deno externos e baixar um áudio original de teste, servido somente em loopback, convertendo-o para MP3 com a mesma lógica do aplicativo.
 5. Gerar ZIP portátil, instalador por usuário e checksums SHA-256, identificados como Preview.
 6. Instalar, abrir e desinstalar a prévia apenas na VM descartável do GitHub Actions.
 
@@ -77,7 +77,7 @@ O instalador e o ZIP, quando essas etapas passarem, ficam nos artefatos da execu
 
 Testes automatizados precisam cobrir validação de links, argumentos de formato/qualidade, parsing de progresso, erros do Spotify, saída UTF-8, caminhos com espaços e cancelamento dos subprocessos. Testar downloads reais separadamente: serviços externos podem bloquear conexões de servidores na nuvem.
 
-Um teste no runner Windows do GitHub não comprova, sozinho, a aparência da interface nem a compatibilidade com Windows 10.
+As capturas são inspecionadas para conferir a aparência; o teste também verifica os limites horizontais dos controles e o contraste do seletor nos dois temas. Um teste no runner Windows do GitHub não comprova, sozinho, compatibilidade com Windows 10, todas as escalas DPI, Narrator ou o funcionamento dos serviços externos.
 
 ## Releases no GitHub
 
