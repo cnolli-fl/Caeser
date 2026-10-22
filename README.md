@@ -1,6 +1,8 @@
 # Caeser
 
-Windows **2.0.0** · macOS **3.0.0**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
+Windows **2.0.1** · macOS **3.0.1**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
+
+**Pequena atualização visual:** histórico mais proporcional, com linhas compactas, ações alinhadas e textos longos contidos. Filas, preferências e downloads são preservados.
 
 Novidades no Mac **3.0.0** e no Windows **2.0.0**: prévia, fila de downloads, histórico, preferências por origem e aviso de atualização. O design continua clean, com a mesma identidade visual. Veja a validação do [Mac](docs/VALIDACAO-2.2.0.md) e do [Windows](Windows/VALIDACAO-2.0.0.md).
 
@@ -8,9 +10,9 @@ Novidades no Mac **3.0.0** e no Windows **2.0.0**: prévia, fila de downloads, h
 
 O Caeser foi criado para facilitar o caminho entre o link e o arquivo salvo: cole o endereço, escolha o formato e a pasta e clique em **Baixar**. Com interface nativa para cada sistema, sem precisar montar comandos a cada download.
 
-[**Baixar para Mac — 3.0.0 (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v3.0.0/Caeser-3.0.0-macOS-AppleSilicon.dmg)
+[**Baixar para Mac — 3.0.1 (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v3.0.1/Caeser-3.0.1-macOS-AppleSilicon.dmg)
 
-[**Baixar para Windows — 2.0.0 (.exe)**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.0.0/Caeser-2.0.0-Windows-x64-Setup.exe)
+[**Baixar para Windows — 2.0.1 (.exe)**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.0.1/Caeser-2.0.1-Windows-x64-Setup.exe)
 
 **Para usar o app, baixe somente o instalador do seu sistema.** As ferramentas já estão incluídas. O README é esta página; não é preciso baixá-lo. Os arquivos **Source code (.zip / .tar.gz)** são gerados automaticamente pelo GitHub e servem para desenvolver o projeto.
 
@@ -38,7 +40,7 @@ Por trás da interface, o Caeser usa yt-dlp, FFmpeg e, para links do Spotify, sp
 
 ## Aplicativo completo
 
-### Windows 2.0.0
+### Windows 2.0.1
 
 Prévia de vídeos e músicas, correspondência Spotify → YouTube usada no download, fila persistente e serial, histórico e preferências por origem. O botão de atualização oferece novas versões Windows estáveis sem confundir com as releases Mac. A instalação da atualização continua manual, com o app fechado.
 
@@ -50,15 +52,15 @@ A 1.1.2 corrige o fechamento ao clicar em Spotify e estabiliza o seletor por cli
 
 Os [fontes das ferramentas de terceiros](https://github.com/cnolli-fl/Caeser/releases/tag/fontes-terceiros) ficam na área para desenvolvedores e redistribuidores. Não são necessários para usar o app. Os avisos de licença continuam no pacote. A atualização remove os arquivos registrados pela instalação antiga, preservando preferências, downloads e arquivos extras do usuário.
 
-Os testes cobrem lógica, processos, ferramentas incluídas, abertura nos dois temas, interação real com o seletor, prévia e fila, download de áudio original servido localmente com conversão MP3 e instalação, abertura e desinstalação no Windows do GitHub. Isso não substitui a validação em PCs reais com Windows 10/11 nem garante disponibilidade dos serviços externos. Os resultados e os limites estão nas [notas da release Windows](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.0.0).
+Os testes cobrem lógica, processos, ferramentas incluídas, abertura nos dois temas, interação real com o seletor, prévia, fila e histórico, download de áudio original servido localmente com conversão MP3 e instalação, abertura e desinstalação no Windows do GitHub. Isso não substitui a validação em PCs reais com Windows 10/11 nem garante disponibilidade dos serviços externos. Os resultados e os limites estão nas [notas da release Windows](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.0.1).
 
-### Mac 3.0.0
+### Mac 3.0.1
 
 Baixe o instalador `.dmg`, abra e arraste Caeser.app para Aplicativos. Requer **macOS 26 ou mais recente em Macs com chip Apple (M1 ou posterior)**. yt-dlp, FFmpeg, FFprobe, Deno e spotDL já acompanham o pacote. Não é necessário Xcode, Python, Homebrew nem o aplicativo do Spotify para usá-lo.
 
 Esta edição tem assinatura local gratuita (ad-hoc), **sem Developer ID e sem notarização da Apple**. O macOS pode impedir a primeira abertura e exigir autorização manual. Isso não deve ser confundido com um app verificado pela Apple. Consulte [as instruções de instalação e segurança](docs/INSTALACAO.md); não desative as proteções globais do sistema.
 
-O instalador está na [release 3.0.0](https://github.com/cnolli-fl/Caeser/releases/tag/v3.0.0), com instruções e hash SHA-256 nas próprias notas. Os [fontes correspondentes das ferramentas](https://github.com/cnolli-fl/Caeser/releases/tag/fontes-terceiros) ficam na área para desenvolvedores, sem misturar com os instaladores.
+O instalador está na [release 3.0.1](https://github.com/cnolli-fl/Caeser/releases/tag/v3.0.1), com instruções e hash SHA-256 nas próprias notas. Os [fontes correspondentes das ferramentas](https://github.com/cnolli-fl/Caeser/releases/tag/fontes-terceiros) ficam na área para desenvolvedores, sem misturar com os instaladores.
 
 A 3.0.0 acrescenta prévia, fila, histórico e aviso de atualização ao pacote otimizado: yt-dlp e spotDL compartilham uma única cópia do Python para Apple Silicon, FFmpeg e FFprobe compartilham suas próprias bibliotecas e os fontes de compilação ficam em um ZIP separado. A interface é declarada como português brasileiro; ficam os recursos neutros, os pequenos catálogos internos obrigatórios dos parsers e as licenças originais. Nenhum codec, extrator ou opção de qualidade é removido.
 

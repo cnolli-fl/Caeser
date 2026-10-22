@@ -1,5 +1,13 @@
 # Mudanças
 
+## macOS 3.0.1 e Windows 2.0.1 — 2026-10-22
+
+- Histórico com proporções equilibradas, linhas compactas, datas e ações alinhadas.
+- Títulos longos e mensagens de erro não aumentam a janela; detalhes completos continuam nas dicas de contexto.
+- Cabeçalho e controles permanecem visíveis durante a rolagem, com estado vazio mais organizado.
+- Windows: o diálogo acompanha o tema da janela. Mac: altura ajustada à quantidade de registros, com limite para listas grandes.
+- Preservados histórico existente, fila, preferências, arquivos baixados e identidade visual.
+
 ## Windows 2.0.0 — 2026-10-22
 
 - Funções aprovadas no Mac: prévia contextual, correspondência Spotify → YouTube preservada no download, fila serial persistente, histórico, preferências por origem e aviso de novas versões Windows.

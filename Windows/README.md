@@ -2,9 +2,13 @@
 
 Versão Windows do Caeser, separada do aplicativo SwiftUI. A versão macOS continua nos diretórios existentes, sem migração nem alteração do aplicativo publicado.
 
-**Versão Windows: 2.0.0.** Implementação nativa em C#/.NET 10 e WinUI 3. A numeração é independente da edição Mac 3.0.0.
+**Versão Windows: 2.0.1.** Implementação nativa em C#/.NET 10 e WinUI 3. A numeração é independente da edição Mac 3.0.1.
 
-[Baixar instalador](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.0.0/Caeser-2.0.0-Windows-x64-Setup.exe) · [Novidades e instruções](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.0.0)
+[Baixar instalador](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.0.1/Caeser-2.0.1-Windows-x64-Setup.exe) · [Novidades e instruções](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.0.1)
+
+### Ajuste visual na 2.0.1
+
+Histórico com linhas compactas, ações alinhadas, datas visíveis e textos longos contidos. Janela mais proporcional e tema herdado da janela principal. Nenhuma alteração no formato dos dados salvos.
 
 Baixe somente o instalador e siga as etapas. Ele configura o app para seu usuário, sem exigir administrador. O README é esta página; os arquivos Source code gerados pelo GitHub são para desenvolvimento.
 

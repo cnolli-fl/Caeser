@@ -1,8 +1,10 @@
-# Caeser 2.0.0 para Windows
+# Caeser 2.0.1 para Windows
+
+Pequena atualização visual do histórico: linhas compactas, títulos e mensagens longas contidos, datas visíveis, botões alinhados e tema herdado da janela principal. Mantidos fila, histórico salvo, preferências e arquivos.
 
 Prévia, fila de downloads, histórico e aviso de atualização, mantendo o visual clean e as logos do Caeser.
 
-[Baixar o instalador](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.0.0/Caeser-2.0.0-Windows-x64-Setup.exe)
+[Baixar o instalador](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.0.1/Caeser-2.0.1-Windows-x64-Setup.exe)
 
 Destinado a Windows 10 22H2 e Windows 11 x64 (Intel/AMD). As ferramentas e o runtime já estão incluídos; não é necessário instalar Python, .NET ou Homebrew.
 
