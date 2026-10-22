@@ -17,11 +17,12 @@ if (-not $process.WaitForExit(120000)) {
 }
 if ($process.ExitCode -ne 0) { throw "Instalador encerrou com código $($process.ExitCode)." }
 try {
-    foreach ($relative in @('Caeser.exe', 'Tools\yt-dlp.exe', 'Tools\ffmpeg.exe', 'Tools\spotdl.exe')) {
+    foreach ($relative in @('Caeser.exe', 'Aplicativo\Caeser.exe', 'Aplicativo\resources.pri', 'Aplicativo\Tools\yt-dlp.exe', 'Aplicativo\Tools\ffmpeg.exe', 'Aplicativo\Tools\spotdl.exe', 'Documentacao\THIRD-PARTY.md')) {
         if (-not (Test-Path (Join-Path $destination $relative))) { throw "Arquivo não foi instalado: $relative" }
     }
     $product = [Diagnostics.FileVersionInfo]::GetVersionInfo((Join-Path $destination 'Caeser.exe'))
     if ($product.ProductVersion -ne $version) { throw "O aplicativo instalado não está na versão $version." }
+    if ((Get-ChildItem $destination -File -Filter '*.dll').Count -gt 0) { throw 'Bibliotecas internas ficaram soltas na raiz da instalação.' }
     & (Join-Path $PSScriptRoot 'TestUi.ps1') -ApplicationDirectory $destination -OutputDirectory (Join-Path $windowsRoot 'artifacts\installed-ui')
 } finally {
     $uninstaller = Join-Path $destination 'unins000.exe'

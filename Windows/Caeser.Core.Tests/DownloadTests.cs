@@ -145,6 +145,13 @@ public sealed class DownloadTests
         Assert.Contains("YouTubeMark.scale-300.png", project);
         Assert.Contains("SpotifyMark.scale-300.png", project);
     }
+    [Fact]
+    public void SelectorDoesNotReferenceTheInvalidHoverBrushThatCrashedOnMouseInput()
+    {
+        var xaml = File.ReadAllText(Path.Combine(RepositoryRoot(), "Windows/Caeser.App/Controls/SourceSelector.xaml"));
+        Assert.DoesNotContain("ControlSubtleFillColorSecondaryBrush", xaml);
+        Assert.Contains("{ThemeResource SubtleFillColorSecondaryBrush}", xaml);
+    }
     internal static string RepositoryRoot()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);

@@ -8,6 +8,7 @@ public partial class App : Application
     private MainWindow? window;
     public App()
     {
+        Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "pt-BR";
         UnhandledException += (_, e) => RecordStartupFailure(e.Exception);
         if (Environment.GetCommandLineArgs().Contains("--smoke-test"))
         {
@@ -46,6 +47,17 @@ public partial class App : Application
     }
     private static void RecordStartupFailure(Exception error)
     {
+        // Normal launches need a useful report too. Never suppress an unknown
+        // XAML exception: record it without pretending that the app recovered.
+        try
+        {
+            var logs = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Caeser", "Logs");
+            Directory.CreateDirectory(logs);
+            File.WriteAllText(Path.Combine(logs, "ultima-falha.txt"),
+                $"Caeser {typeof(App).Assembly.GetName().Version} · {DateTimeOffset.Now:O}{Environment.NewLine}{error}");
+        }
+        catch (IOException) { }
+        catch (UnauthorizedAccessException) { }
         var args = Environment.GetCommandLineArgs();
         var index = Array.IndexOf(args, "--smoke-test");
         if (index < 0 || index + 1 >= args.Length) return;

@@ -36,6 +36,15 @@ internal static class UiSmokeTest
             await ClickSourceAsync(window, root, selector, model,
                 i % 2 == 0 ? "SpotifyButton" : "YouTubeButton",
                 i % 2 == 0 ? DownloadSource.Spotify : DownloadSource.Video);
+        // Binding setters must ignore writing the same selected item back.
+        var notifications = 0;
+        System.ComponentModel.PropertyChangedEventHandler countChange = (_, _) => notifications++;
+        model.PropertyChanged += countChange;
+        model.Quality = model.Quality;
+        model.Format = model.Format;
+        model.Source = model.Source;
+        model.PropertyChanged -= countChange;
+        if (notifications != 0) throw new InvalidOperationException("O formulário notificou uma mudança de seleção inexistente.");
         foreach (var theme in new[] { ElementTheme.Dark, ElementTheme.Light })
         {
             root.RequestedTheme = theme;
@@ -59,6 +68,10 @@ internal static class UiSmokeTest
         ToggleThroughAutomation(selector, "SpotifyButton");
         if (model.Source != DownloadSource.Spotify)
             throw new InvalidOperationException("A automação de acessibilidade não selecionou Spotify.");
+        selector.MotionEnabledOverride = false;
+        selector.SelectedSource = DownloadSource.Video;
+        selector.SelectedSource = DownloadSource.Spotify;
+        if (model.Source != DownloadSource.Spotify) throw new InvalidOperationException("A seleção falhou com movimento reduzido.");
         model.UrlText = "isso não é um link";
         await model.StartAsync();
         if (model.Error == null || model.IsBusy)
@@ -75,7 +88,8 @@ internal static class UiSmokeTest
         {
             succeeded = true, title = window.Title, screenshots = files.Select(Path.GetFileName),
             urlValidation = true, sourceSwitch = true, mouseSourceSwitch = true,
-            animatedSourceSwitch = true, accessibleSourceSwitch = true, keyboardFocus = focusWorks,
+            animatedSourceSwitch = true, reducedMotionSourceSwitch = true,
+            accessibleSourceSwitch = true, keyboardFocus = focusWorks,
             note = "Capturas reais do XAML no runner. Não substitui teste manual no Windows 10/11."
         }, new JsonSerializerOptions { WriteIndented = true }));
     }
@@ -116,9 +130,9 @@ internal static class UiSmokeTest
         var element = selector.FindName(name) as FrameworkElement ??
             throw new InvalidOperationException("O botão de origem não foi encontrado.");
         var peer = FrameworkElementAutomationPeer.CreatePeerForElement(element);
-        if (peer.GetPattern(PatternInterface.Toggle) is not IToggleProvider toggle)
+        if (peer.GetPattern(PatternInterface.SelectionItem) is not ISelectionItemProvider item)
             throw new InvalidOperationException("O seletor não expõe seu estado à automação de acessibilidade.");
-        toggle.Toggle();
+        item.Select();
     }
     private static async Task CheckLayoutAsync(FrameworkElement root, string directory)
     {

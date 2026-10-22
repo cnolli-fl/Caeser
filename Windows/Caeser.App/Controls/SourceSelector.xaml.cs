@@ -13,7 +13,7 @@ public sealed partial class SourceSelector : UserControl
 {
     public static readonly DependencyProperty SelectedSourceProperty = DependencyProperty.Register(
         nameof(SelectedSource), typeof(DownloadSource), typeof(SourceSelector),
-        new PropertyMetadata(DownloadSource.Video, (d, _) => ((SourceSelector)d).UpdateSelection(true)));
+        new PropertyMetadata(DownloadSource.Video, (d, _) => ((SourceSelector)d).SourceChanged()));
     public DownloadSource SelectedSource
     {
         get => (DownloadSource)GetValue(SelectedSourceProperty);
@@ -40,7 +40,15 @@ public sealed partial class SourceSelector : UserControl
         // our own capture cancels a drag; otherwise the first move resets it.
         PointerCaptureLost += (_, e) => { if (e.OriginalSource == this) ResetDrag(); };
         Loaded += (_, _) => UpdateSelection(false);
+        Unloaded += (_, _) => StopAnimation();
         IsEnabledChanged += (_, _) => { if (!IsEnabled) ResetDrag(); };
+    }
+    private void SourceChanged()
+    {
+        UpdateSelection(true);
+        // Layout, button synchronization and selecting an already selected item
+        // must never emit another model change inside the checked event.
+        SelectionChanged?.Invoke(this, EventArgs.Empty);
     }
     private void UpdateSelection(bool animate)
     {
@@ -54,14 +62,25 @@ public sealed partial class SourceSelector : UserControl
         finally { updatingButtons = false; }
         Thumb.Width = Math.Max(0, Inner.ActualWidth / 2);
         MoveTo(SelectedSource == DownloadSource.Video ? 0 : Inner.ActualWidth / 2, animate);
-        SelectionChanged?.Invoke(this, EventArgs.Empty);
+    }
+    private void Select(DownloadSource source)
+    {
+        if (SelectedSource == source) UpdateSelection(true);
+        else SelectedSource = source;
+    }
+    private void StopAnimation()
+    {
+        var current = ThumbTranslation.X;
+        var previous = animation;
+        animation = null;
+        previous?.Stop();
+        ThumbTranslation.X = current;
     }
     private void MoveTo(double target, bool animate)
     {
         var current = ThumbTranslation.X;
-        animation?.Stop(); animation = null;
-        ThumbTranslation.X = current;
-        if (!animate || !(MotionEnabledOverride ?? settings.AnimationsEnabled) || !IsLoaded)
+        StopAnimation();
+        if (!animate || !(MotionEnabledOverride ?? settings.AnimationsEnabled) || !IsLoaded || Math.Abs(current - target) < 0.1)
         { ThumbTranslation.X = target; return; }
         var next = new Storyboard();
         var move = new DoubleAnimation
@@ -69,38 +88,34 @@ public sealed partial class SourceSelector : UserControl
             From = current, To = target, Duration = TimeSpan.FromMilliseconds(280),
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
         };
-        Storyboard.SetTarget(move, ThumbTranslation);
-        Storyboard.SetTargetProperty(move, "X");
+        Storyboard.SetTarget(move, Thumb);
+        Storyboard.SetTargetProperty(move, "(UIElement.RenderTransform).(TranslateTransform.X)");
         next.Children.Add(move);
         next.Completed += (_, _) =>
         {
             if (animation != next) return;
-            next.Stop(); ThumbTranslation.X = target; animation = null;
+            animation = null; next.Stop(); ThumbTranslation.X = target;
         };
         animation = next; next.Begin();
     }
     private void YouTube_Checked(object sender, RoutedEventArgs e)
     {
         if (updatingButtons) return;
-        SelectedSource = DownloadSource.Video; UpdateSelection(true);
+        Select(DownloadSource.Video);
     }
     private void Spotify_Checked(object sender, RoutedEventArgs e)
     {
         if (updatingButtons) return;
-        SelectedSource = DownloadSource.Spotify; UpdateSelection(true);
+        Select(DownloadSource.Spotify);
     }
-    private void Option_Unchecked(object sender, RoutedEventArgs e)
-    {
-        if (!updatingButtons) UpdateSelection(false);
-    }
-    private void Track_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateSelection(false);
+    private void Track_SizeChanged(object sender, SizeChangedEventArgs e)
+    { if (Math.Abs(e.NewSize.Width - e.PreviousSize.Width) > 0.1) UpdateSelection(false); }
     private void Track_KeyDown(object sender, KeyRoutedEventArgs e)
     {
         if (!IsEnabled) return;
-        if (e.Key is VirtualKey.Left or VirtualKey.Home) SelectedSource = DownloadSource.Video;
-        else if (e.Key is VirtualKey.Right or VirtualKey.End) SelectedSource = DownloadSource.Spotify;
+        if (e.Key is VirtualKey.Left or VirtualKey.Home) Select(DownloadSource.Video);
+        else if (e.Key is VirtualKey.Right or VirtualKey.End) Select(DownloadSource.Spotify);
         else return;
-        UpdateSelection(true);
         (SelectedSource == DownloadSource.Video ? YouTubeButton : SpotifyButton).Focus(FocusState.Keyboard);
         e.Handled = true;
     }
@@ -131,7 +146,7 @@ public sealed partial class SourceSelector : UserControl
         var target = ThumbTranslation.X >= Inner.ActualWidth / 4 ? DownloadSource.Spotify : DownloadSource.Video;
         dragging = false; pressed = null;
         ReleasePointerCapture(e.Pointer);
-        SelectedSource = target; UpdateSelection(true); e.Handled = true;
+        Select(target); e.Handled = true;
     }
     private void ResetDrag()
     {

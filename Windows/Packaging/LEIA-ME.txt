@@ -1,0 +1,18 @@
+CAESER - WINDOWS
+
+Abra Caeser.exe. Não precisa instalar Python, FFmpeg, .NET ou outras ferramentas.
+
+Aplicativo: arquivos internos necessários. Não mova nem apague arquivos dessa pasta.
+Documentacao: licenças e avisos das ferramentas incluídas, nos idiomas originais.
+
+Mantenha estas pastas junto de Caeser.exe. Extraia o ZIP inteiro antes de abrir.
+Se preferir, use o instalador para ter um atalho no menu Iniciar.
+
+YouTube: baixa vídeos ou músicas. Spotify: identifica músicas e procura o áudio
+no YouTube; não baixa áudio dos servidores do Spotify nem exige sua conta.
+
+Os fontes das ferramentas são fornecidos separadamente no arquivo
+Caeser-VERSAO-Windows-x64-Fontes-Terceiros.zip, junto do pacote correspondente.
+Eles não são necessários para usar o aplicativo.
+
+Projeto e atualizações: https://github.com/cnolli-fl/Caeser

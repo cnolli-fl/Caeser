@@ -1,0 +1,24 @@
+#include <windows.h>
+1 ICON "@ICON@"
+1 VERSIONINFO
+FILEVERSION @VERSION_NUMERIC@
+PRODUCTVERSION @VERSION_NUMERIC@
+FILEOS VOS_NT_WINDOWS32
+FILETYPE VFT_APP
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "041604b0"
+    BEGIN
+      VALUE "CompanyName", "Caeser"
+      VALUE "FileDescription", "Caeser"
+      VALUE "FileVersion", "@VERSION@"
+      VALUE "ProductName", "Caeser"
+      VALUE "ProductVersion", "@VERSION@"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x0416, 1200
+  END
+END

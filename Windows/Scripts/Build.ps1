@@ -16,6 +16,17 @@ try {
         Get-ChildItem $OutputDirectory -Filter *.pri | Select-Object Name | Format-Table -AutoSize
         throw 'O índice resources.pri não foi publicado. Não distribuir um pacote sem os recursos XAML.'
     }
+    # The native WinUI payload does not honor SatelliteResourceLanguages.
+    # Remove only generated language satellites, never neutral DLL/PRI files.
+    foreach ($directory in Get-ChildItem $OutputDirectory -Directory) {
+        if ($directory.Name -notmatch '^[a-z]{2,3}(-[a-zA-Z0-9]{2,8})*$' -or $directory.Name -eq 'pt-BR') { continue }
+        $satellites = @(Get-ChildItem $directory.FullName -Recurse -File)
+        if ($satellites.Count -gt 0 -and @($satellites | Where-Object { $_.Name -notmatch '(\.mui|\.resources\.dll)$' }).Count -eq 0) {
+            $satellites | Remove-Item -Force
+            Get-ChildItem $directory.FullName -Directory -Recurse | Sort-Object FullName -Descending | Remove-Item -Force
+            Remove-Item $directory.FullName -Force
+        }
+    }
     $legal = Join-Path $OutputDirectory 'Licenses\Runtime'
     New-Item -ItemType Directory -Path $legal -Force | Out-Null
     $dotnetRoot = Split-Path (Get-Command dotnet).Source -Parent
@@ -37,7 +48,7 @@ try {
             }
         }
     }
-    if (-not (Get-ChildItem $legal -Filter 'Microsoft.WindowsAppSDK-*-license.txt')) {
+    if (-not (Get-ChildItem $legal -Filter 'Microsoft.WindowsAppSDK.WinUI-*-license.txt')) {
         throw 'A licença do Windows App SDK não foi incluída na distribuição.'
     }
 } finally { Pop-Location }

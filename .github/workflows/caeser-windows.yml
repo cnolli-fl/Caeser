@@ -116,6 +116,7 @@ jobs:
           name: Caeser-Windows-package-QA-${{ github.run_number }}
           path: |
             Windows/artifacts/installed-ui/
+            Windows/artifacts/portable-ui/
             Windows/artifacts/installer-test.log
             Windows/artifacts/tools-versions.json
             Windows/TestResults/

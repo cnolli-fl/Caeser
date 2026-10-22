@@ -10,6 +10,16 @@ O instalador configura o app para seu usuário, sem exigir administrador. Para u
 
 O pacote já inclui as ferramentas. Não é necessário instalar Python, .NET, FFmpeg, Deno ou yt-dlp separadamente. O instalador não tem assinatura Authenticode; o Windows pode avisar que o fornecedor é desconhecido.
 
+### Atualização em desenvolvimento (ainda não publicada)
+
+A distribuição otimizada mantém apenas **Caeser.exe**, **Aplicativo**, **Documentacao** e **LEIA-ME.txt** na pasta principal. Abra Caeser.exe e mantenha as pastas ao lado dele. As bibliotecas e ferramentas necessárias ficam dentro de Aplicativo, sem removê-las nem mudar seus caminhos internos.
+
+Interface e instalador usam português brasileiro. Satélites de tradução não utilizados são excluídos da saída gerada; arquivos neutros do runtime e os textos originais das licenças são preservados. O projeto referencia somente os componentes Windows App SDK que usa, sem IA/ML, Search ou Widgets.
+
+Os fontes das ferramentas ficam no download separado Caeser-VERSAO-Windows-x64-Fontes-Terceiros.zip, correspondente ao pacote, em vez de ocuparem espaço na instalação. Os avisos de licença continuam em Documentacao. Não é necessário baixar os fontes para usar o Caeser.
+
+Caso haja uma falha inesperada, o último relatório fica em `%LOCALAPPDATA%\Caeser\Logs\ultima-falha.txt`. Nenhum relatório é enviado automaticamente.
+
 ## Plataforma
 
 - C#/.NET com WinUI 3, em um projeto independente do projeto SwiftUI.
@@ -54,6 +64,7 @@ A identidade e o layout devem ser os mesmos. A barra de título, os botões de j
 - Caeser.Core: validação, argumentos, progresso, preferências e execução segura de processos.
 - Caeser.Core.Tests: testes automatizados, sem depender da interface.
 - Caeser.ProcessProbe: programa auxiliar usado pelos testes de stdout/stderr e cancelamento.
+- Caeser.Launcher: entrada nativa pequena que abre a interface em Aplicativo, sem exigir outro runtime.
 - Scripts e Packaging: ferramentas, fontes verificadas, construção e instalador.
 - DESIGN.md: referência de fidelidade visual e critérios de acessibilidade.
 
@@ -76,8 +87,9 @@ Etapas:
 2. Compilar a interface autocontida e abrir a janela para os testes e capturas reais.
 3. Construir FFmpeg/LAME a partir dos fontes fixados e spotDL com o extrator atualizado.
 4. Verificar todas as ferramentas em um ambiente sem Python/FFmpeg/Deno externos e baixar um áudio original de teste, servido somente em loopback, convertendo-o para MP3 com a mesma lógica do aplicativo.
-5. Conferir a versão do aplicativo e gerar ZIP portátil, instalador por usuário e checksums SHA-256.
-6. Instalar, conferir a versão instalada, abrir e desinstalar o app apenas na VM descartável do GitHub Actions.
+5. Conferir a versão do aplicativo e gerar ZIP portátil, instalador por usuário, arquivo separado de fontes de terceiros e checksums SHA-256.
+6. Extrair o ZIP em um caminho com espaços e acentos e abrir pelo launcher, validando o pacote que o usuário recebe.
+7. Instalar, conferir a versão instalada, abrir e desinstalar o app apenas na VM descartável do GitHub Actions.
 
 Os pacotes aprovados são publicados na release Windows windows-v1.1.1. A release Mac v2.1.0 e seus arquivos não são substituídos.
 

@@ -4,7 +4,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     Height="40" AutomationProperties.Name="Origem do link">
     <UserControl.Resources>
-        <Style x:Key="SourceButton" TargetType="ToggleButton">
+        <Style x:Key="SourceButton" TargetType="RadioButton">
             <Setter Property="HorizontalAlignment" Value="Stretch" />
             <Setter Property="HorizontalContentAlignment" Value="Center" />
             <Setter Property="VerticalContentAlignment" Value="Center" />
@@ -13,42 +13,25 @@
             <Setter Property="UseSystemFocusVisuals" Value="True" />
             <Setter Property="Template">
                 <Setter.Value>
-                    <ControlTemplate TargetType="ToggleButton">
+                    <ControlTemplate TargetType="RadioButton">
                         <Border x:Name="HitArea" Background="Transparent" CornerRadius="8">
                             <VisualStateManager.VisualStateGroups>
                                 <VisualStateGroup x:Name="CommonStates">
                                     <VisualState x:Name="Normal" />
                                     <VisualState x:Name="PointerOver">
                                         <VisualState.Setters>
-                                            <Setter Target="HitArea.Background" Value="{ThemeResource ControlSubtleFillColorSecondaryBrush}" />
+                                            <Setter Target="HitArea.Background" Value="{ThemeResource SubtleFillColorSecondaryBrush}" />
                                         </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Pressed" />
                                     <VisualState x:Name="Disabled">
                                         <VisualState.Setters><Setter Target="HitArea.Opacity" Value="0.5" /></VisualState.Setters>
                                     </VisualState>
+                                </VisualStateGroup>
+                                <VisualStateGroup x:Name="CheckStates">
+                                    <VisualState x:Name="Unchecked" />
                                     <VisualState x:Name="Checked">
                                         <VisualState.Setters>
-                                            <Setter Target="Label.Foreground" Value="{ThemeResource CaeserOnAccent}" />
-                                            <Setter Target="Mark.Foreground" Value="{ThemeResource CaeserOnAccent}" />
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="CheckedPointerOver">
-                                        <VisualState.Setters>
-                                            <Setter Target="HitArea.Background" Value="{ThemeResource ControlSubtleFillColorSecondaryBrush}" />
-                                            <Setter Target="Label.Foreground" Value="{ThemeResource CaeserOnAccent}" />
-                                            <Setter Target="Mark.Foreground" Value="{ThemeResource CaeserOnAccent}" />
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="CheckedPressed">
-                                        <VisualState.Setters>
-                                            <Setter Target="Label.Foreground" Value="{ThemeResource CaeserOnAccent}" />
-                                            <Setter Target="Mark.Foreground" Value="{ThemeResource CaeserOnAccent}" />
-                                        </VisualState.Setters>
-                                    </VisualState>
-                                    <VisualState x:Name="CheckedDisabled">
-                                        <VisualState.Setters>
-                                            <Setter Target="HitArea.Opacity" Value="0.5" />
                                             <Setter Target="Label.Foreground" Value="{ThemeResource CaeserOnAccent}" />
                                             <Setter Target="Mark.Foreground" Value="{ThemeResource CaeserOnAccent}" />
                                         </VisualState.Setters>
@@ -78,13 +61,13 @@
             </Border>
             <Grid>
                 <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
-                <ToggleButton x:Name="YouTubeButton" Style="{StaticResource SourceButton}"
+                <RadioButton x:Name="YouTubeButton" Style="{StaticResource SourceButton}"
                     AutomationProperties.Name="YouTube" AutomationProperties.AutomationId="source-youtube"
-                    ToolTipService.ToolTip="Baixar de um link de vídeo" Checked="YouTube_Checked" Unchecked="Option_Unchecked"
+                    ToolTipService.ToolTip="Baixar de um link de vídeo" Checked="YouTube_Checked"
                     Content="YouTube" Tag="ms-appx:///Assets/YouTubeMark.png" />
-                <ToggleButton x:Name="SpotifyButton" Grid.Column="1" Style="{StaticResource SourceButton}"
+                <RadioButton x:Name="SpotifyButton" Grid.Column="1" Style="{StaticResource SourceButton}"
                     AutomationProperties.Name="Spotify" AutomationProperties.AutomationId="source-spotify"
-                    ToolTipService.ToolTip="Buscar músicas do Spotify no YouTube" Checked="Spotify_Checked" Unchecked="Option_Unchecked"
+                    ToolTipService.ToolTip="Buscar músicas do Spotify no YouTube" Checked="Spotify_Checked"
                     Content="Spotify" Tag="ms-appx:///Assets/SpotifyMark.png" />
             </Grid>
         </Grid>
