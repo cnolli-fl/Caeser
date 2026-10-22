@@ -36,6 +36,16 @@ internal static class UiSmokeTest
             await ClickSourceAsync(window, root, selector, model,
                 i % 2 == 0 ? "SpotifyButton" : "YouTubeButton",
                 i % 2 == 0 ? DownloadSource.Spotify : DownloadSource.Video);
+        await DragSourceAsync(window, root, selector, model, false);
+        await DragSourceAsync(window, root, selector, model, true);
+        ((RadioButton)selector.FindName("YouTubeButton")).Focus(FocusState.Keyboard);
+        await PressKeyAsync(0x27); // Right arrow.
+        if (model.Source != DownloadSource.Spotify) throw new InvalidOperationException("Seta direita não selecionou Spotify.");
+        await PressKeyAsync(0x24); // Home.
+        if (model.Source != DownloadSource.Video) throw new InvalidOperationException("Home não selecionou YouTube.");
+        await PressKeyAsync(0x23); // End.
+        await PressKeyAsync(0x20); // Space cannot clear the selected source.
+        if (model.Source != DownloadSource.Spotify) throw new InvalidOperationException("O teclado desmarcou a origem selecionada.");
         // Binding setters must ignore writing the same selected item back.
         var notifications = 0;
         System.ComponentModel.PropertyChangedEventHandler countChange = (_, _) => notifications++;
@@ -89,6 +99,7 @@ internal static class UiSmokeTest
             succeeded = true, title = window.Title, screenshots = files.Select(Path.GetFileName),
             urlValidation = true, sourceSwitch = true, mouseSourceSwitch = true,
             animatedSourceSwitch = true, reducedMotionSourceSwitch = true,
+            dragSourceSwitch = true, keyboardSourceSwitch = true,
             accessibleSourceSwitch = true, keyboardFocus = focusWorks,
             note = "Capturas reais do XAML no runner. Não substitui teste manual no Windows 10/11."
         }, new JsonSerializerOptions { WriteIndented = true }));
@@ -110,12 +121,62 @@ internal static class UiSmokeTest
         if (SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<MouseInput>()) != inputs.Length)
             throw new InvalidOperationException("O Windows não aceitou os cliques de teste.");
         await Task.Delay(60);
+        if (selector.PointerPressCount <= presses) throw new InvalidOperationException("O clique não chegou ao seletor.");
         if (model.Source != expected)
             throw new InvalidOperationException($"Clique real em {name} não selecionou {expected}. " +
                 $"PointerPressed {presses} -> {selector.PointerPressCount}; tela {screen.X},{screen.Y}; " +
                 $"controle {element.ActualWidth}x{element.ActualHeight}; escala {scale}; " +
                 $"janela ativa: {GetForegroundWindow() == handle}.");
     }
+    private static async Task DragSourceAsync(Window window, FrameworkElement root, SourceSelector selector,
+        DownloadViewModel model, bool backToVideo)
+    {
+        var source = (FrameworkElement)selector.FindName(backToVideo ? "SpotifyButton" : "YouTubeButton");
+        var target = (FrameworkElement)selector.FindName(backToVideo ? "YouTubeButton" : "SpotifyButton");
+        var handle = WinRT.Interop.WindowNative.GetWindowHandle(window);
+        NativePoint Locate(FrameworkElement element)
+        {
+            var point = element.TransformToVisual(root).TransformPoint(new Point(element.ActualWidth / 2, element.ActualHeight / 2));
+            var screen = new NativePoint { X = (int)(point.X * root.XamlRoot.RasterizationScale), Y = (int)(point.Y * root.XamlRoot.RasterizationScale) };
+            if (!ClientToScreen(handle, ref screen)) throw new InvalidOperationException("Não consegui localizar a área do arraste.");
+            return screen;
+        }
+        var from = Locate(source); var to = Locate(target);
+        SetCursorPos(from.X, from.Y);
+        await Task.Delay(40);
+        MouseInput[] down = [new() { Data = new() { Flags = 0x0002 } }];
+        MouseInput[] up = [new() { Data = new() { Flags = 0x0004 } }];
+        if (SendInput(1, down, Marshal.SizeOf<MouseInput>()) != 1) throw new InvalidOperationException("Falha ao iniciar arraste.");
+        try
+        {
+            await Task.Delay(40);
+            for (var step = 1; step <= 6; step++)
+            {
+                SetCursorPos(from.X + (to.X - from.X) * step / 6, from.Y + (to.Y - from.Y) * step / 6);
+                await Task.Delay(40);
+            }
+        }
+        finally { SendInput(1, up, Marshal.SizeOf<MouseInput>()); }
+        await Task.Delay(350);
+        if (model.Source != (backToVideo ? DownloadSource.Video : DownloadSource.Spotify))
+            throw new InvalidOperationException("Arrastar o indicador não trocou a origem.");
+    }
+    private static async Task PressKeyAsync(ushort key)
+    {
+        KeyboardInput[] inputs = [new() { Type = 1, Key = key }, new() { Type = 1, Key = key, Flags = 2 }];
+        if (SendKeyboardInput(2, inputs, Marshal.SizeOf<KeyboardInput>()) != 2) throw new InvalidOperationException("Falha na entrada de teclado.");
+        await Task.Delay(100);
+    }
+    // INPUT is 40 bytes for our x64-only target; KEYBDINPUT shares the union
+    // with MOUSEINPUT at byte 8, with dwExtraInfo aligned at byte 24.
+    [StructLayout(LayoutKind.Explicit, Size = 40)] private struct KeyboardInput
+    {
+        [FieldOffset(0)] public uint Type;
+        [FieldOffset(8)] public ushort Key;
+        [FieldOffset(12)] public uint Flags;
+    }
+    [DllImport("user32.dll", EntryPoint = "SendInput", ExactSpelling = true)]
+    private static extern uint SendKeyboardInput(uint count, KeyboardInput[] inputs, int size);
     [StructLayout(LayoutKind.Sequential)] private struct NativePoint { public int X, Y; }
     [StructLayout(LayoutKind.Sequential)] private struct MouseData
     { public int X, Y; public uint Mouse, Flags, Time; public UIntPtr Extra; }
