@@ -52,12 +52,4 @@
         <Setter Property="Foreground" Value="{ThemeResource CaeserSecondary}" />
         <Setter Property="TextWrapping" Value="Wrap" />
     </Style>
-    <Style x:Key="CaeserLink" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
-        <Setter Property="Background" Value="Transparent" />
-        <Setter Property="BorderThickness" Value="0" />
-        <Setter Property="Padding" Value="8,4" />
-        <Setter Property="MinHeight" Value="30" />
-        <Setter Property="Foreground" Value="{ThemeResource TextFillColorPrimaryBrush}" />
-        <Setter Property="CornerRadius" Value="8" />
-    </Style>
 </ResourceDictionary>

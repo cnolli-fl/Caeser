@@ -21,6 +21,9 @@ if (-not (Test-Path $resultFile)) {
     throw "O aplicativo encerrou sem confirmar o teste. Código: $($process.ExitCode)"
 }
 $result = Get-Content -Raw $resultFile | ConvertFrom-Json
+if (Test-Path (Join-Path $output 'xaml-diagnostics.txt')) {
+    Get-Content (Join-Path $output 'xaml-diagnostics.txt') -Tail 80 | Write-Host
+}
 if (-not $result.succeeded) { throw "Falha no teste de interface: $($result.error)" }
 if (@(Get-ChildItem $output -Filter '*.png').Count -ne 4) { throw 'As quatro capturas de tema/origem não foram geradas.' }
 Write-Host 'Interface aberta e verificada: YouTube/Spotify, claro/escuro, link inválido e foco de teclado.'
