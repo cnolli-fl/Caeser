@@ -27,6 +27,7 @@ public sealed partial class SourceSelector : UserControl
     private bool updatingButtons;
     private readonly UISettings settings = new();
     internal bool? MotionEnabledOverride { get; set; }
+    internal int PointerPressCount { get; private set; }
 
     public SourceSelector()
     {
@@ -105,6 +106,7 @@ public sealed partial class SourceSelector : UserControl
     }
     private void OnPressed(object sender, PointerRoutedEventArgs e)
     {
+        PointerPressCount++;
         if (!IsEnabled || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
         pressed = e.GetCurrentPoint(this).Position;
         initial = SelectedSource == DownloadSource.Video ? 0 : Inner.ActualWidth / 2;

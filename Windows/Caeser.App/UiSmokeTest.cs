@@ -28,6 +28,7 @@ internal static class UiSmokeTest
         // CI desktops often disable animation. Exercise the same animated path
         // as a normal Windows desktop instead of silently skipping it.
         selector.MotionEnabledOverride = true;
+        await Task.Delay(700); // Root.Loaded precedes the first activated desktop frame.
         await ClickSourceAsync(window, root, selector, model, "SpotifyButton", DownloadSource.Spotify);
         await ClickSourceAsync(window, root, selector, model, "YouTubeButton", DownloadSource.Video);
         // Interrupt an in-flight animation repeatedly, not just at rest.
@@ -90,12 +91,16 @@ internal static class UiSmokeTest
         SetForegroundWindow(handle);
         if (!SetCursorPos(screen.X, screen.Y)) throw new InvalidOperationException("Não consegui posicionar o mouse no teste.");
         await Task.Delay(30);
+        var presses = selector.PointerPressCount;
         MouseInput[] inputs = [new() { Data = new() { Flags = 0x0002 } }, new() { Data = new() { Flags = 0x0004 } }];
         if (SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<MouseInput>()) != inputs.Length)
             throw new InvalidOperationException("O Windows não aceitou os cliques de teste.");
         await Task.Delay(60);
         if (model.Source != expected)
-            throw new InvalidOperationException($"Clique real em {name} não selecionou {expected}.");
+            throw new InvalidOperationException($"Clique real em {name} não selecionou {expected}. " +
+                $"PointerPressed {presses} -> {selector.PointerPressCount}; tela {screen.X},{screen.Y}; " +
+                $"controle {element.ActualWidth}x{element.ActualHeight}; escala {scale}; " +
+                $"janela ativa: {GetForegroundWindow() == handle}.");
     }
     [StructLayout(LayoutKind.Sequential)] private struct NativePoint { public int X, Y; }
     [StructLayout(LayoutKind.Sequential)] private struct MouseData
@@ -105,6 +110,7 @@ internal static class UiSmokeTest
     [DllImport("user32.dll")] private static extern bool ClientToScreen(IntPtr window, ref NativePoint point);
     [DllImport("user32.dll")] private static extern bool SetCursorPos(int x, int y);
     [DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr window);
+    [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
     private static void ToggleThroughAutomation(SourceSelector selector, string name)
     {
         var element = selector.FindName(name) as FrameworkElement ??
