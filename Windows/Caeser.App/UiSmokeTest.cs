@@ -151,6 +151,11 @@ internal static class UiSmokeTest
         if (bounds.Any(p => p.Value.Width < 1 || p.Value.Left < -1 || p.Value.Right > root.ActualWidth + 1))
             throw new InvalidOperationException("A interface ultrapassou a largura da janela. Consulte layout.json.");
         var selector = (SourceSelector)root.FindName("SourceBar");
+        var translation = (TranslateTransform)selector.FindName("ThumbTranslation");
+        var inner = (FrameworkElement)selector.FindName("Inner");
+        var expectedOffset = selector.SelectedSource == DownloadSource.Video ? 0 : inner.ActualWidth / 2;
+        if (Math.Abs(translation.X - expectedOffset) > 1)
+            throw new InvalidOperationException($"O indicador roxo não acompanhou a origem: {translation.X}; esperado {expectedOffset}.");
         foreach (var name in new[] { "YouTubeButton", "SpotifyButton" })
         {
             var button = (ToggleButton)selector.FindName(name);

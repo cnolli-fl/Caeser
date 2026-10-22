@@ -83,7 +83,14 @@ jobs:
         with:
           python-version: '3.14.7'
           architecture: x64
+      - name: Recuperar ferramentas verificadas da mesma construção
+        id: media-cache
+        uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: Windows/.tools/win-x64
+          key: windows-media-x64-py3.14.7-v1-${{ hashFiles('Windows/Packaging/tools.lock.json', 'Windows/Packaging/spotdl-windows-requirements.txt', 'Packaging/spotdl-requirements.txt', 'Windows/Scripts/BuildMediaTools.sh', 'Windows/Scripts/BuildSpotDL.ps1', 'Scripts/SpotDLEntry.py', 'Windows/Scripts/DownloadTools.ps1', 'Windows/Scripts/CollectPythonLicenses.py', 'Windows/Scripts/CollectSourceNotices.py') }}
       - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2
+        if: steps.media-cache.outputs.cache-hit != 'true'
         with:
           msystem: UCRT64
           update: true
@@ -93,12 +100,21 @@ jobs:
             mingw-w64-ucrt-x86_64-pkgconf
             mingw-w64-ucrt-x86_64-nasm
       - name: Baixar e verificar ferramentas e fontes fixados
+        if: steps.media-cache.outputs.cache-hit != 'true'
         run: ./Scripts/DownloadTools.ps1
       - name: Construir FFmpeg e LAME sem dependências externas
+        if: steps.media-cache.outputs.cache-hit != 'true'
         shell: msys2 {0}
         run: bash Scripts/BuildMediaTools.sh .cache/media .tools/win-x64
       - name: Construir spotDL com extrator atualizado
+        if: steps.media-cache.outputs.cache-hit != 'true'
         run: ./Scripts/BuildSpotDL.ps1
+      - name: Guardar ferramentas para testar novas correções sem reconstruí-las
+        if: steps.media-cache.outputs.cache-hit != 'true'
+        uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
+        with:
+          path: Windows/.tools/win-x64
+          key: ${{ steps.media-cache.outputs.cache-primary-key }}
       - name: Verificar ferramentas e gerar instalador e ZIP
         run: ./Scripts/Package.ps1
       - name: Testar instalação, abertura e desinstalação

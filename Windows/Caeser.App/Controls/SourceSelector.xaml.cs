@@ -96,6 +96,9 @@ public sealed partial class SourceSelector : UserControl
             if (animation != next) return;
             animation = null; next.Stop(); ThumbTranslation.X = target;
         };
+        // Keep the base value correct even when Windows skips or disables an
+        // animation. The explicit From value still starts at the visible point.
+        ThumbTranslation.X = target;
         animation = next; next.Begin();
     }
     private void YouTube_Checked(object sender, RoutedEventArgs e)

@@ -53,4 +53,5 @@ try {
     if (-not (Get-ChildItem $legal -Filter 'Microsoft.WindowsAppSDK.WinUI-*-license.txt')) {
         throw 'A licença do Windows App SDK não foi incluída na distribuição.'
     }
+    & (Join-Path $PSScriptRoot 'BuildLauncher.ps1') -OutputDirectory (Join-Path $OutputDirectory 'Launcher')
 } finally { Pop-Location }

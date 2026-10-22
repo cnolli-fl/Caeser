@@ -17,7 +17,7 @@ $documentation = Join-Path $candidate 'Documentacao'
 $payloadTools = Join-Path $payload 'Tools'
 New-Item -ItemType Directory -Path $payload, $payloadTools, $documentation -Force | Out-Null
 foreach ($item in Get-ChildItem $ApplicationDirectory) {
-    if ($item.Name -eq 'Licenses' -or $item.Extension -eq '.pdb') { continue }
+    if ($item.Name -in @('Licenses', 'Launcher') -or $item.Extension -eq '.pdb') { continue }
     Copy-Item $item.FullName $payload -Recurse -Force
 }
 # Sources are distributed alongside the binaries, not installed as runtime data.
@@ -30,7 +30,7 @@ Copy-Item (Join-Path $repoRoot 'BRAND-ASSETS.md') $documentation
 Copy-Item (Join-Path $windowsRoot 'THIRD-PARTY.md') $documentation
 (Get-Content -Raw (Join-Path $windowsRoot 'Packaging\LEIA-ME.txt')).Replace('VERSAO', $version) |
     Set-Content -Encoding utf8 (Join-Path $candidate 'LEIA-ME.txt')
-& (Join-Path $PSScriptRoot 'BuildLauncher.ps1') -OutputDirectory $candidate
+Copy-Item (Join-Path $ApplicationDirectory 'Launcher\Caeser.exe') $candidate
 & (Join-Path $PSScriptRoot 'VerifyTools.ps1') -ToolsDirectory $payloadTools
 Copy-Item (Join-Path $payloadTools 'versions.json') (Join-Path $windowsRoot 'artifacts\tools-versions.json') -Force
 $previousTestDirectory = $env:CAESER_TEST_APPLICATION_DIRECTORY
