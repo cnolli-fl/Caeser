@@ -34,6 +34,13 @@ export PKG_CONFIG_PATH="$task_prefix/lib/pkgconfig"
 cp "$task_prefix/bin/ffmpeg.exe" "$task_prefix/bin/ffprobe.exe" "$task_output/"
 cp "$task_build/ffmpeg-9.0.2/COPYING.LGPLv2.1" "$task_output/Licenses/FFmpeg-LGPL-2.1.txt"
 cp "$task_build/lame-3.100/COPYING" "$task_output/Licenses/LAME-LGPL.txt"
+mkdir -p "$task_output/Licenses/MinGW-runtime"
+for task_notice in /ucrt64/share/licenses/gcc-libs/* /ucrt64/share/licenses/crt-git/* /ucrt64/share/licenses/headers-git/*; do
+    if [ -f "$task_notice" ]; then
+        task_owner="$(basename "$(dirname "$task_notice")")"
+        cp "$task_notice" "$task_output/Licenses/MinGW-runtime/$task_owner-$(basename "$task_notice")"
+    fi
+done
 cp "$task_script" "$task_output/Sources/BuildMediaTools.sh"
 cp "$task_build/ffmpeg-9.0.2/ffbuild/config.log" "$task_output/Sources/FFmpeg-config.log"
 "$task_output/ffmpeg.exe" -hide_banner -version

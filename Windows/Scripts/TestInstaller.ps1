@@ -1,10 +1,12 @@
 [CmdletBinding()]
 param()
 $ErrorActionPreference = 'Stop'
-if (-not $IsWindows) { throw 'Este teste instala a prévia somente no runner Windows.' }
+if (-not $IsWindows) { throw 'Este teste instala o aplicativo somente no runner Windows.' }
 if ($env:GITHUB_ACTIONS -ne 'true') { throw 'Execute este teste automatizado apenas em uma VM descartável do GitHub Actions.' }
 $windowsRoot = Split-Path $PSScriptRoot -Parent
-$installer = Join-Path $windowsRoot 'artifacts\dist\Caeser-2.1.0-Windows-x64-Preview-Setup.exe'
+[xml]$properties = Get-Content -Raw (Join-Path $windowsRoot 'Directory.Build.props')
+$version = $properties.Project.PropertyGroup.Version
+$installer = Join-Path $windowsRoot "artifacts\dist\Caeser-$version-Windows-x64-Setup.exe"
 $destination = Join-Path $env:RUNNER_TEMP ('Caeser-install-test-' + [Guid]::NewGuid().ToString('N'))
 $log = Join-Path $windowsRoot 'artifacts\installer-test.log'
 $arguments = @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', ('/DIR="' + $destination + '"'), ('/LOG="' + $log + '"'))
@@ -18,6 +20,8 @@ try {
     foreach ($relative in @('Caeser.exe', 'Tools\yt-dlp.exe', 'Tools\ffmpeg.exe', 'Tools\spotdl.exe')) {
         if (-not (Test-Path (Join-Path $destination $relative))) { throw "Arquivo não foi instalado: $relative" }
     }
+    $product = [Diagnostics.FileVersionInfo]::GetVersionInfo((Join-Path $destination 'Caeser.exe'))
+    if ($product.ProductVersion -ne $version) { throw "O aplicativo instalado não está na versão $version." }
     & (Join-Path $PSScriptRoot 'TestUi.ps1') -ApplicationDirectory $destination -OutputDirectory (Join-Path $windowsRoot 'artifacts\installed-ui')
 } finally {
     $uninstaller = Join-Path $destination 'unins000.exe'

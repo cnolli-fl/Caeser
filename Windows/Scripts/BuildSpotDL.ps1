@@ -28,9 +28,12 @@ $buildArguments = @(
 if ($LASTEXITCODE -ne 0) { throw 'Falha na criação do spotdl.exe.' }
 & $python (Join-Path $PSScriptRoot 'CollectPythonLicenses.py') (Join-Path $tools 'Licenses\Python-packages')
 if ($LASTEXITCODE -ne 0) { throw 'Falha na coleta dos avisos de licença.' }
+& $python (Join-Path $PSScriptRoot 'CollectSourceNotices.py') $tools (Join-Path $cache 'source-cache') python
+if ($LASTEXITCODE -ne 0) { throw 'Falha na coleta dos fontes correspondentes das dependências Python.' }
 Copy-Item (Join-Path $windowsRoot 'Packaging\spotdl-windows-requirements.txt') (Join-Path $tools 'Sources') -Force
 Copy-Item (Join-Path $repoRoot 'Packaging\spotdl-requirements.txt') (Join-Path $tools 'Sources') -Force
 Copy-Item (Join-Path $repoRoot 'Scripts\SpotDLEntry.py') (Join-Path $tools 'Sources') -Force
+Copy-Item (Join-Path $PSScriptRoot 'CollectSourceNotices.py') (Join-Path $tools 'Sources') -Force
 & $python -m pip freeze | Set-Content -Encoding utf8 (Join-Path $tools 'Sources\spotdl-freeze.txt')
 & (Join-Path $tools 'spotdl.exe') --version
 if ($LASTEXITCODE -ne 0) { throw 'spotdl.exe não abriu depois da construção.' }

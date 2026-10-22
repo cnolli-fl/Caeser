@@ -1,7 +1,7 @@
 name: Caeser Windows
 on:
   push:
-    branches: [codex/windows-port]
+    branches: [main, codex/windows-port]
     paths:
       - 'Windows/**'
       - '.github/workflows/caeser-windows.yml'
@@ -61,7 +61,7 @@ jobs:
             Windows/artifacts/ui-smoke/
             Windows/TestResults/
           retention-days: 7
-  package-preview:
+  package:
     needs: build-and-test
     if: github.event_name != 'pull_request'
     runs-on: windows-2025
@@ -103,10 +103,10 @@ jobs:
         run: ./Scripts/Package.ps1
       - name: Testar instalação, abertura e desinstalação
         run: ./Scripts/TestInstaller.ps1
-      - name: Guardar pacotes de prévia
+      - name: Guardar pacotes Windows
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: Caeser-Windows-Preview-${{ github.run_number }}
+          name: Caeser-Windows-package-${{ github.run_number }}
           path: Windows/artifacts/dist/
           retention-days: 7
       - name: Guardar diagnóstico do pacote
@@ -117,6 +117,6 @@ jobs:
           path: |
             Windows/artifacts/installed-ui/
             Windows/artifacts/installer-test.log
-            Windows/.tools/win-x64/versions.json
+            Windows/artifacts/tools-versions.json
             Windows/TestResults/
           retention-days: 7

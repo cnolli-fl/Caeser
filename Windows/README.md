@@ -2,7 +2,13 @@
 
 Versão Windows do Caeser, separada do aplicativo SwiftUI. A versão macOS continua nos diretórios existentes, sem migração nem alteração do aplicativo publicado.
 
-**Estado atual:** prévia de desenvolvimento em C#/.NET 10 e WinUI 3. O código, os testes e a construção do instalador estão nesta pasta; ainda não há uma release Windows estável. A compatibilidade precisa ser confirmada pelos testes, não apenas pelo código.
+**Versão Windows: 1.1.1.** Implementação nativa em C#/.NET 10 e WinUI 3. A numeração é independente da edição Mac 2.1.0.
+
+[Baixar instalador](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.1/Caeser-1.1.1-Windows-x64-Setup.exe) · [ZIP portátil](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.1/Caeser-1.1.1-Windows-x64.zip) · [Release e checksums](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v1.1.1)
+
+O instalador configura o app para seu usuário, sem exigir administrador. Para usar a edição portátil, extraia o ZIP inteiro e abra Caeser.exe. Não mova apenas o executável: as pastas e bibliotecas que o acompanham são necessárias.
+
+O pacote já inclui as ferramentas. Não é necessário instalar Python, .NET, FFmpeg, Deno ou yt-dlp separadamente. O instalador não tem assinatura Authenticode; o Windows pode avisar que o fornecedor é desconhecido.
 
 ## Plataforma
 
@@ -62,7 +68,7 @@ O aplicativo compilado sozinho não contém as ferramentas de download. Para o p
 
 ## Compilação e pacote completo
 
-O workflow Caeser Windows, na branch codex/windows-port, está separado da release pública. Não possui permissão para publicar Releases.
+O workflow Caeser Windows testa main e a branch de desenvolvimento. Não possui permissão para publicar Releases: a publicação é feita separadamente, após conferir o pacote e sua execução.
 
 Etapas:
 
@@ -70,10 +76,10 @@ Etapas:
 2. Compilar a interface autocontida e abrir a janela para os testes e capturas reais.
 3. Construir FFmpeg/LAME a partir dos fontes fixados e spotDL com o extrator atualizado.
 4. Verificar todas as ferramentas em um ambiente sem Python/FFmpeg/Deno externos e baixar um áudio original de teste, servido somente em loopback, convertendo-o para MP3 com a mesma lógica do aplicativo.
-5. Gerar ZIP portátil, instalador por usuário e checksums SHA-256, identificados como Preview.
-6. Instalar, abrir e desinstalar a prévia apenas na VM descartável do GitHub Actions.
+5. Conferir a versão do aplicativo e gerar ZIP portátil, instalador por usuário e checksums SHA-256.
+6. Instalar, conferir a versão instalada, abrir e desinstalar o app apenas na VM descartável do GitHub Actions.
 
-O instalador e o ZIP, quando essas etapas passarem, ficam nos artefatos da execução, não na release v2.1.0. O pacote Preview não usa assinatura Authenticode; o sistema pode exibir um aviso de fornecedor desconhecido.
+Os pacotes aprovados são publicados na release Windows windows-v1.1.1. A release Mac v2.1.0 e seus arquivos não são substituídos.
 
 Testes automatizados precisam cobrir validação de links, argumentos de formato/qualidade, parsing de progresso, erros do Spotify, saída UTF-8, caminhos com espaços e cancelamento dos subprocessos. Testar downloads reais separadamente: serviços externos podem bloquear conexões de servidores na nuvem.
 
@@ -81,7 +87,7 @@ As capturas são inspecionadas para conferir a aparência; o teste também verif
 
 ## Releases no GitHub
 
-Uma mesma release poderá oferecer arquivos diferentes para cada sistema. Os nomes abaixo são uma convenção proposta, não arquivos já disponíveis:
+Cada plataforma tem sua numeração. A distribuição Windows usa a tag windows-v1.1.1; o Mac permanece em v2.1.0. O README principal mantém links separados. Os nomes identificam plataforma e arquitetura:
 
 - `Caeser-X.Y.Z-macOS-AppleSilicon.dmg`
 - `Caeser-X.Y.Z-macOS-AppleSilicon.zip`
@@ -91,6 +97,6 @@ Uma mesma release poderá oferecer arquivos diferentes para cada sistema. Os nom
 
 As notas da release e o README devem apresentar links separados para **Baixar para Mac** e **Baixar para Windows 10/11 x64**, com os requisitos de cada um. O GitHub lista esses arquivos na seção Assets; não é necessário criar outro repositório.
 
-Não anunciar Windows na release atual enquanto não houver um pacote construído e validado. Não substituir os arquivos macOS já publicados. Commits e testes são feitos apenas na branch de desenvolvimento autorizada; a publicação de uma release estável é uma etapa separada, após aprovação.
+A publicação Windows não renomeia arquivos de Mac nem reaproveita seus binários. Antes de publicar qualquer atualização, executar os testes, conferir versões e checksums e preservar os arquivos das releases anteriores.
 
 Referência: [releases e arquivos de distribuição no GitHub](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases).

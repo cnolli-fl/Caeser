@@ -40,10 +40,15 @@ $notices = @{
     'yt-dlp-third-party.txt' = 'https://raw.githubusercontent.com/yt-dlp/yt-dlp/2026.08.19/THIRD_PARTY_LICENSES.txt'
     'spotDL-MIT.txt' = 'https://raw.githubusercontent.com/spotDL/spotify-downloader/v4.5.2/LICENSE'
     'Deno-MIT.txt' = 'https://raw.githubusercontent.com/denoland/deno/v2.9.8/LICENSE.md'
+    'Deno-Node.txt' = 'https://raw.githubusercontent.com/denoland/deno/v2.9.8/cli/tsc/dts/node/LICENSE'
+    'Deno-Undici.txt' = 'https://raw.githubusercontent.com/denoland/deno/v2.9.8/cli/tsc/dts/node/undici/LICENSE'
+    'Deno-WebGPU.txt' = 'https://raw.githubusercontent.com/denoland/deno/v2.9.8/ext/webgpu/LICENSE.md'
     'Python.txt' = 'https://raw.githubusercontent.com/python/cpython/v3.14.7/LICENSE'
     'PyInstaller.txt' = 'https://raw.githubusercontent.com/pyinstaller/pyinstaller/v6.22.3/COPYING.txt'
 }
 foreach ($notice in $notices.GetEnumerator()) {
     Invoke-WebRequest -Uri $notice.Value -OutFile (Join-Path $licenses $notice.Key) -MaximumRetryCount 3 -RetryIntervalSec 2
 }
+& python (Join-Path $PSScriptRoot 'CollectSourceNotices.py') $tools (Join-Path $cache 'source-cache') deno
+if ($LASTEXITCODE -ne 0) { throw 'Falha na coleta dos avisos de dependências Deno/V8.' }
 Write-Host 'Downloads fixados e verificados. Binários macOS não são reutilizados.'

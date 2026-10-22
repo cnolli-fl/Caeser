@@ -1,5 +1,17 @@
 # Mudanças
 
+## Windows 1.1.1 — 2026-10-22
+
+- Primeira distribuição Windows x64, com instalador por usuário e ZIP portátil.
+- Interface nativa WinUI 3, preservando a identidade visual e as logos originais.
+- YouTube e sites compatíveis com yt-dlp: qualidade de vídeo, MP4, WebM e MP3 na configuração máxima de conversão.
+- Links públicos do Spotify usados para buscar correspondências no YouTube/YouTube Music, sem baixar o áudio diretamente do Spotify.
+- Seletor animado, temas claro/escuro, atalhos, pasta persistente, progresso, logs e cancelamento de subprocessos.
+- yt-dlp, FFmpeg/FFprobe, Deno, spotDL e runtimes incluídos; sem exigir instalações separadas de ferramentas.
+- Testes automatizados da lógica, processos e pacote; abertura real da interface, download local convertido para MP3 e instalação/desinstalação no runner Windows.
+- Distribuição gratuita sem assinatura Authenticode. Testes em PCs reais com Windows 10/11 e disponibilidade dos serviços externos continuam sendo limites de validação.
+- Numeração independente por plataforma: Windows 1.1.1 não substitui nem renomeia o Mac 2.1.0.
+
 ## 2.1.0 — 2026-10-21
 
 ### Aplicativo pronto para instalar

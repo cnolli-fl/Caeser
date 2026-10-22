@@ -39,4 +39,4 @@ Foram lidas também as referências de acessibilidade, cor, layout, tipografia, 
 
 ## Verificação
 
-O teste de interface abre o aplicativo no runner Windows, alterna YouTube/Spotify e claro/escuro e captura o XAML realmente renderizado. Testa também URL inválida e foco por teclado. Isso não comprova sozinho leitura por Narrator, alto contraste ao vivo, arraste, todas as escalas DPI nem funcionamento em Windows 10; esses itens continuam no checklist manual antes da release estável.
+O teste de interface abre o aplicativo no runner Windows, alterna YouTube/Spotify e claro/escuro e captura o XAML realmente renderizado. Testa também URL inválida, foco por teclado, acessibilidade do seletor, contraste e limites horizontais dos controles. Isso não comprova sozinho leitura por Narrator, alto contraste ao vivo, arraste, todas as escalas DPI nem funcionamento em Windows 10; esses limites de validação precisam ser informados nas releases.

@@ -1,14 +1,18 @@
 # Caeser
 
-Versão 2.1.0. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
+Windows **1.1.1** · macOS **2.1.0**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
 
-**Baixe vídeos e músicas no Mac de um jeito simples e muito rápido.**
+**Baixe vídeos e músicas no Mac ou Windows de um jeito simples e muito rápido.**
 
-O Caeser foi criado para facilitar o caminho entre o link e o arquivo salvo: cole o endereço, escolha o formato e a pasta e clique em **Baixar**. Tudo em uma interface nativa para macOS 26, sem precisar montar comandos a cada download.
+O Caeser foi criado para facilitar o caminho entre o link e o arquivo salvo: cole o endereço, escolha o formato e a pasta e clique em **Baixar**. Com interface nativa para cada sistema, sem precisar montar comandos a cada download.
 
 [**Baixar Caeser 2.1.0 para Mac (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v2.1.0/Caeser-2.1.0-macOS-AppleSilicon.dmg) · [ZIP](https://github.com/cnolli-fl/Caeser/releases/download/v2.1.0/Caeser-2.1.0-macOS-AppleSilicon.zip) · [Notas da release](https://github.com/cnolli-fl/Caeser/releases/tag/v2.1.0)
 
-Requer **macOS 26 ou mais recente e chip Apple (M1 ou posterior)**. Ferramentas incluídas, sem Homebrew ou Python separado. Esta edição não é notarizada pela Apple; veja [como instalar e conferir a segurança](docs/INSTALACAO.md). Ainda não há versão para Windows ou Mac Intel.
+[**Baixar Caeser 1.1.1 para Windows (.exe)**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.1/Caeser-1.1.1-Windows-x64-Setup.exe) · [ZIP portátil](https://github.com/cnolli-fl/Caeser/releases/download/windows-v1.1.1/Caeser-1.1.1-Windows-x64.zip) · [Notas da release Windows](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v1.1.1)
+
+**Mac:** macOS 26 ou mais recente e chip Apple (M1 ou posterior). **Windows:** Windows 10 22H2 ou Windows 11, x64 (Intel/AMD). As ferramentas já acompanham os dois pacotes; não é preciso instalar Homebrew, Python, FFmpeg ou yt-dlp separadamente.
+
+A edição Mac não é notarizada pela Apple; veja [como instalar e conferir a segurança](docs/INSTALACAO.md). A edição Windows não tem assinatura Authenticode e pode exibir um aviso de fornecedor desconhecido. Veja [as instruções e os testes do Windows](Windows/README.md). Mac Intel, Windows de 32 bits e Windows ARM64 não são alvos validados.
 
 ![Caeser 2.1.0 com seletor YouTube e Spotify, opções de download e download concluído](docs/images/caeser-interface.png)
 
@@ -18,7 +22,7 @@ Requer **macOS 26 ou mais recente e chip Apple (M1 ou posterior)**. Ferramentas 
 
 O intuito do projeto é **facilitar e agilizar o download de vídeos e músicas**, reunindo o que você precisa em uma única janela. Dá para salvar um vídeo, extrair o áudio em MP3 ou usar um link do Spotify para encontrar as músicas no YouTube, sem fazer a busca manual de cada faixa.
 
-A ideia é ser prático no dia a dia: poucas etapas para iniciar, pasta de destino lembrada pelo app, acompanhamento na própria tela e acesso ao arquivo pelo Finder quando terminar.
+A ideia é ser prático no dia a dia: poucas etapas para iniciar, pasta de destino lembrada pelo app, acompanhamento na própria tela e acesso ao arquivo pelo Finder ou Explorador quando terminar.
 
 ### Rapidez no uso
 
@@ -29,6 +33,16 @@ A velocidade de transferência depende da conexão, do tamanho do arquivo e do s
 Por trás da interface, o Caeser usa yt-dlp, FFmpeg e, para links do Spotify, spotDL. A edição completa inclui essas ferramentas e o Deno dentro do aplicativo, sem precisar instalar Homebrew ou Python. O código-fonte continua sem binários de terceiros versionados no Git.
 
 ## Aplicativo completo
+
+### Windows 1.1.1
+
+Baixe o instalador .exe e siga as etapas; a instalação é por usuário e não pede acesso de administrador. Outra opção é extrair o ZIP inteiro e abrir Caeser.exe, mantendo as demais pastas ao lado dele. Os arquivos Source code do GitHub não são o aplicativo pronto.
+
+O pacote inclui yt-dlp, FFmpeg/FFprobe, Deno, spotDL e os runtimes necessários. A interface mantém a identidade visual do Mac com controles, seleção de pasta e atalhos próprios do Windows. O código fica separado em [Windows/](Windows/), com a solução para Visual Studio, scripts de construção e testes.
+
+Foram automatizados testes da lógica e dos processos, abertura nos dois temas, troca YouTube/Spotify, download de áudio original servido localmente com conversão MP3 e instalação/desinstalação no Windows do GitHub. Isso não substitui a validação em PCs reais com Windows 10/11 nem garante disponibilidade dos serviços externos. Os resultados e os limites estão nas [notas da release Windows](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v1.1.1).
+
+### Mac 2.1.0
 
 A receita de distribuição gera um `.dmg` e um `.zip` para **macOS 26 ou mais recente em Macs com chip Apple (M1 ou posterior)**. Basta mover Caeser.app para Aplicativos; yt-dlp, FFmpeg, FFprobe, Deno e spotDL já acompanham o pacote. Não é necessário Xcode, Python, Homebrew nem o aplicativo do Spotify para usá-lo.
 
@@ -54,6 +68,7 @@ A qualidade de vídeo escolhida é um limite de resolução: o resultado depende
 | Componente | Responsabilidade |
 | --- | --- |
 | SwiftUI | Interface, opções, animações e estados visuais. |
+| C#/.NET 10 e WinUI 3 | Aplicativo nativo Windows, mantido separadamente em Windows/. |
 | AppKit | Seleção da pasta com NSOpenPanel e integração com o Finder. |
 | Foundation | URLs, arquivos, processos externos e leitura da saída. |
 | yt-dlp | Extração e download de vídeos e áudio. |
@@ -80,6 +95,8 @@ docs/images/                  Captura da interface
 ```
 
 ## Requisitos para desenvolver
+
+Os requisitos abaixo são da edição Mac. Para compilar no Windows, veja [Windows/README.md](Windows/README.md) e abra a solução Caeser.Windows.sln no Visual Studio com .NET 10 e WinUI.
 
 - macOS 26 ou mais recente e Xcode com o SDK correspondente.
 - [Homebrew](https://brew.sh/).
@@ -154,6 +171,8 @@ Em álbuns e playlists, o progresso indica músicas processadas. Uma falha é mo
 
 ## Interface e atalhos
 
+A lista a seguir descreve a edição Mac. No Windows, Ctrl+L foca o campo do link, Ctrl+Enter inicia o download e Esc cancela. As ações usam ícones e controles nativos do Windows, sem redistribuir SF Symbols.
+
 - Aparência clara/escura acompanhando o sistema e cores semânticas.
 - SF Symbols, controles nativos e ação principal em Liquid Glass.
 - Seletor YouTube/Spotify com barrinha roxa deslizante, por clique ou arraste, e suporte a teclado.
@@ -200,7 +219,7 @@ brew upgrade yt-dlp ffmpeg
 
 - Uma operação de download por vez, sem fila independente de tarefas.
 - Álbuns e playlists públicas identificados por links do Spotify são processados pelo spotDL, com áudio buscado no YouTube Music/YouTube; playlists de vídeo não são baixadas pelo fluxo de vídeo.
-- Edição completa disponível pela receita de empacotamento apenas para Apple Silicon; compilação direta de desenvolvimento ainda usa ferramentas externas.
+- Edições completas para Mac Apple Silicon e Windows x64. Cada plataforma tem seus próprios arquivos e instruções de desenvolvimento.
 - Sem Developer ID/notarização nesta distribuição gratuita; pode haver bloqueio na primeira abertura.
 - Sem fluxo de autenticação com contas de serviços na interface.
 
@@ -208,7 +227,7 @@ O app não contorna DRM. Use os downloads conforme as permissões do conteúdo e
 
 ## Licença
 
-O código Swift deste projeto é open source sob a [licença MIT](LICENSE). Você pode usar, modificar e distribuir o código, mantendo o aviso de copyright e a licença. As ferramentas incluídas na edição completa mantêm as próprias licenças, descritas em [THIRD-PARTY.md](THIRD-PARTY.md), e os fontes de FFmpeg/LAME acompanham o app. As marcas de terceiros seguem as condições descritas em [BRAND-ASSETS.md](BRAND-ASSETS.md).
+O código Swift e C# deste projeto é open source sob a [licença MIT](LICENSE). Você pode usar, modificar e distribuir o código, mantendo o aviso de copyright e a licença. As ferramentas incluídas mantêm as próprias licenças, descritas em [THIRD-PARTY.md](THIRD-PARTY.md) e [Windows/THIRD-PARTY.md](Windows/THIRD-PARTY.md), com fontes e avisos acompanhando os pacotes. As marcas de terceiros seguem as condições descritas em [BRAND-ASSETS.md](BRAND-ASSETS.md).
 
 ## Autor
 
