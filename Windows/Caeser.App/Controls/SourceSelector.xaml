@@ -57,7 +57,7 @@
         <Grid x:Name="Inner">
             <Border x:Name="Thumb" HorizontalAlignment="Left"
                 Background="{ThemeResource CaeserAccent}" CornerRadius="8" IsHitTestVisible="False">
-                <Border.RenderTransform><TranslateTransform x:Name="ThumbTranslation" /></Border.RenderTransform>
+                <Border.RenderTransform><TranslateTransform /></Border.RenderTransform>
             </Border>
             <Grid>
                 <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>

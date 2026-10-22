@@ -2,6 +2,7 @@ using Caeser.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Animation;
 using DispatcherQueueTimer = Microsoft.UI.Dispatching.DispatcherQueueTimer;
 using Windows.Foundation;
@@ -29,6 +30,7 @@ public sealed partial class SourceSelector : UserControl
     private bool transferringCapture;
     private bool updatingButtons;
     private readonly UISettings settings = new();
+    private TranslateTransform Translation => (TranslateTransform)Thumb.RenderTransform;
     internal bool? MotionEnabledOverride { get; set; }
     internal int PointerPressCount { get; private set; }
     internal string PointerDiagnostics { get; private set; } = "";
@@ -91,38 +93,41 @@ public sealed partial class SourceSelector : UserControl
     }
     private void StopAnimation()
     {
-        var current = ThumbTranslation.X;
+        var current = Translation.X;
         var previous = animation;
         animation = null;
         animationDeadline?.Stop(); animationDeadline = null;
         previous?.Stop();
-        ThumbTranslation.X = current;
+        // Always work on the transform actually attached to the indicator.
+        // Replacing it also clears a compositor-held animation value.
+        Thumb.RenderTransform = new TranslateTransform { X = current };
     }
     private void MoveTo(double target, bool animate)
     {
-        var current = ThumbTranslation.X;
+        var current = Translation.X;
         StopAnimation();
         if (!animate || !(MotionEnabledOverride ?? settings.AnimationsEnabled) || !IsLoaded || Math.Abs(current - target) < 0.1)
-        { ThumbTranslation.X = target; return; }
+        { Translation.X = target; return; }
         var next = new Storyboard { FillBehavior = FillBehavior.Stop };
         var move = new DoubleAnimation
         {
             From = current, To = target, Duration = TimeSpan.FromMilliseconds(280),
             EasingFunction = new CubicEase { EasingMode = EasingMode.EaseOut }
         };
-        Storyboard.SetTarget(move, Thumb);
-        Storyboard.SetTargetProperty(move, "(UIElement.RenderTransform).(TranslateTransform.X)");
+        Storyboard.SetTarget(move, Translation);
+        Storyboard.SetTargetProperty(move, "X");
         next.Children.Add(move);
         void Finish()
         {
             if (animation != next) return;
             animationDeadline?.Stop(); animationDeadline = null;
-            animation = null; next.Stop(); ThumbTranslation.X = target;
+            animation = null; next.Stop();
+            Thumb.RenderTransform = new TranslateTransform { X = target };
         }
         next.Completed += (_, _) => Finish();
         // Keep the base value correct even when Windows skips or disables an
         // animation. The explicit From value still starts at the visible point.
-        ThumbTranslation.X = target;
+        Translation.X = target;
         // Some remote desktops suspend compositor clocks or skip Completed.
         // Keep UI state bounded: never leave a selected source under the wrong
         // indicator, even when animations are disabled mid-flight.
@@ -191,8 +196,8 @@ public sealed partial class SourceSelector : UserControl
     private void OnReleased(object sender, PointerRoutedEventArgs e)
     {
         if (!dragging) { pressed = null; return; }
-        var target = ThumbTranslation.X >= Inner.ActualWidth / 4 ? DownloadSource.Spotify : DownloadSource.Video;
-        TracePointer($"release x={ThumbTranslation.X}, target={target}");
+        var target = Translation.X >= Inner.ActualWidth / 4 ? DownloadSource.Spotify : DownloadSource.Video;
+        TracePointer($"release x={Translation.X}, target={target}");
         dragging = false; pressed = null;
         ReleasePointerCapture(e.Pointer);
         Select(target); e.Handled = true;
