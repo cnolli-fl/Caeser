@@ -152,7 +152,9 @@ internal static class UiSmokeTest
             await Task.Delay(40);
             for (var step = 1; step <= 6; step++)
             {
-                SetCursorPos(from.X + (to.X - from.X) * step / 6, from.Y + (to.Y - from.Y) * step / 6);
+                // SetCursorPos repositions the cursor but does not reliably
+                // produce captured WinUI pointer motion. Inject real moves.
+                MoveMouseTo(new NativePoint { X = from.X + (to.X - from.X) * step / 6, Y = from.Y + (to.Y - from.Y) * step / 6 });
                 await Task.Delay(40);
             }
         }
@@ -160,6 +162,18 @@ internal static class UiSmokeTest
         await Task.Delay(350);
         if (model.Source != (backToVideo ? DownloadSource.Video : DownloadSource.Spotify))
             throw new InvalidOperationException($"Arrastar o indicador não trocou a origem (volta={backToVideo}; origem={model.Source}). {selector.PointerDiagnostics}");
+    }
+    private static void MoveMouseTo(NativePoint point)
+    {
+        var left = GetSystemMetrics(76); var top = GetSystemMetrics(77);
+        var width = GetSystemMetrics(78); var height = GetSystemMetrics(79);
+        MouseInput[] input = [new() { Data = new()
+        {
+            X = (int)Math.Round((point.X - left) * 65535.0 / (width - 1)),
+            Y = (int)Math.Round((point.Y - top) * 65535.0 / (height - 1)),
+            Flags = 0xC001 // MOVE | ABSOLUTE | VIRTUALDESK
+        } }];
+        if (SendInput(1, input, Marshal.SizeOf<MouseInput>()) != 1) throw new InvalidOperationException("Falha ao enviar movimento real do mouse.");
     }
     private static async Task PressKeyAsync(ushort key)
     {
@@ -186,6 +200,7 @@ internal static class UiSmokeTest
     [DllImport("user32.dll")] private static extern bool SetCursorPos(int x, int y);
     [DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr window);
     [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
+    [DllImport("user32.dll")] private static extern int GetSystemMetrics(int index);
     private static void ToggleThroughAutomation(SourceSelector selector, string name)
     {
         var element = selector.FindName(name) as FrameworkElement ??
