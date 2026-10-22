@@ -38,7 +38,7 @@ public sealed partial class SourceSelector : UserControl
         PointerCanceled += (_, _) => ResetDrag();
         // Taking capture away from a child also bubbles this event. Only losing
         // our own capture cancels a drag; otherwise the first move resets it.
-        PointerCaptureLost += (_, e) => { if (e.OriginalSource == this) ResetDrag(); };
+        PointerCaptureLost += (_, e) => { if (ReferenceEquals(e.OriginalSource, this)) ResetDrag(); };
         Loaded += (_, _) => UpdateSelection(false);
         Unloaded += (_, _) => StopAnimation();
         IsEnabledChanged += (_, _) => { if (!IsEnabled) ResetDrag(); };
