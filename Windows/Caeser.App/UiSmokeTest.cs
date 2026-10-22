@@ -39,8 +39,9 @@ internal static class UiSmokeTest
         await DragSourceAsync(window, root, selector, model, false);
         await DragSourceAsync(window, root, selector, model, true);
         ((RadioButton)selector.FindName("YouTubeButton")).Focus(FocusState.Keyboard);
+        await Task.Delay(50);
         await PressKeyAsync(0x27); // Right arrow.
-        if (model.Source != DownloadSource.Spotify) throw new InvalidOperationException("Seta direita não selecionou Spotify.");
+        if (model.Source != DownloadSource.Spotify) throw new InvalidOperationException($"Seta direita não selecionou Spotify. {selector.PointerDiagnostics}");
         await PressKeyAsync(0x24); // Home.
         if (model.Source != DownloadSource.Video) throw new InvalidOperationException("Home não selecionou YouTube.");
         await PressKeyAsync(0x23); // End.
@@ -177,7 +178,8 @@ internal static class UiSmokeTest
     }
     private static async Task PressKeyAsync(ushort key)
     {
-        KeyboardInput[] inputs = [new() { Type = 1, Key = key }, new() { Type = 1, Key = key, Flags = 2 }];
+        uint extended = key is 0x27 or 0x24 or 0x23 ? 1u : 0u;
+        KeyboardInput[] inputs = [new() { Type = 1, Key = key, Flags = extended }, new() { Type = 1, Key = key, Flags = extended | 2 }];
         if (SendKeyboardInput(2, inputs, Marshal.SizeOf<KeyboardInput>()) != 2) throw new InvalidOperationException("Falha na entrada de teclado.");
         await Task.Delay(100);
     }

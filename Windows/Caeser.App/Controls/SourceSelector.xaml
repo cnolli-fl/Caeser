@@ -53,7 +53,7 @@
     </UserControl.Resources>
     <Border x:Name="Track" Background="{ThemeResource CaeserSelector}"
         BorderBrush="{ThemeResource CaeserBorder}" BorderThickness="0.5" CornerRadius="11"
-        Padding="3" SizeChanged="Track_SizeChanged" KeyDown="Track_KeyDown">
+        Padding="3" SizeChanged="Track_SizeChanged">
         <Grid x:Name="Inner">
             <Border x:Name="Thumb" HorizontalAlignment="Left"
                 Background="{ThemeResource CaeserAccent}" CornerRadius="8" IsHitTestVisible="False">

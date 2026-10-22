@@ -43,6 +43,9 @@ public sealed partial class SourceSelector : UserControl
         AddHandler(PointerPressedEvent, new PointerEventHandler(OnPressed), true);
         AddHandler(PointerMovedEvent, new PointerEventHandler(OnMoved), true);
         AddHandler(PointerReleasedEvent, new PointerEventHandler(OnReleased), true);
+        // RadioButton handles arrow keys itself. Our two-part selector needs
+        // to see those keys too, including events already marked handled.
+        AddHandler(KeyDownEvent, new KeyEventHandler(Track_KeyDown), true);
         PointerCanceled += (_, e) =>
         {
             TracePointer($"canceled {e.OriginalSource?.GetType().Name}, transfer={transferringCapture}");
@@ -131,6 +134,7 @@ public sealed partial class SourceSelector : UserControl
     { if (Math.Abs(e.NewSize.Width - e.PreviousSize.Width) > 0.1) UpdateSelection(false); }
     private void Track_KeyDown(object sender, KeyRoutedEventArgs e)
     {
+        TracePointer($"key={e.Key}, handled={e.Handled}");
         if (!IsEnabled) return;
         if (e.Key is VirtualKey.Left or VirtualKey.Home) Select(DownloadSource.Video);
         else if (e.Key is VirtualKey.Right or VirtualKey.End) Select(DownloadSource.Spotify);
