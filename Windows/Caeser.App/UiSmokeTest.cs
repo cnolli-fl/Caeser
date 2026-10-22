@@ -109,6 +109,11 @@ internal static class UiSmokeTest
                 var shown = dialog.ShowAsync();
                 await Task.Delay(400);
                 var content = (FrameworkElement)dialog.Content;
+                var subtitle = (TextBlock)((StackPanel)content).Children[0];
+                var foreground = ((SolidColorBrush)subtitle.Foreground).Color;
+                var brightness = foreground.R + foreground.G + foreground.B;
+                if (theme == ElementTheme.Dark ? brightness < 384 : brightness > 384)
+                    throw new InvalidOperationException("O texto secundário do histórico não acompanhou o tema.");
                 if (content.ActualWidth > root.ActualWidth || content.ActualHeight > root.ActualHeight || content.ActualWidth < 240)
                     throw new InvalidOperationException("O histórico ultrapassou a área da janela.");
                 await CaptureAsync(dialog, directory, $"history-{(empty ? "empty" : "items")}-{theme.ToString().ToLowerInvariant()}.png");

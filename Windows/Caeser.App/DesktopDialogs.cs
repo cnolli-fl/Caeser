@@ -61,9 +61,14 @@ public sealed partial class MainWindow
         var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, RequestedTheme = Root.ActualTheme, Title = "Histórico", CloseButtonText = "Fechar",
             SecondaryButtonText = items.Count > 0 ? "Limpar histórico…" : "", DefaultButton = ContentDialogButton.Close };
         dialog.Resources["ContentDialogMaxWidth"] = 620d;
+        TextBlock Secondary(string value)
+        {
+            var text = (TextBlock)Microsoft.UI.Xaml.Markup.XamlReader.Load("<TextBlock xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Foreground='{ThemeResource TextFillColorSecondaryBrush}' FontSize='13' />");
+            text.Text = value; return text;
+        }
         var body = new StackPanel { Spacing = 16, Width = Math.Min(548, Math.Max(240, Root.ActualWidth - 96)) };
-        body.Children.Add(new TextBlock { Text = items.Count == 0 ? "Seus últimos downloads, salvos neste PC." : $"{items.Count} de 100 registros · salvos neste PC",
-            FontSize = 14, Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"], TextWrapping = TextWrapping.Wrap });
+        var subtitle = Secondary(items.Count == 0 ? "Seus últimos downloads, salvos neste PC." : $"{items.Count} de 100 registros · salvos neste PC");
+        subtitle.FontSize = 14; subtitle.TextWrapping = TextWrapping.Wrap; body.Children.Add(subtitle);
         var list = new StackPanel();
         foreach (var item in items)
         {
@@ -83,13 +88,11 @@ public sealed partial class MainWindow
             var status = item.State switch { QueueState.Completed => "Concluído", QueueState.Failed => "Não concluído", QueueState.Cancelled => "Cancelado", _ => "Interrompido ao fechar" };
             var meta = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 6 };
             meta.Children.Add(new SymbolIcon(symbol) { Width = 16, Height = 16 });
-            meta.Children.Add(new TextBlock { Text = $"{status} · {item.Created.ToLocalTime():dd/MM HH:mm}", FontSize = 13,
-                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"] });
+            meta.Children.Add(Secondary($"{status} · {item.Created.ToLocalTime():dd/MM HH:mm}"));
             text.Children.Add(meta);
             if (item.State is QueueState.Failed or QueueState.Interrupted)
             {
-                var detail = new TextBlock { Text = item.Detail, FontSize = 13, MaxLines = 1, TextTrimming = TextTrimming.CharacterEllipsis,
-                    Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"] };
+                var detail = Secondary(item.Detail); detail.MaxLines = 1; detail.TextTrimming = TextTrimming.CharacterEllipsis;
                 ToolTipService.SetToolTip(detail, item.Detail); text.Children.Add(detail);
             }
             Grid.SetColumn(text, 1); row.Children.Add(text);
@@ -106,17 +109,20 @@ public sealed partial class MainWindow
             again.Click += (_, _) => { retry(item); dialog.Hide(); };
             actions.Children.Add(open); actions.Children.Add(again); Grid.SetColumn(actions, 2); row.Children.Add(actions);
             list.Children.Add(row);
-            if (item != items.Last()) list.Children.Add(new Border { Height = 1, Margin = new Thickness(48, 0, 0, 0),
-                Background = (Brush)Application.Current.Resources["DividerStrokeColorDefaultBrush"] });
+            if (item != items.Last())
+            {
+                var divider = (Border)Microsoft.UI.Xaml.Markup.XamlReader.Load("<Border xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Background='{ThemeResource DividerStrokeColorDefaultBrush}' Height='1' Margin='48,0,0,0' />");
+                list.Children.Add(divider);
+            }
         }
         if (items.Count == 0)
         {
             var empty = new StackPanel { Spacing = 12, Padding = new Thickness(24, 32, 24, 32), HorizontalAlignment = HorizontalAlignment.Center };
             empty.Children.Add(new SymbolIcon(Symbol.Clock) { Width = 32, Height = 32 });
             empty.Children.Add(new TextBlock { Text = "Nenhum download ainda", FontSize = 16, FontWeight = FontWeights.SemiBold, TextAlignment = TextAlignment.Center });
-            empty.Children.Add(new TextBlock { Text = "Os downloads concluídos, cancelados ou com erro aparecem aqui.", MaxWidth = 320,
-                TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center, FontSize = 14,
-                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"] });
+            var description = Secondary("Os downloads concluídos, cancelados ou com erro aparecem aqui.");
+            description.MaxWidth = 320; description.TextWrapping = TextWrapping.Wrap;
+            description.TextAlignment = TextAlignment.Center; description.FontSize = 14; empty.Children.Add(description);
             list.Children.Add(empty);
         }
         body.Children.Add(new ScrollViewer { Content = list, MaxHeight = Math.Max(160, Math.Min(360, Root.ActualHeight - 260)),
