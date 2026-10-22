@@ -26,5 +26,5 @@ if (Test-Path (Join-Path $output 'xaml-diagnostics.txt')) {
 }
 if (-not $result.succeeded) { throw "Falha no teste de interface: $($result.error)" }
 if ($process.ExitCode -ne 0) { throw "O aplicativo confirmou o teste, mas encerrou com erro $($process.ExitCode)." }
-if (@(Get-ChildItem $output -Filter '*.png').Count -ne 4) { throw 'As quatro capturas de tema/origem não foram geradas.' }
+if (@(Get-ChildItem $output -Filter '*.png').Count -ne 6) { throw 'As seis capturas de origem, prévia e fila nos dois temas não foram geradas.' }
 Write-Host 'Interface aberta e verificada: YouTube/Spotify, claro/escuro, link inválido e foco de teclado.'
