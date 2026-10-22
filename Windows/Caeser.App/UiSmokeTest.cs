@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Runtime.InteropServices;
 using System.Text.Json;
 using Caeser.App.Controls;
 using Caeser.App.ViewModels;
@@ -27,6 +28,13 @@ internal static class UiSmokeTest
         // CI desktops often disable animation. Exercise the same animated path
         // as a normal Windows desktop instead of silently skipping it.
         selector.MotionEnabledOverride = true;
+        await ClickSourceAsync(window, root, selector, model, "SpotifyButton", DownloadSource.Spotify);
+        await ClickSourceAsync(window, root, selector, model, "YouTubeButton", DownloadSource.Video);
+        // Interrupt an in-flight animation repeatedly, not just at rest.
+        for (var i = 0; i < 8; i++)
+            await ClickSourceAsync(window, root, selector, model,
+                i % 2 == 0 ? "SpotifyButton" : "YouTubeButton",
+                i % 2 == 0 ? DownloadSource.Spotify : DownloadSource.Video);
         foreach (var theme in new[] { ElementTheme.Dark, ElementTheme.Light })
         {
             root.RequestedTheme = theme;
@@ -65,10 +73,38 @@ internal static class UiSmokeTest
         await File.WriteAllTextAsync(Path.Combine(directory, "result.json"), JsonSerializer.Serialize(new
         {
             succeeded = true, title = window.Title, screenshots = files.Select(Path.GetFileName),
-            urlValidation = true, sourceSwitch = true, accessibleSourceSwitch = true, keyboardFocus = focusWorks,
+            urlValidation = true, sourceSwitch = true, mouseSourceSwitch = true,
+            animatedSourceSwitch = true, accessibleSourceSwitch = true, keyboardFocus = focusWorks,
             note = "Capturas reais do XAML no runner. Não substitui teste manual no Windows 10/11."
         }, new JsonSerializerOptions { WriteIndented = true }));
     }
+    private static async Task ClickSourceAsync(Window window, FrameworkElement root, SourceSelector selector,
+        DownloadViewModel model, string name, DownloadSource expected)
+    {
+        var element = (FrameworkElement)selector.FindName(name);
+        var point = element.TransformToVisual(root).TransformPoint(new Point(element.ActualWidth / 2, element.ActualHeight / 2));
+        var scale = root.XamlRoot.RasterizationScale;
+        var screen = new NativePoint { X = (int)(point.X * scale), Y = (int)(point.Y * scale) };
+        var handle = WinRT.Interop.WindowNative.GetWindowHandle(window);
+        if (!ClientToScreen(handle, ref screen)) throw new InvalidOperationException("Não consegui localizar o seletor na tela.");
+        SetForegroundWindow(handle);
+        if (!SetCursorPos(screen.X, screen.Y)) throw new InvalidOperationException("Não consegui posicionar o mouse no teste.");
+        await Task.Delay(30);
+        MouseInput[] inputs = [new() { Data = new() { Flags = 0x0002 } }, new() { Data = new() { Flags = 0x0004 } }];
+        if (SendInput((uint)inputs.Length, inputs, Marshal.SizeOf<MouseInput>()) != inputs.Length)
+            throw new InvalidOperationException("O Windows não aceitou os cliques de teste.");
+        await Task.Delay(60);
+        if (model.Source != expected)
+            throw new InvalidOperationException($"Clique real em {name} não selecionou {expected}.");
+    }
+    [StructLayout(LayoutKind.Sequential)] private struct NativePoint { public int X, Y; }
+    [StructLayout(LayoutKind.Sequential)] private struct MouseData
+    { public int X, Y; public uint Mouse, Flags, Time; public UIntPtr Extra; }
+    [StructLayout(LayoutKind.Sequential)] private struct MouseInput { public uint Type; public MouseData Data; }
+    [DllImport("user32.dll", SetLastError = true)] private static extern uint SendInput(uint count, MouseInput[] inputs, int size);
+    [DllImport("user32.dll")] private static extern bool ClientToScreen(IntPtr window, ref NativePoint point);
+    [DllImport("user32.dll")] private static extern bool SetCursorPos(int x, int y);
+    [DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr window);
     private static void ToggleThroughAutomation(SourceSelector selector, string name)
     {
         var element = selector.FindName(name) as FrameworkElement ??
