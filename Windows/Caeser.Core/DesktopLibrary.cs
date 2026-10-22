@@ -22,7 +22,8 @@ public sealed class LibraryItem : System.ComponentModel.INotifyPropertyChanged
     public List<string> Files { get; set; } = [];
     public DateTimeOffset Created { get; set; } = DateTimeOffset.Now;
     public bool Pending => State is QueueState.Waiting or QueueState.Downloading;
-    public string Description => $"{(Request.Source == DownloadSource.Spotify ? "Spotify" : "YouTube")} · {Request.Format} · {Detail}";
+    public string Description => $"{(Request.Source == DownloadSource.Spotify ? "Spotify" : "YouTube")} · {FormatLabel} · {Detail}";
+    private string FormatLabel => Request.Format switch { VideoFormat.Automatic => "Automático", VideoFormat.Mp3 => "MP3", VideoFormat.Mp4 => "MP4", _ => "WebM" };
 }
 public sealed class DesktopLibrary
 {
