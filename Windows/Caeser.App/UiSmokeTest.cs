@@ -5,7 +5,10 @@ using Caeser.App.ViewModels;
 using Caeser.Core;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Automation.Peers;
+using Microsoft.UI.Xaml.Automation.Provider;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Windows.Foundation;
 using Windows.Graphics.Imaging;
 using Windows.Storage;
 
@@ -24,13 +27,24 @@ internal static class UiSmokeTest
             root.RequestedTheme = theme;
             selector.SelectedSource = DownloadSource.Video;
             await Task.Delay(400);
+            await CheckLayoutAsync(root, directory);
             await CaptureAsync(root, directory, $"youtube-{theme.ToString().ToLowerInvariant()}.png");
             selector.SelectedSource = DownloadSource.Spotify;
             await Task.Delay(400);
+            await CheckLayoutAsync(root, directory);
             if (model.Source != DownloadSource.Spotify || model.SpotifyVisibility != Visibility.Visible)
                 throw new InvalidOperationException("A seleção Spotify não atualizou o formulário.");
             await CaptureAsync(root, directory, $"spotify-{theme.ToString().ToLowerInvariant()}.png");
         }
+        ToggleThroughAutomation(selector, "YouTubeButton");
+        if (model.Source != DownloadSource.Video)
+            throw new InvalidOperationException("A automação de acessibilidade não selecionou YouTube.");
+        ToggleThroughAutomation(selector, "YouTubeButton");
+        if (model.Source != DownloadSource.Video)
+            throw new InvalidOperationException("A origem selecionada não pode ficar vazia.");
+        ToggleThroughAutomation(selector, "SpotifyButton");
+        if (model.Source != DownloadSource.Spotify)
+            throw new InvalidOperationException("A automação de acessibilidade não selecionou Spotify.");
         model.UrlText = "isso não é um link";
         await model.StartAsync();
         if (model.Error == null || model.IsBusy)
@@ -46,9 +60,35 @@ internal static class UiSmokeTest
         await File.WriteAllTextAsync(Path.Combine(directory, "result.json"), JsonSerializer.Serialize(new
         {
             succeeded = true, title = window.Title, screenshots = files.Select(Path.GetFileName),
-            urlValidation = true, sourceSwitch = true, keyboardFocus = focusWorks,
+            urlValidation = true, sourceSwitch = true, accessibleSourceSwitch = true, keyboardFocus = focusWorks,
             note = "Capturas reais do XAML no runner. Não substitui teste manual no Windows 10/11."
         }, new JsonSerializerOptions { WriteIndented = true }));
+    }
+    private static void ToggleThroughAutomation(SourceSelector selector, string name)
+    {
+        var element = selector.FindName(name) as FrameworkElement ??
+            throw new InvalidOperationException("O botão de origem não foi encontrado.");
+        var peer = FrameworkElementAutomationPeer.CreatePeerForElement(element);
+        if (peer.GetPattern(PatternInterface.Toggle) is not IToggleProvider toggle)
+            throw new InvalidOperationException("O seletor não expõe seu estado à automação de acessibilidade.");
+        toggle.Toggle();
+    }
+    private static async Task CheckLayoutAsync(FrameworkElement root, string directory)
+    {
+        var bounds = new Dictionary<string, Rect>();
+        foreach (var name in new[] { "ContentFrame", "SourceBar", "UrlBox", "PasteButton", "FolderButton" })
+        {
+            var element = root.FindName(name) as FrameworkElement ??
+                throw new InvalidOperationException($"Controle ausente: {name}");
+            bounds[name] = element.TransformToVisual(root).TransformBounds(new Rect(0, 0, element.ActualWidth, element.ActualHeight));
+        }
+        await File.WriteAllTextAsync(Path.Combine(directory, "layout.json"), JsonSerializer.Serialize(new
+        {
+            viewportWidth = root.ActualWidth,
+            controls = bounds.ToDictionary(p => p.Key, p => new { p.Value.X, p.Value.Y, p.Value.Width, p.Value.Height })
+        }, new JsonSerializerOptions { WriteIndented = true }));
+        if (bounds.Any(p => p.Value.Width < 1 || p.Value.Left < -1 || p.Value.Right > root.ActualWidth + 1))
+            throw new InvalidOperationException("A interface ultrapassou a largura da janela. Consulte layout.json.");
     }
     private static async Task CaptureAsync(FrameworkElement root, string directory, string name)
     {

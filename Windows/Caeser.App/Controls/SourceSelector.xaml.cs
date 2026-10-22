@@ -24,6 +24,7 @@ public sealed partial class SourceSelector : UserControl
     private Point? pressed;
     private double initial;
     private bool dragging;
+    private bool updatingButtons;
     private readonly UISettings settings = new();
 
     public SourceSelector()
@@ -33,15 +34,22 @@ public sealed partial class SourceSelector : UserControl
         AddHandler(PointerMovedEvent, new PointerEventHandler(OnMoved), true);
         AddHandler(PointerReleasedEvent, new PointerEventHandler(OnReleased), true);
         PointerCanceled += (_, _) => ResetDrag();
-        PointerCaptureLost += (_, _) => ResetDrag();
+        // Taking capture away from a child also bubbles this event. Only losing
+        // our own capture cancels a drag; otherwise the first move resets it.
+        PointerCaptureLost += (_, e) => { if (e.OriginalSource == this) ResetDrag(); };
         Loaded += (_, _) => UpdateSelection(false);
         IsEnabledChanged += (_, _) => { if (!IsEnabled) ResetDrag(); };
     }
     private void UpdateSelection(bool animate)
     {
         if (YouTubeButton == null) return;
-        YouTubeButton.IsChecked = SelectedSource == DownloadSource.Video;
-        SpotifyButton.IsChecked = SelectedSource == DownloadSource.Spotify;
+        updatingButtons = true;
+        try
+        {
+            YouTubeButton.IsChecked = SelectedSource == DownloadSource.Video;
+            SpotifyButton.IsChecked = SelectedSource == DownloadSource.Spotify;
+        }
+        finally { updatingButtons = false; }
         Thumb.Width = Math.Max(0, Inner.ActualWidth / 2);
         MoveTo(SelectedSource == DownloadSource.Video ? 0 : Inner.ActualWidth / 2, animate);
         SelectionChanged?.Invoke(this, EventArgs.Empty);
@@ -69,10 +77,20 @@ public sealed partial class SourceSelector : UserControl
         };
         animation = next; next.Begin();
     }
-    private void YouTube_Click(object sender, RoutedEventArgs e)
-    { SelectedSource = DownloadSource.Video; UpdateSelection(true); }
-    private void Spotify_Click(object sender, RoutedEventArgs e)
-    { SelectedSource = DownloadSource.Spotify; UpdateSelection(true); }
+    private void YouTube_Checked(object sender, RoutedEventArgs e)
+    {
+        if (updatingButtons) return;
+        SelectedSource = DownloadSource.Video; UpdateSelection(true);
+    }
+    private void Spotify_Checked(object sender, RoutedEventArgs e)
+    {
+        if (updatingButtons) return;
+        SelectedSource = DownloadSource.Spotify; UpdateSelection(true);
+    }
+    private void Option_Unchecked(object sender, RoutedEventArgs e)
+    {
+        if (!updatingButtons) UpdateSelection(false);
+    }
     private void Track_SizeChanged(object sender, SizeChangedEventArgs e) => UpdateSelection(false);
     private void Track_KeyDown(object sender, KeyRoutedEventArgs e)
     {

@@ -28,8 +28,10 @@
                 </StackPanel>
             </Button>
         </Grid>
-        <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
-            <Border MaxWidth="800" Padding="32" HorizontalAlignment="Stretch">
+        <ScrollViewer x:Name="MainScroll" Grid.Row="1" HorizontalScrollBarVisibility="Disabled"
+            HorizontalScrollMode="Disabled" HorizontalContentAlignment="Stretch" VerticalScrollBarVisibility="Auto">
+            <Border x:Name="ContentFrame" MaxWidth="800" Width="{Binding ViewportWidth, ElementName=MainScroll}"
+                Padding="32" HorizontalAlignment="Center">
                 <StackPanel Spacing="26">
                     <Grid Margin="0,4,0,0">
                         <Grid.ColumnDefinitions><ColumnDefinition Width="68" /><ColumnDefinition /></Grid.ColumnDefinitions>
@@ -55,7 +57,7 @@
                                     <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
                                     <TextBlock Text="{Binding LinkLabel}" FontSize="14" FontWeight="SemiBold"
                                         Foreground="{ThemeResource CaeserForeground}" VerticalAlignment="Center" />
-                                    <Button Grid.Column="1" Style="{StaticResource CaeserLink}" Click="Paste_Click">
+                                    <Button x:Name="PasteButton" Grid.Column="1" Style="{StaticResource CaeserLink}" Click="Paste_Click">
                                         <StackPanel Orientation="Horizontal" Spacing="8">
                                             <FontIcon Glyph="&#xE77F;" FontSize="15" AutomationProperties.AccessibilityView="Raw" />
                                             <TextBlock Text="Colar" />
@@ -115,7 +117,7 @@
                                         TextTrimming="CharacterEllipsis" Foreground="{ThemeResource CaeserForeground}"
                                         ToolTipService.ToolTip="{Binding Destination}" />
                                 </StackPanel>
-                                <Button Grid.Column="2" Content="Alterar…" MinHeight="30" CornerRadius="8" Click="Folder_Click" />
+                                <Button x:Name="FolderButton" Grid.Column="2" Content="Alterar…" MinHeight="30" CornerRadius="8" Click="Folder_Click" />
                             </Grid>
                         </StackPanel>
                         </ContentControl>

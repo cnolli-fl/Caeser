@@ -14,12 +14,17 @@ $lockFile = Join-Path $windowsRoot 'Packaging\tools.lock.json'
 $lock = Get-Content -Raw $lockFile | ConvertFrom-Json
 foreach ($entry in $lock.PSObject.Properties) {
     $item = $entry.Value
+    if ($item.sha256 -notmatch '^[0-9a-f]{64}$') { throw "SHA-256 malformado: $($item.file)" }
     $target = Join-Path $cache $item.file
     if (-not (Test-Path $target)) {
-        Invoke-WebRequest -Uri $item.url -OutFile $target -MaximumRetryCount 3 -RetryIntervalSec 2
+        # Preserve the exact archive bytes, even if a mirror sends Content-Encoding: gzip.
+        # Invoke-WebRequest transparently decompresses that response and changes its hash.
+        & curl.exe --fail --location --retry 3 --retry-all-errors --max-time 180 --output $target -- $item.url
+        if ($LASTEXITCODE -ne 0) { throw "Falha ao baixar $($item.file)." }
     }
-    if ((Get-FileHash -Algorithm SHA256 $target).Hash.ToLowerInvariant() -ne $item.sha256) {
-        throw "Checksum inválido: $($item.file). Não executar nem empacotar este arquivo."
+    $actualHash = (Get-FileHash -Algorithm SHA256 $target).Hash.ToLowerInvariant()
+    if ($actualHash -ne $item.sha256) {
+        throw "Checksum inválido: $($item.file). Esperado $($item.sha256); recebido $actualHash ($((Get-Item $target).Length) bytes). Não executar nem empacotar este arquivo."
     }
 }
 Copy-Item (Join-Path $cache 'yt-dlp.exe') $tools -Force

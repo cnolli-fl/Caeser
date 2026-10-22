@@ -30,16 +30,27 @@
                                 </VisualStateGroup>
                                 <VisualStateGroup x:Name="CheckStates">
                                     <VisualState x:Name="Unchecked">
-                                        <VisualState.Setters><Setter Target="Label.Foreground" Value="{ThemeResource CaeserForeground}" /></VisualState.Setters>
+                                        <VisualState.Setters>
+                                            <Setter Target="Label.Foreground" Value="{ThemeResource CaeserForeground}" />
+                                            <Setter Target="Mark.Foreground" Value="{ThemeResource CaeserForeground}" />
+                                        </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Checked">
-                                        <VisualState.Setters><Setter Target="Label.Foreground" Value="{ThemeResource CaeserOnAccent}" /></VisualState.Setters>
+                                        <VisualState.Setters>
+                                            <Setter Target="Label.Foreground" Value="{ThemeResource CaeserOnAccent}" />
+                                            <Setter Target="Mark.Foreground" Value="{ThemeResource CaeserOnAccent}" />
+                                        </VisualState.Setters>
                                     </VisualState>
                                     <VisualState x:Name="Indeterminate" />
                                 </VisualStateGroup>
                             </VisualStateManager.VisualStateGroups>
-                            <ContentPresenter x:Name="Label" Content="{TemplateBinding Content}"
-                                HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                <BitmapIcon x:Name="Mark" UriSource="{Binding Tag, RelativeSource={RelativeSource TemplatedParent}}"
+                                    Width="36" Height="24" ShowAsMonochrome="True" Foreground="{ThemeResource CaeserForeground}"
+                                    AutomationProperties.AccessibilityView="Raw" />
+                                <TextBlock x:Name="Label" Text="{Binding Content, RelativeSource={RelativeSource TemplatedParent}}"
+                                    FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center" Foreground="{ThemeResource CaeserForeground}" />
+                            </StackPanel>
                         </Border>
                     </ControlTemplate>
                 </Setter.Value>
@@ -58,22 +69,12 @@
                 <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition /></Grid.ColumnDefinitions>
                 <ToggleButton x:Name="YouTubeButton" Style="{StaticResource SourceButton}"
                     AutomationProperties.Name="YouTube" AutomationProperties.AutomationId="source-youtube"
-                    ToolTipService.ToolTip="Baixar de um link de vídeo" Click="YouTube_Click">
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <BitmapIcon UriSource="ms-appx:///Assets/YouTubeMark.png" Width="36" Height="24" ShowAsMonochrome="True"
-                            AutomationProperties.AccessibilityView="Raw" />
-                        <TextBlock Text="YouTube" VerticalAlignment="Center" />
-                    </StackPanel>
-                </ToggleButton>
+                    ToolTipService.ToolTip="Baixar de um link de vídeo" Checked="YouTube_Checked" Unchecked="Option_Unchecked"
+                    Content="YouTube" Tag="ms-appx:///Assets/YouTubeMark.png" />
                 <ToggleButton x:Name="SpotifyButton" Grid.Column="1" Style="{StaticResource SourceButton}"
                     AutomationProperties.Name="Spotify" AutomationProperties.AutomationId="source-spotify"
-                    ToolTipService.ToolTip="Buscar músicas do Spotify no YouTube" Click="Spotify_Click">
-                    <StackPanel Orientation="Horizontal" Spacing="10">
-                        <BitmapIcon UriSource="ms-appx:///Assets/SpotifyMark.png" Width="36" Height="24" ShowAsMonochrome="True"
-                            AutomationProperties.AccessibilityView="Raw" />
-                        <TextBlock Text="Spotify" VerticalAlignment="Center" />
-                    </StackPanel>
-                </ToggleButton>
+                    ToolTipService.ToolTip="Buscar músicas do Spotify no YouTube" Checked="Spotify_Checked" Unchecked="Option_Unchecked"
+                    Content="Spotify" Tag="ms-appx:///Assets/SpotifyMark.png" />
             </Grid>
         </Grid>
     </Border>
