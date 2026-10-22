@@ -24,10 +24,18 @@ public sealed partial class SourceSelector : UserControl
     private Point? pressed;
     private double initial;
     private bool dragging;
+    private bool transferringCapture;
     private bool updatingButtons;
     private readonly UISettings settings = new();
     internal bool? MotionEnabledOverride { get; set; }
     internal int PointerPressCount { get; private set; }
+    internal string PointerDiagnostics { get; private set; } = "";
+    private void TracePointer(string value)
+    {
+        if (MotionEnabledOverride == null) return;
+        PointerDiagnostics += value + "; ";
+        if (PointerDiagnostics.Length > 2000) PointerDiagnostics = PointerDiagnostics[^2000..];
+    }
 
     public SourceSelector()
     {
@@ -35,10 +43,18 @@ public sealed partial class SourceSelector : UserControl
         AddHandler(PointerPressedEvent, new PointerEventHandler(OnPressed), true);
         AddHandler(PointerMovedEvent, new PointerEventHandler(OnMoved), true);
         AddHandler(PointerReleasedEvent, new PointerEventHandler(OnReleased), true);
-        PointerCanceled += (_, _) => ResetDrag();
+        PointerCanceled += (_, e) =>
+        {
+            TracePointer($"canceled {e.OriginalSource?.GetType().Name}, transfer={transferringCapture}");
+            if (!transferringCapture && ReferenceEquals(e.OriginalSource, this)) ResetDrag();
+        };
         // Taking capture away from a child also bubbles this event. Only losing
         // our own capture cancels a drag; otherwise the first move resets it.
-        PointerCaptureLost += (_, e) => { if (ReferenceEquals(e.OriginalSource, this)) ResetDrag(); };
+        PointerCaptureLost += (_, e) =>
+        {
+            TracePointer($"capture lost {e.OriginalSource?.GetType().Name}, transfer={transferringCapture}");
+            if (!transferringCapture && ReferenceEquals(e.OriginalSource, this)) ResetDrag();
+        };
         Loaded += (_, _) => UpdateSelection(false);
         Unloaded += (_, _) => StopAnimation();
         IsEnabledChanged += (_, _) => { if (!IsEnabled) ResetDrag(); };
@@ -127,6 +143,7 @@ public sealed partial class SourceSelector : UserControl
         PointerPressCount++;
         if (!IsEnabled || !e.GetCurrentPoint(this).Properties.IsLeftButtonPressed) return;
         pressed = e.GetCurrentPoint(this).Position;
+        TracePointer($"press {pressed}");
         initial = SelectedSource == DownloadSource.Video ? 0 : Inner.ActualWidth / 2;
     }
     private void OnMoved(object sender, PointerRoutedEventArgs e)
@@ -137,7 +154,10 @@ public sealed partial class SourceSelector : UserControl
         if (!dragging)
         {
             if (Math.Abs(dx) < 5 || Math.Abs(dx) < Math.Abs(point.Y - pressed.Value.Y)) return;
-            dragging = CapturePointer(e.Pointer);
+            transferringCapture = true;
+            try { dragging = CapturePointer(e.Pointer); }
+            finally { transferringCapture = false; }
+            TracePointer($"capture={dragging}, pressed={pressed}");
         }
         if (!dragging) return;
         MoveTo(Math.Clamp(initial + dx, 0, Inner.ActualWidth / 2), false);
@@ -147,6 +167,7 @@ public sealed partial class SourceSelector : UserControl
     {
         if (!dragging) { pressed = null; return; }
         var target = ThumbTranslation.X >= Inner.ActualWidth / 4 ? DownloadSource.Spotify : DownloadSource.Video;
+        TracePointer($"release x={ThumbTranslation.X}, target={target}");
         dragging = false; pressed = null;
         ReleasePointerCapture(e.Pointer);
         Select(target); e.Handled = true;
@@ -154,6 +175,7 @@ public sealed partial class SourceSelector : UserControl
     private void ResetDrag()
     {
         if (pressed == null && !dragging) return;
+        TracePointer("reset");
         pressed = null; dragging = false; UpdateSelection(true);
     }
 }

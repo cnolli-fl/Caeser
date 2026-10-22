@@ -159,7 +159,7 @@ internal static class UiSmokeTest
         finally { SendInput(1, up, Marshal.SizeOf<MouseInput>()); }
         await Task.Delay(350);
         if (model.Source != (backToVideo ? DownloadSource.Video : DownloadSource.Spotify))
-            throw new InvalidOperationException("Arrastar o indicador não trocou a origem.");
+            throw new InvalidOperationException($"Arrastar o indicador não trocou a origem (volta={backToVideo}; origem={model.Source}). {selector.PointerDiagnostics}");
     }
     private static async Task PressKeyAsync(ushort key)
     {
