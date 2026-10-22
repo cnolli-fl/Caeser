@@ -18,6 +18,8 @@ Interface e instalador usam português brasileiro. Satélites de tradução não
 
 Os fontes das ferramentas ficam no download separado Caeser-VERSAO-Windows-x64-Fontes-Terceiros.zip, correspondente ao pacote, em vez de ocuparem espaço na instalação. Os avisos de licença continuam em Documentacao. Não é necessário baixar os fontes para usar o Caeser.
 
+Ao atualizar uma instalação antiga, o instalador usa o desinstalador anterior para remover somente os arquivos registrados por ele. Não apaga a pasta inteira nem os downloads e preferências. O teste automatizado verifica a atualização da versão publicada e a preservação de um arquivo extra do usuário.
+
 Caso haja uma falha inesperada, o último relatório fica em `%LOCALAPPDATA%\Caeser\Logs\ultima-falha.txt`. Nenhum relatório é enviado automaticamente.
 
 ## Plataforma
