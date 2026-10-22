@@ -35,6 +35,7 @@ public sealed partial class DownloadViewModel
     public string UpdateMessage { get; private set; } = "";
     private DateTimeOffset lastUpdateCheck = DateTimeOffset.MinValue;
     private bool checkingUpdates;
+    private static readonly Version CurrentVersion = typeof(DownloadViewModel).Assembly.GetName().Version ?? new Version(2, 0, 0);
     private DispatcherQueueTimer? updatesTimer;
     private void InitializeLibrary()
     {
@@ -172,8 +173,8 @@ public sealed partial class DownloadViewModel
         checkingUpdates = true;
         try
         {
-            Update = await ReleaseUpdates.CheckAsync(new Version(2, 0, 0));
-            UpdateMessage = Update == null ? "Você está com a versão mais recente do Caeser para Windows (2.0.0)." : $"Caeser {Update.Version} está disponível.";
+            Update = await ReleaseUpdates.CheckAsync(CurrentVersion);
+            UpdateMessage = Update == null ? $"Você está com a versão mais recente do Caeser para Windows ({CurrentVersion.ToString(3)})." : $"Caeser {Update.Version} está disponível.";
         }
         catch (Exception) { UpdateMessage = "Não consegui verificar agora. Confira sua conexão e tente novamente."; }
         finally { lastUpdateCheck = DateTimeOffset.Now; checkingUpdates = false; Changed(); }
