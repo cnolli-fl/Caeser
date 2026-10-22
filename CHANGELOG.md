@@ -1,5 +1,12 @@
 # Mudanças
 
+## Windows 2.0.0 — 2026-10-22
+
+- Funções aprovadas no Mac: prévia contextual, correspondência Spotify → YouTube preservada no download, fila serial persistente, histórico, preferências por origem e aviso de novas versões Windows.
+- Colagem de vários links, organização dos pendentes, cancelamento individual, pausa entre downloads e recuperação ao reabrir.
+- Mantidos o design clean, as logos, a qualidade MP3 máxima e o pacote organizado para Windows 10 22H2/11 x64.
+- Testes de lógica/processos, renderização claro/escuro e novos estados de interface, ferramentas reais e instalação/desinstalação no runner Windows.
+
 ## macOS 3.0.0 — 2026-10-22
 
 - Prévia de vídeos e músicas, incluindo a correspondência Spotify → YouTube usada no download.
