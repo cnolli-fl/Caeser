@@ -26,6 +26,7 @@ public sealed partial class SourceSelector : UserControl
     private bool dragging;
     private bool updatingButtons;
     private readonly UISettings settings = new();
+    internal bool? MotionEnabledOverride { get; set; }
 
     public SourceSelector()
     {
@@ -59,7 +60,7 @@ public sealed partial class SourceSelector : UserControl
         var current = ThumbTranslation.X;
         animation?.Stop(); animation = null;
         ThumbTranslation.X = current;
-        if (!animate || !settings.AnimationsEnabled || !IsLoaded)
+        if (!animate || !(MotionEnabledOverride ?? settings.AnimationsEnabled) || !IsLoaded)
         { ThumbTranslation.X = target; return; }
         var next = new Storyboard();
         var move = new DoubleAnimation

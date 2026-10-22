@@ -24,6 +24,9 @@ internal static class UiSmokeTest
     {
         var directory = Path.GetFullPath(outputDirectory);
         Directory.CreateDirectory(directory);
+        // CI desktops often disable animation. Exercise the same animated path
+        // as a normal Windows desktop instead of silently skipping it.
+        selector.MotionEnabledOverride = true;
         foreach (var theme in new[] { ElementTheme.Dark, ElementTheme.Light })
         {
             root.RequestedTheme = theme;

@@ -1,7 +1,7 @@
 name: Caeser Windows
 on:
   push:
-    branches: [main, codex/windows-port]
+    branches: [main, 'codex/windows-*']
     paths:
       - 'Windows/**'
       - '.github/workflows/caeser-windows.yml'
