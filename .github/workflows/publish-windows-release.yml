@@ -1,0 +1,107 @@
+name: Publicar pacote Windows verificado
+on:
+  workflow_dispatch:
+    inputs:
+      run_id:
+        description: Execução aprovada do workflow Caeser Windows
+        required: true
+      version:
+        description: Versão do rascunho Windows existente (ex. 2.0.1)
+        required: true
+permissions:
+  contents: write
+  actions: read
+concurrency:
+  group: publish-windows-${{ inputs.version }}
+  cancel-in-progress: false
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      GH_TOKEN: ${{ github.token }}
+      RELEASE_VERSION: ${{ inputs.version }}
+      BUILD_RUN: ${{ inputs.run_id }}
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+        with:
+          fetch-depth: 0
+      - name: Validar execução e código da versão
+        run: |
+          python3 - <<'PY'
+          import json, os, re, subprocess
+          version, run = os.environ['RELEASE_VERSION'], os.environ['BUILD_RUN']
+          assert re.fullmatch(r'\d+\.\d+\.\d+', version), 'Versão inválida'
+          assert run.isdecimal(), 'Execução inválida'
+          repo = os.environ['GITHUB_REPOSITORY']
+          data = json.loads(subprocess.check_output(['gh', 'api', f'repos/{repo}/actions/runs/{run}']))
+          assert data['conclusion'] == 'success' and data['status'] == 'completed'
+          assert data['path'] == '.github/workflows/caeser-windows.yml'
+          assert data['head_repository']['full_name'] == repo
+          tag = f'windows-v{version}'
+          subprocess.run(['git', 'diff', '--quiet', data['head_sha'], tag, '--', 'Windows', 'Sources/VideoDownloader/Resources'], check=True)
+          props = subprocess.check_output(['git', 'show', f'{tag}:Windows/Directory.Build.props'], text=True)
+          assert f'<Version>{version}</Version>' in props
+          release = next(r for r in json.loads(subprocess.check_output(['gh', 'api', f'repos/{repo}/releases?per_page=100'])) if r['tag_name'] == tag)
+          assert release['draft'] and not release['prerelease'], 'Só publica um rascunho estável existente'
+          with open(os.environ['GITHUB_ENV'], 'a') as output:
+              output.write(f'PACKAGE_ARTIFACT=Caeser-Windows-package-{data["run_number"]}\n')
+          print(f'Código validado: {tag}, execução {run}, commit {data["head_sha"]}')
+          PY
+      - uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4
+        with:
+          name: ${{ env.PACKAGE_ARTIFACT }}
+          run-id: ${{ inputs.run_id }}
+          github-token: ${{ github.token }}
+          path: package
+      - name: Conferir arquivos e publicar o instalador
+        run: |
+          python3 - <<'PY'
+          import hashlib, json, os, pathlib, subprocess, zipfile
+          version = os.environ['RELEASE_VERSION']
+          repo = os.environ['GITHUB_REPOSITORY']
+          tag = f'windows-v{version}'
+          prefix = f'Caeser-{version}-Windows-x64'
+          directory = pathlib.Path('package')
+          names = [prefix + '-Setup.exe', prefix + '.zip', prefix + '-Fontes-Terceiros.zip']
+          manifest = {}
+          for line in (directory / (prefix + '-SHA256SUMS.txt')).read_text(encoding='utf-8-sig').splitlines():
+              digest, name = line.split(maxsplit=1)
+              manifest[name.lstrip('*')] = digest
+          assert set(manifest) == set(names), 'Manifesto inesperado'
+          for name in names:
+              path = directory / name
+              with path.open('rb') as stream:
+                  digest = hashlib.file_digest(stream, 'sha256').hexdigest()
+              assert digest == manifest[name], f'Hash diferente: {name}'
+              if name.endswith('.zip'):
+                  with zipfile.ZipFile(path) as archive:
+                      assert archive.testzip() is None, f'ZIP corrompido: {name}'
+              else:
+                  with path.open('rb') as stream:
+                      assert stream.read(2) == b'MZ', 'Instalador inválido'
+              print(f'Integridade OK: {name}: {digest}')
+          def api(endpoint, *args):
+              return json.loads(subprocess.check_output(['gh', 'api', f'repos/{repo}/{endpoint}', *args]))
+          def release(tag_name):
+              return next(r for r in api('releases?per_page=100') if r['tag_name'] == tag_name)
+          def upload(tag_name, name):
+              current = release(tag_name)
+              old = next((a for a in current['assets'] if a['name'] == name), None)
+              if old is None:
+                  subprocess.run(['gh', 'release', 'upload', tag_name, str(directory / name), '--repo', repo], check=True)
+              asset = next(a for a in api(f'releases/{current["id"]}/assets') if a['name'] == name)
+              assert asset['state'] == 'uploaded' and asset['size'] == (directory / name).stat().st_size
+              assert asset['digest'] == 'sha256:' + manifest[name], f'Hash remoto diferente: {name}'
+          upload('fontes-terceiros', names[2])
+          upload(tag, names[0])
+          draft = release(tag)
+          assert draft['draft'] and {a['name'] for a in draft['assets']} == {names[0]}
+          body = draft['body'] or ''
+          hashes = f'\n\nSHA-256 do instalador: `{manifest[names[0]]}`.\n\nSHA-256 dos fontes: `{manifest[names[2]]}`.\n'
+          if manifest[names[0]] not in body:
+              body = body.replace('</details>', hashes + '\n</details>') if '</details>' in body else body + hashes
+          result = api(f'releases/{draft["id"]}', '--method', 'PATCH', '-f', 'body=' + body, '-F', 'draft=false', '-f', 'make_latest=false')
+          assert not result['draft'] and not result['prerelease']
+          print('Release pública:', result['html_url'])
+          PY
