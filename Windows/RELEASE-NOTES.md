@@ -2,6 +2,12 @@
 
 Instalador online pequeno e aplicativo mais enxuto, com o mesmo design, prévia, fila, histórico e qualidade dos downloads.
 
+Comparado à 2.1.0, no mesmo ambiente de teste:
+
+- **Instalador online: 249 KB** (248.832 bytes). Baixa o pacote completo depois.
+- **Pacote completo: 166,3 → 136,0 MB**, redução de **18,2%** no download.
+- **Instalação: 425,9 → 367,5 MB**, redução de **13,7%**; arquivos medidos de **3.283 → 328**, cerca de **90% menos**.
+
 ## Qual arquivo baixar?
 
 - **[Online.exe — recomendado](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.0/Caeser-2.2.0-Windows-x64-Online.exe):** escolha **Baixar e instalar**; ele baixa o pacote completo e inicia a instalação. Mostra progresso e permite cancelar.
@@ -32,6 +38,8 @@ O instalador online usa HTTPS e confere **tamanho e SHA-256 fixados na construç
 ## Verificação
 
 Testes no runner Windows: lógica e processos, interface nos dois temas, ferramentas com ambiente isolado, download de áudio original servido localmente e conversão MP3, ZIP extraído em caminho com espaços e acentos, instalação/atualização/desinstalação e reabertura real do aplicativo. O instalador online é testado com pacote válido, alterado, truncado, redirecionamento indevido e cancelamento pelo diálogo.
+
+[Execução aprovada e artefatos de teste](https://github.com/cnolli-fl/Caeser/actions/runs/39900546450) · [Medições e limites](https://github.com/cnolli-fl/Caeser/blob/windows-v2.2.0/Windows/VALIDACAO-2.2.0.md).
 
 A atualização da 2.1.0 é comparada em disco e preserva arquivos extras, inclusive dentro das pastas antigas. As listas de extratores e codecs são comparadas antes e depois. Esses testes não substituem a validação em PCs reais com Windows 10/11, o ciclo público de download pelo GitHub nem a confirmação manual de eventuais avisos do SmartScreen. Serviços externos podem mudar ou limitar downloads. Spotify fornece metadados; o áudio vem do YouTube.
 

@@ -2,6 +2,7 @@
 
 ## Windows 2.2.0 — 2026-10-23
 
+- Instalador online de 248.832 bytes (~249 KB). Pacote completo de 166,3 para 136,0 MB (18,2% menor); instalação de 425,9 para 367,5 MB (13,7% menor), com 3.283 → 328 arquivos medidos após atualizar da 2.1.0.
 - Instalador online nativo pequeno, com download posterior do pacote completo, progresso e cancelamento.
 - URL de versão, tamanho e SHA-256 fixados na construção; conferência antes de executar e preservação dos controles de segurança do Windows.
 - Instalador completo mantido como alternativa offline e para atualizar pelo aplicativo a partir da 2.1.0.

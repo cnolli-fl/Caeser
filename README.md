@@ -4,6 +4,8 @@ Windows **2.2.0** · macOS **3.0.1**. Cada plataforma tem sua própria numeraç�
 
 **Novo no Windows 2.2.0:** instalador online bem pequeno e aplicativo mais enxuto, mantendo o design e as funções. O instalador baixa o pacote completo durante a instalação, com progresso, cancelamento e conferência de integridade. Quem já usa a 2.1.0 pode atualizar pelo aplicativo. [Como funciona](docs/ATUALIZACAO-WINDOWS-NO-APP.md).
 
+Download inicial de **249 KB**. Pacote completo de **136,0 MB** (antes 166,3 MB); instalação **13,7% menor**, com cerca de **90% menos arquivos** na comparação com a 2.1.0. [Medições e testes](Windows/VALIDACAO-2.2.0.md).
+
 **Pequena atualização visual:** histórico mais proporcional, com linhas compactas, ações alinhadas e textos longos contidos. Filas, preferências e downloads são preservados.
 
 Novidades no Mac **3.0.0** e no Windows **2.0.0**: prévia, fila de downloads, histórico, preferências por origem e aviso de atualização. O design continua clean, com a mesma identidade visual. Veja a validação do [Mac](docs/VALIDACAO-2.2.0.md) e do [Windows](Windows/VALIDACAO-2.0.0.md).

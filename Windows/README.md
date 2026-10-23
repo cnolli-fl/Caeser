@@ -12,6 +12,8 @@ Instalador online nativo pequeno: escolha **Baixar e instalar**, acompanhe o pro
 
 O pacote também ficou mais enxuto: yt-dlp e spotDL compartilham um Python, FFmpeg e FFprobe compartilham suas DLLs e os avisos legais completos ficam em `Documentacao/Ferramentas.zip`. Sem retirar extratores, codecs, qualidade MP3 ou funções do Caeser. A interface do aplicativo permanece igual.
 
+O online tem **249 KB**; o completo passou de **166,3 para 136,0 MB** (18,2% menor). Na atualização medida, a instalação passou de **425,9 para 367,5 MB**, com **3.283 → 328 arquivos**. [Testes, medições e limites da 2.2.0](VALIDACAO-2.2.0.md).
+
 ### Novidade na 2.1.0
 
 Atualizações compatíveis podem ser baixadas no aplicativo, com progresso, cancelamento e conferência de integridade. Você escolhe **Instalar e reiniciar**; a fila é salva e volta pausada. Instale a 2.1.0 manualmente uma vez para obter esse recurso nas versões seguintes. Cópias portáteis mantêm o caminho manual. [Fluxo, segurança e limites](../docs/ATUALIZACAO-WINDOWS-NO-APP.md).
