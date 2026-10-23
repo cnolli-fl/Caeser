@@ -23,7 +23,11 @@ foreach ($item in Get-ChildItem $ApplicationDirectory) {
 # Sources are distributed alongside the binaries, not installed as runtime data.
 # Keep complete licenses accessible in the app's documentation folder.
 Get-ChildItem $ToolsDirectory -File | Copy-Item -Destination $payloadTools -Force
-Copy-Item (Join-Path $ToolsDirectory 'Licenses') (Join-Path $documentation 'Ferramentas') -Recurse -Force
+[IO.Compression.ZipFile]::CreateFromDirectory((Join-Path $ToolsDirectory 'Licenses'), (Join-Path $documentation 'Ferramentas.zip'), [IO.Compression.CompressionLevel]::Optimal, $false)
+$licenseArchive = [IO.Compression.ZipFile]::OpenRead((Join-Path $documentation 'Ferramentas.zip'))
+try {
+    if (@($licenseArchive.Entries | Where-Object { $_.Name }).Count -ne @(Get-ChildItem (Join-Path $ToolsDirectory 'Licenses') -Recurse -File -Force).Count) { throw 'O arquivo de licenças não preservou todos os avisos.' }
+} finally { $licenseArchive.Dispose() }
 Copy-Item (Join-Path $ApplicationDirectory 'Licenses') (Join-Path $documentation 'Runtime') -Recurse -Force
 Copy-Item (Join-Path $repoRoot 'LICENSE') (Join-Path $documentation 'LICENSE.txt')
 Copy-Item (Join-Path $repoRoot 'BRAND-ASSETS.md') $documentation

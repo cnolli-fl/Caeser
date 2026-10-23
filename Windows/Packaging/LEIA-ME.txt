@@ -3,7 +3,8 @@ CAESER - WINDOWS
 Abra Caeser.exe. Não precisa instalar Python, FFmpeg, .NET ou outras ferramentas.
 
 Aplicativo: arquivos internos necessários. Não mova nem apague arquivos dessa pasta.
-Documentacao: licenças e avisos das ferramentas incluídas, nos idiomas originais.
+Documentacao: licenças e avisos completos; abra Ferramentas.zip no Explorador.
+Os textos preservam seus idiomas originais.
 
 Mantenha estas pastas junto de Caeser.exe. Extraia o ZIP inteiro antes de abrir.
 Se preferir, use o instalador para ter um atalho no menu Iniciar.
