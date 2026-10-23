@@ -1,8 +1,8 @@
 # Caeser
 
-Windows **2.1.0** · macOS **3.0.1**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
+Windows **2.2.0** · macOS **3.0.1**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
 
-**Novo no Windows 2.1.0:** baixe a atualização no aplicativo e escolha **Instalar e reiniciar**, com conferência de integridade e preservação dos dados. Instale a 2.1.0 manualmente uma vez para obter o recurso; ele será usado nas próximas versões compatíveis. [Como funciona](docs/ATUALIZACAO-WINDOWS-NO-APP.md).
+**Novo no Windows 2.2.0:** instalador online bem pequeno e aplicativo mais enxuto, mantendo o design e as funções. O instalador baixa o pacote completo durante a instalação, com progresso, cancelamento e conferência de integridade. Quem já usa a 2.1.0 pode atualizar pelo aplicativo. [Como funciona](docs/ATUALIZACAO-WINDOWS-NO-APP.md).
 
 **Pequena atualização visual:** histórico mais proporcional, com linhas compactas, ações alinhadas e textos longos contidos. Filas, preferências e downloads são preservados.
 
@@ -14,9 +14,11 @@ O Caeser foi criado para facilitar o caminho entre o link e o arquivo salvo: col
 
 [**Baixar para Mac — 3.0.1 (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v3.0.1/Caeser-3.0.1-macOS-AppleSilicon.dmg)
 
-[**Baixar para Windows — 2.1.0 (.exe)**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.1.0/Caeser-2.1.0-Windows-x64-Setup.exe)
+[**Baixar para Windows — 2.2.0 (instalador online)**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.0/Caeser-2.2.0-Windows-x64-Online.exe)
 
-**Para usar o app, baixe somente o instalador do seu sistema.** As ferramentas já estão incluídas. O README é esta página; não é preciso baixá-lo. Os arquivos **Source code (.zip / .tar.gz)** são gerados automaticamente pelo GitHub e servem para desenvolver o projeto.
+[Instalador completo do Windows, para instalar sem internet](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.0/Caeser-2.2.0-Windows-x64-Setup.exe).
+
+**Para usar o app, escolha somente um instalador do seu sistema.** No Windows, o online baixa o aplicativo e as ferramentas depois; o completo já contém tudo. O README é esta página; não é preciso baixá-lo. Os arquivos **Source code (.zip / .tar.gz)** são gerados automaticamente pelo GitHub e servem para desenvolver o projeto.
 
 **Mac:** macOS 26 ou mais recente e chip Apple (M1 ou posterior). **Windows:** Windows 10 22H2 ou Windows 11, x64 (Intel/AMD). As ferramentas já acompanham os dois pacotes; não é preciso instalar Homebrew, Python, FFmpeg ou yt-dlp separadamente.
 
@@ -42,19 +44,19 @@ Por trás da interface, o Caeser usa yt-dlp, FFmpeg e, para links do Spotify, sp
 
 ## Aplicativo completo
 
-### Windows 2.1.0
+### Windows 2.2.0
 
 Prévia de vídeos e músicas, correspondência Spotify → YouTube usada no download, fila persistente e serial, histórico e preferências por origem. O botão de atualização oferece novas versões Windows estáveis sem confundir com as releases Mac. Na instalação registrada, versões compatíveis podem ser baixadas e verificadas no app; você escolhe quando instalar e reiniciar. Cópias portáteis e releases sem dados de integridade continuam com instalação manual.
 
-Baixe o instalador .exe e siga as etapas; a instalação é por usuário e não pede acesso de administrador. O instalador é o único arquivo necessário para usar o Caeser.
+Baixe o instalador online .exe e escolha **Baixar e instalar**. Ele mostra o progresso, permite cancelar e confere o tamanho e SHA-256 do pacote antes de executá-lo. O pacote completo ainda é transferido pela internet; o arquivo inicial pequeno não elimina esse download. Se preferir, use o instalador completo. A instalação é por usuário e não pede acesso de administrador.
 
-O pacote inclui yt-dlp, FFmpeg/FFprobe, Deno, spotDL e os runtimes necessários. A interface mantém a identidade visual do Mac com controles, seleção de pasta e atalhos próprios do Windows. O código fica separado em [Windows/](Windows/), com a solução para Visual Studio, scripts de construção e testes.
+O pacote inclui yt-dlp, FFmpeg/FFprobe, Deno, spotDL e os runtimes necessários. Na 2.2.0, yt-dlp e spotDL compartilham uma única cópia do Python; FFmpeg e FFprobe compartilham suas bibliotecas, e os avisos legais completos ficam agrupados em ZIP. A interface mantém a identidade visual do Mac com controles, seleção de pasta e atalhos próprios do Windows. O código fica separado em [Windows/](Windows/), com a solução para Visual Studio, scripts de construção e testes.
 
 A 1.1.2 corrige o fechamento ao clicar em Spotify e estabiliza o seletor por clique, arraste e teclado. O instalador ficou cerca de **57% menor** (382 → 166 MB) e o ZIP, **51% menor** (443 → 215 MB), com a pasta principal organizada em Caeser.exe, Aplicativo, Documentacao e LEIA-ME.txt. Interface e instalador em português; apenas o pequeno fallback interno en-US obrigatório do WinUI e as licenças originais são preservados.
 
 Os [fontes das ferramentas de terceiros](https://github.com/cnolli-fl/Caeser/releases/tag/fontes-terceiros) ficam na área para desenvolvedores e redistribuidores. Não são necessários para usar o app. Os avisos de licença continuam no pacote. A atualização remove os arquivos registrados pela instalação antiga, preservando preferências, downloads e arquivos extras do usuário.
 
-Os testes cobrem lógica, processos, ferramentas incluídas, abertura nos dois temas, interação real com o seletor, prévia, fila e histórico, download de áudio original servido localmente com conversão MP3 e instalação, abertura e desinstalação no Windows do GitHub. Isso não substitui a validação em PCs reais com Windows 10/11 nem garante disponibilidade dos serviços externos. Os resultados e os limites estão nas [notas da release Windows](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.0.1).
+Os testes cobrem lógica, processos, ferramentas incluídas, abertura nos dois temas, interação real com o seletor, prévia, fila e histórico, download de áudio original servido localmente com conversão MP3 e instalação, abertura e desinstalação no Windows do GitHub. Isso não substitui a validação em PCs reais com Windows 10/11 nem garante disponibilidade dos serviços externos. Os resultados e os limites estão nas [notas da release Windows](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.2.0).
 
 ### Mac 3.0.1
 
@@ -68,7 +70,7 @@ A 3.0.0 acrescenta prévia, fila, histórico e aviso de atualização ao pacote 
 
 Na otimização da 2.1.1, o instalador passou de **165,3 para 105,4 MB** (36,2% menor) e o ZIP de **159,6 para 100,2 MB** (37,2% menor). Os avisos de licença foram agrupados em `Licenses.zip`. A 3.0.0 preserva essa estrutura e acrescenta as novas funções; foram verificados os testes de fila, prévia, histórico e atualização, a interface, as ferramentas e downloads locais com conversão MP3. O teste local não garante a disponibilidade futura dos serviços externos.
 
-Os ZIPs alternativos continuam sendo gerados para validação local. Os downloads públicos das releases de aplicativo oferecem apenas o instalador; hashes ficam nas notas, e fontes de terceiros na área separada. O código necessário para compilar, testar e manter o Caeser continua no repositório.
+Os ZIPs alternativos continuam sendo gerados para validação local. Os downloads públicos oferecem os instaladores: no Windows, online ou completo; no Mac, DMG. Hashes ficam nas notas, e fontes de terceiros na área separada. O código necessário para compilar, testar e manter o Caeser continua no repositório.
 
 ## Recursos
 

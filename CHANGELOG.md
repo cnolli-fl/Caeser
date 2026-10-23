@@ -1,5 +1,15 @@
 # Mudanças
 
+## Windows 2.2.0 — 2026-10-23
+
+- Instalador online nativo pequeno, com download posterior do pacote completo, progresso e cancelamento.
+- URL de versão, tamanho e SHA-256 fixados na construção; conferência antes de executar e preservação dos controles de segurança do Windows.
+- Instalador completo mantido como alternativa offline e para atualizar pelo aplicativo a partir da 2.1.0.
+- Python compartilhado entre yt-dlp e spotDL; bibliotecas compartilhadas entre FFmpeg e FFprobe, sem remover extratores ou codecs.
+- Avisos legais completos agrupados em ZIP, menos arquivos e compressão melhorada.
+- Migração dos arquivos registrados antigos preservando arquivos extras do usuário, fila, histórico e preferências.
+- Testes de integridade, cancelamento, instalação e redução real do pacote. Design e funções preservados; Mac permanece na 3.0.1, sem alterações.
+
 ## Windows 2.1.0 — 2026-10-22
 
 - Download de atualizações dentro do aplicativo, com progresso e cancelamento.

@@ -2,9 +2,15 @@
 
 Versão Windows do Caeser, separada do aplicativo SwiftUI. A versão macOS continua nos diretórios existentes, sem migração nem alteração do aplicativo publicado.
 
-**Versão Windows: 2.1.0.** Implementação nativa em C#/.NET 10 e WinUI 3. A numeração é independente da edição Mac 3.0.1.
+**Versão Windows: 2.2.0.** Implementação nativa em C#/.NET 10 e WinUI 3. A numeração é independente da edição Mac 3.0.1.
 
-[Baixar instalador](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.1.0/Caeser-2.1.0-Windows-x64-Setup.exe) · [Novidades e instruções](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.1.0)
+[Baixar instalador online](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.0/Caeser-2.2.0-Windows-x64-Online.exe) · [Instalador completo](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.0/Caeser-2.2.0-Windows-x64-Setup.exe) · [Novidades e instruções](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.2.0)
+
+### Novidade na 2.2.0
+
+Instalador online nativo pequeno: escolha **Baixar e instalar**, acompanhe o progresso e cancele se precisar. O tamanho e o SHA-256 do pacote são fixados na construção e conferidos antes de iniciar a instalação. A transferência continua sendo do pacote completo, não uma atualização diferencial; a janela informa quantos MB serão baixados. O instalador completo continua disponível para instalação offline e para o atualizador integrado da 2.1.0 em diante.
+
+O pacote também ficou mais enxuto: yt-dlp e spotDL compartilham um Python, FFmpeg e FFprobe compartilham suas DLLs e os avisos legais completos ficam em `Documentacao/Ferramentas.zip`. Sem retirar extratores, codecs, qualidade MP3 ou funções do Caeser. A interface do aplicativo permanece igual.
 
 ### Novidade na 2.1.0
 
@@ -14,7 +20,7 @@ Atualizações compatíveis podem ser baixadas no aplicativo, com progresso, can
 
 Histórico com linhas compactas, ações alinhadas, datas visíveis e textos longos contidos. Janela mais proporcional e tema herdado da janela principal. Nenhuma alteração no formato dos dados salvos.
 
-Baixe somente o instalador e siga as etapas. Ele configura o app para seu usuário, sem exigir administrador. O README é esta página; os arquivos Source code gerados pelo GitHub são para desenvolvimento.
+Escolha somente um dos dois instaladores e siga as etapas. Ele configura o app para seu usuário, sem exigir administrador. O online precisa de internet durante a instalação; o completo já contém todos os arquivos. O README é esta página; os arquivos Source code gerados pelo GitHub são para desenvolvimento.
 
 O pacote já inclui as ferramentas. Não é necessário instalar Python, .NET, FFmpeg, Deno ou yt-dlp separadamente. O instalador não tem assinatura Authenticode; o Windows pode avisar que o fornecedor é desconhecido.
 
@@ -23,7 +29,7 @@ O pacote já inclui as ferramentas. Não é necessário instalar Python, .NET, F
 - Prévia automática com capa, título, autor e duração quando disponíveis. Para música individual do Spotify, mostra a correspondência no YouTube e usa o mesmo vídeo no download.
 - Fila de até 100 pendentes, com até 50 links por entrada. Pode misturar origens, organizar/remover pendentes, cancelar o atual e pausar antes do próximo. Cada item conserva formato, qualidade e destino.
 - Histórico dos últimos 100 downloads e recuperação da fila pausada após reabrir. Limpar o histórico preserva seus arquivos.
-- Preferências por origem e aviso de novas releases estáveis de Windows. O botão oferece o instalador oficial; a instalação continua manual.
+- Preferências por origem e aviso de novas releases estáveis de Windows. A partir da 2.1.0, instalações registradas podem baixar e iniciar atualizações compatíveis dentro do aplicativo.
 - Mesmo design clean, identidade violeta, logos e componentes nativos. Os downloads MP3 mantêm a qualidade máxima de conversão.
 
 Prévias dependem dos serviços. Se uma prévia falhar, ainda é possível adicionar o link à fila. Spotify fornece os metadados; o áudio vem do YouTube. Cole vários links, um por linha, e use Ctrl+Enter para adicionar.
@@ -36,9 +42,9 @@ A distribuição otimizada mantém apenas **Caeser.exe**, **Aplicativo**, **Docu
 
 Interface e instalador usam português brasileiro. Satélites de tradução não utilizados são excluídos da saída gerada. Além de pt-BR, são preservados apenas o pequeno fallback interno en-US exigido pelo carregador nativo do WinUI, os arquivos neutros do runtime e os textos originais das licenças. O projeto referencia somente os componentes Windows App SDK que usa, sem IA/ML, Search ou Widgets.
 
-Os [fontes das ferramentas](https://github.com/cnolli-fl/Caeser/releases/download/fontes-terceiros/Caeser-1.1.2-Windows-x64-Fontes-Terceiros.zip) ficam na área Fontes de terceiros, no arquivo correspondente ao pacote, em vez de ocuparem espaço na instalação. Os avisos de licença continuam em Documentacao. Não é necessário baixar os fontes para usar o Caeser; quem redistribuir os binários deve disponibilizar também os fontes correspondentes, conforme [THIRD-PARTY.md](THIRD-PARTY.md).
+Os [fontes das ferramentas](https://github.com/cnolli-fl/Caeser/releases/download/fontes-terceiros/Caeser-2.2.0-Windows-x64-Fontes-Terceiros.zip) ficam na área Fontes de terceiros, no arquivo correspondente ao pacote, em vez de ocuparem espaço na instalação. Os avisos de licença continuam em Documentacao. Não é necessário baixar os fontes para usar o Caeser; quem redistribuir os binários deve disponibilizar também os fontes correspondentes, conforme [THIRD-PARTY.md](THIRD-PARTY.md).
 
-Ao atualizar uma instalação antiga, o instalador usa o desinstalador anterior para remover somente os arquivos registrados por ele. Não apaga a pasta inteira nem os downloads e preferências. O teste automatizado verifica a atualização da 1.1.1 publicada e a preservação de um arquivo extra do usuário, inclusive após desinstalar a nova versão.
+Ao migrar uma instalação com arquivos antigos ou avisos legais soltos, o instalador usa o desinstalador registrado dessa mesma pasta para remover somente os arquivos conhecidos. Não apaga a pasta inteira nem os downloads e preferências. Arquivos extras do usuário permanecem, inclusive dentro das pastas antigas. Atualizações posteriores usam substituição normal dos arquivos.
 
 Caso haja uma falha inesperada, o último relatório fica em `%LOCALAPPDATA%\Caeser\Logs\ultima-falha.txt`. Nenhum relatório é enviado automaticamente.
 
@@ -87,6 +93,7 @@ A identidade e o layout devem ser os mesmos. A barra de título, os botões de j
 - Caeser.Core.Tests: testes automatizados, sem depender da interface.
 - Caeser.ProcessProbe: programa auxiliar usado pelos testes de stdout/stderr e cancelamento.
 - Caeser.Launcher: entrada nativa pequena que abre a interface em Aplicativo, sem exigir outro runtime.
+- Caeser.Bootstrap: instalador online nativo em C++, sem exigir .NET ou Python para baixar o pacote.
 - Scripts e Packaging: ferramentas, fontes verificadas, construção e instalador.
 - DESIGN.md: referência de fidelidade visual e critérios de acessibilidade.
 
@@ -109,11 +116,11 @@ Etapas:
 2. Compilar a interface autocontida e abrir a janela para os testes e capturas reais.
 3. Construir FFmpeg/LAME a partir dos fontes fixados e spotDL com o extrator atualizado.
 4. Verificar todas as ferramentas em um ambiente sem Python/FFmpeg/Deno externos e baixar um áudio original de teste, servido somente em loopback, convertendo-o para MP3 com a mesma lógica do aplicativo.
-5. Conferir a versão do aplicativo e gerar ZIP portátil, instalador por usuário, arquivo separado de fontes de terceiros e checksums SHA-256.
+5. Conferir a versão do aplicativo e gerar ZIP portátil, instalador completo por usuário, instalador online com URL/tamanho/hash fixados, arquivo separado de fontes de terceiros e checksums SHA-256.
 6. Extrair o ZIP em um caminho com espaços e acentos e abrir pelo launcher, validando o pacote que o usuário recebe.
 7. Instalar, conferir a versão instalada, abrir e desinstalar o app apenas na VM descartável do GitHub Actions.
 
-O instalador aprovado é publicado na release Windows windows-v1.1.2. O Mac usa sua própria release; os instaladores de versões anteriores continuam disponíveis.
+Os instaladores aprovados são publicados na release Windows windows-v2.2.0. O Mac usa sua própria release; os instaladores de versões anteriores continuam disponíveis.
 
 A 1.1.2 foi validada no [workflow 39783492094](https://github.com/cnolli-fl/Caeser/actions/runs/39783492094): 39 testes de lógica/processos e mais 1 teste real das ferramentas incluídas, além da interação com a interface, abertura dos pacotes e atualização/desinstalação. Os pacotes publicados são os mesmos arquivos testados nesse workflow; as notas, os links e o changelog foram atualizados depois, sem modificar o código funcional.
 
@@ -123,9 +130,10 @@ As capturas são inspecionadas para conferir a aparência; o teste também verif
 
 ## Releases no GitHub
 
-Cada plataforma tem sua numeração. A distribuição Windows usa a tag windows-v1.1.2; o Mac usa v2.1.1. O README principal mantém links separados. Os nomes dos instaladores públicos identificam plataforma e arquitetura:
+Cada plataforma tem sua numeração. A distribuição Windows usa a tag windows-v2.2.0; o Mac usa v3.0.1. O README principal mantém links separados. Os nomes dos instaladores públicos identificam plataforma e arquitetura:
 
 - `Caeser-X.Y.Z-macOS-AppleSilicon.dmg`
+- `Caeser-X.Y.Z-Windows-x64-Online.exe`
 - `Caeser-X.Y.Z-Windows-x64-Setup.exe`
 
 Os fontes correspondentes das ferramentas e as instruções de construção ficam na área pública Fontes de terceiros, com links diretos nas notas dos instaladores. Os hashes SHA-256 ficam nas próprias notas. ZIPs alternativos e arquivos de checksums continuam sendo gerados para validação local, mas não são anexados às releases de aplicativo.
