@@ -27,6 +27,7 @@ public sealed class UpdateInstallerTests
             var path = await new UpdateInstaller(client).DownloadAsync(Update(), root, null, CancellationToken.None);
             await UpdateInstaller.VerifyAsync(path, Update());
             Assert.Equal(installer, await File.ReadAllBytesAsync(path));
+            if (OperatingSystem.IsWindows()) Assert.Contains("ZoneId=3", await File.ReadAllTextAsync(path + ":Zone.Identifier"));
             UpdateInstaller.DeleteDownload(path); Assert.False(File.Exists(path));
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
@@ -80,10 +81,11 @@ public sealed class UpdateInstallerTests
         Assert.False(UpdateInstaller.TrustedDownload(new("https://user@github.com/a")));
         Assert.True(UpdateInstaller.TrustedDownload(new("https://release-assets.githubusercontent.com/a")));
     }
-    [Fact] public void InstallerArgumentsAreNotShellCommandsAndNeverForceCloseOrReboot()
+    [Fact] public void InstallerUsesWindowsSecurityChecksAndNeverForceClosesOrReboots()
     {
         var info = UpdateInstaller.StartInfo(Path.Combine(Path.GetTempPath(), "instalador com espaço.exe"), Path.Combine(Path.GetTempPath(), "Caeser ação"));
-        Assert.False(info.UseShellExecute);
+        Assert.True(info.UseShellExecute);
+        Assert.EndsWith("instalador com espaço.exe", info.FileName);
         Assert.Contains("/CAESERUPDATE=1", info.ArgumentList); Assert.Contains("/NORESTART", info.ArgumentList);
         Assert.Contains("/NOFORCECLOSEAPPLICATIONS", info.ArgumentList); Assert.DoesNotContain("/SUPPRESSMSGBOXES", info.ArgumentList);
         Assert.Single(info.ArgumentList.Where(a => a.StartsWith("/DIR=")));
@@ -106,5 +108,30 @@ public sealed class UpdateInstallerTests
             html_url = update.Page.AbsoluteUri, assets = new[] { new { name = "Caeser-2.1.1-Windows-x64-Setup.exe", size = update.Size,
             state = "uploaded", browser_download_url = update.Download.AbsoluteUri, digest = "sha256:" + update.Sha256 } } } });
         Assert.True(ReleaseUpdates.Parse(json, new Version(2, 1, 0))?.CanInstall);
+    }
+    [Fact] public async Task RejectsWrongLengthBeforeRetainingInstaller()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Caeser-update-test-" + Guid.NewGuid());
+        try
+        {
+            using var client = Client(installer);
+            await Assert.ThrowsAsync<InvalidDataException>(() => new UpdateInstaller(client).DownloadAsync(Update() with { Size = 999 }, root, null, CancellationToken.None));
+            Assert.Empty(Directory.EnumerateFiles(root, "*", SearchOption.AllDirectories));
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+    [Fact] public void CleanupOnlyRemovesOldKnownInstallerFiles()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "Caeser-update-test-" + Guid.NewGuid());
+        var directory = Path.Combine(root, Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(directory);
+            var old = Path.Combine(directory, "Caeser-2.1.1-Setup.exe"); File.WriteAllBytes(old, installer); File.SetLastWriteTimeUtc(old, DateTime.UtcNow.AddDays(-2));
+            var sentinel = Path.Combine(directory, "arquivo-do-usuario.txt"); File.WriteAllText(sentinel, "Preservar");
+            UpdateInstaller.CleanupOldDownloads(root);
+            Assert.False(File.Exists(old)); Assert.True(File.Exists(sentinel));
+        }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
     }
 }

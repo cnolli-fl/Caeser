@@ -39,6 +39,7 @@ public sealed partial class DownloadViewModel
     private DispatcherQueueTimer? updatesTimer;
     private void InitializeLibrary()
     {
+        _ = Task.Run(() => UpdateInstaller.CleanupOldDownloads(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Caeser", "Updates")));
         dispatcher = DispatcherQueue.GetForCurrentThread();
         updatesTimer = dispatcher.CreateTimer(); updatesTimer.Interval = TimeSpan.FromHours(6);
         updatesTimer.Tick += async (_, _) => await CheckUpdatesAsync(); updatesTimer.Start();

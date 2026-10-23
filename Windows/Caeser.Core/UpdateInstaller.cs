@@ -62,6 +62,12 @@ public sealed class UpdateInstaller
                         throw new InvalidDataException("A conferência de integridade falhou. Nada foi instalado.");
                 }
                 await VerifyAsync(path, update, token).ConfigureAwait(false);
+                if (OperatingSystem.IsWindows())
+                {
+                    // Preserve Windows' Internet-origin checks for unsigned installers.
+                    // Never use Unblock-File or suppress SmartScreen/UAC.
+                    await File.WriteAllTextAsync(path + ":Zone.Identifier", "[ZoneTransfer]\r\nZoneId=3\r\nHostUrl=" + update.Download.AbsoluteUri + "\r\n", token).ConfigureAwait(false);
+                }
                 return path;
             }
             throw new InvalidDataException("Muitos redirecionamentos ao baixar a atualização.");
@@ -83,7 +89,7 @@ public sealed class UpdateInstaller
     }
     public static ProcessStartInfo StartInfo(string path, string installation)
     {
-        var result = new ProcessStartInfo(Path.GetFullPath(path)) { UseShellExecute = false, WorkingDirectory = Path.GetDirectoryName(Path.GetFullPath(path))! };
+        var result = new ProcessStartInfo(Path.GetFullPath(path)) { UseShellExecute = true, WorkingDirectory = Path.GetDirectoryName(Path.GetFullPath(path))! };
         foreach (var argument in new[] { "/SILENT", "/SP-", "/NORESTART", "/CLOSEAPPLICATIONS", "/NOFORCECLOSEAPPLICATIONS", "/NORESTARTAPPLICATIONS", "/CAESERUPDATE=1", "/DIR=" + Path.GetFullPath(installation) }) result.ArgumentList.Add(argument);
         return result;
     }
@@ -98,6 +104,24 @@ public sealed class UpdateInstaller
     public static void DeleteDownload(string path)
     {
         try { File.Delete(path); Directory.Delete(Path.GetDirectoryName(path)!); }
+        catch (IOException) { } catch (UnauthorizedAccessException) { }
+    }
+    public static void CleanupOldDownloads(string root)
+    {
+        if (!Directory.Exists(root) || File.GetAttributes(root).HasFlag(FileAttributes.ReparsePoint)) return;
+        try
+        {
+            foreach (var directory in Directory.EnumerateDirectories(root).Take(100))
+            {
+                if (!Guid.TryParseExact(Path.GetFileName(directory), "N", out _) || File.GetAttributes(directory).HasFlag(FileAttributes.ReparsePoint)) continue;
+                foreach (var file in Directory.EnumerateFiles(directory))
+                {
+                    if (!File.GetAttributes(file).HasFlag(FileAttributes.ReparsePoint) && System.Text.RegularExpressions.Regex.IsMatch(Path.GetFileName(file), @"^Caeser-\d+\.\d+\.\d+-Setup\.exe$") &&
+                        File.GetLastWriteTimeUtc(file) < DateTime.UtcNow.AddDays(-1)) File.Delete(file);
+                }
+                if (!Directory.EnumerateFileSystemEntries(directory).Any()) Directory.Delete(directory);
+            }
+        }
         catch (IOException) { } catch (UnauthorizedAccessException) { }
     }
 }

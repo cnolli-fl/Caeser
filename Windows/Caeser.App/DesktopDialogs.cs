@@ -64,22 +64,18 @@ public sealed partial class MainWindow
     private async Task DownloadUpdateAsync(ReleaseUpdate update, string installation)
     {
         using var cancellation = new CancellationTokenSource(); updateCancellation = cancellation;
-        var message = new TextBlock { Text = "Baixando a atualização…", TextWrapping = TextWrapping.Wrap, MaxWidth = 400 };
-        var progress = new ProgressBar { Minimum = 0, Maximum = 100, Value = 0 };
-        AutomationProperties.SetName(progress, "Download da atualização");
-        var body = new StackPanel { Spacing = 16, MinWidth = 300 }; body.Children.Add(message); body.Children.Add(progress);
-        var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, RequestedTheme = Root.ActualTheme, Title = $"Caeser {update.Version}",
-            Content = body, CloseButtonText = "Cancelar", PrimaryButtonText = "Instalar e reiniciar", IsPrimaryButtonEnabled = false };
-        string? path = null; bool launched = false, dismissed = false;
+        var dialog = CreateUpdateDownloadDialog(update.Version, out var message, out var progress);
+        string? path = null; bool launched = false, dismissed = false, ready = false;
         var shown = dialog.ShowAsync().AsTask();
         try
         {
             var transfer = new UpdateInstaller().DownloadAsync(update, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Caeser", "Updates"),
-                new Progress<double>(value => { if (!dismissed) { progress.Value = value; message.Text = value >= 100 ? "Conferindo integridade…" : $"Baixando atualização · {value:0}%"; } }), cancellation.Token);
+                new Progress<double>(value => { if (!dismissed && !ready) { progress.Value = value; message.Text = value >= 100 ? "Conferindo integridade…" : $"Baixando atualização · {value:0}%"; } }), cancellation.Token);
             if (await Task.WhenAny(transfer, shown) == shown) cancellation.Cancel();
             path = await transfer;
             if (cancellation.IsCancellationRequested || shown.IsCompleted) return;
-            message.Text = "Atualização pronta. Ao instalar, o Caeser será fechado e aberto novamente. Sua fila será preservada e voltará pausada.";
+            ready = true;
+            message.Text = UpdateReadyMessage;
             progress.Value = 100; dialog.IsPrimaryButtonEnabled = true; dialog.CloseButtonText = "Depois";
             if (await shown == ContentDialogResult.Primary)
             {
@@ -108,6 +104,16 @@ public sealed partial class MainWindow
             if (!shown.IsCompleted) { dialog.Hide(); await shown; }
             if (path != null && !launched) UpdateInstaller.DeleteDownload(path);
         }
+    }
+    internal const string UpdateReadyMessage = "Atualização pronta. Ao instalar, o Caeser será fechado e aberto novamente. Sua fila será preservada e voltará pausada.";
+    internal ContentDialog CreateUpdateDownloadDialog(string version, out TextBlock message, out ProgressBar progress)
+    {
+        message = new TextBlock { Text = "Baixando a atualização…", TextWrapping = TextWrapping.Wrap, MaxWidth = 400 };
+        progress = new ProgressBar { Minimum = 0, Maximum = 100, Value = 0 };
+        AutomationProperties.SetName(progress, "Download da atualização");
+        var body = new StackPanel { Spacing = 16, MinWidth = 300 }; body.Children.Add(message); body.Children.Add(progress);
+        return new ContentDialog { XamlRoot = Root.XamlRoot, RequestedTheme = Root.ActualTheme, Title = $"Caeser {version}",
+            Content = body, CloseButtonText = "Cancelar", PrimaryButtonText = "Instalar e reiniciar", IsPrimaryButtonEnabled = false };
     }
     private async void History_Click(object sender, RoutedEventArgs e)
     {

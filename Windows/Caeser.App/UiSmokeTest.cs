@@ -119,9 +119,21 @@ internal static class UiSmokeTest
                 await CaptureAsync(dialog, directory, $"history-{(empty ? "empty" : "items")}-{theme.ToString().ToLowerInvariant()}.png");
                 dialog.Hide(); await shown;
             }
+            var updateDialog = ((MainWindow)window).CreateUpdateDownloadDialog("2.1.1 · teste de interface", out var updateMessage, out var updateProgress);
+            var updateShown = updateDialog.ShowAsync();
+            updateProgress.Value = 60; updateMessage.Text = "Baixando atualização · 60%";
+            await Task.Delay(300);
+            if (updateDialog.IsPrimaryButtonEnabled) throw new InvalidOperationException("A instalação foi oferecida antes da verificação.");
+            await CaptureAsync(updateDialog, directory, $"update-download-{theme.ToString().ToLowerInvariant()}.png");
+            updateMessage.Text = MainWindow.UpdateReadyMessage; updateProgress.Value = 100;
+            updateDialog.IsPrimaryButtonEnabled = true; updateDialog.CloseButtonText = "Depois";
+            await Task.Delay(150);
+            await CaptureAsync(updateDialog, directory, $"update-ready-{theme.ToString().ToLowerInvariant()}.png");
+            await PressKeyAsync(0x1B);
+            if (await updateShown != ContentDialogResult.None) throw new InvalidOperationException("Escape não cancelou a atualização.");
         }
         var files = Directory.GetFiles(directory, "*.png");
-        if (files.Length != 10 || files.Any(f => new FileInfo(f).Length < 2000))
+        if (files.Length != 14 || files.Any(f => new FileInfo(f).Length < 2000))
             throw new InvalidOperationException("A captura real da interface está incompleta.");
         await File.WriteAllTextAsync(Path.Combine(directory, "result.json"), JsonSerializer.Serialize(new
         {
