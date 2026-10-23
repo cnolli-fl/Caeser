@@ -12,13 +12,35 @@ on:
       - '.github/workflows/caeser-windows.yml'
       - 'Sources/VideoDownloader/Resources/**'
   workflow_dispatch:
+    inputs:
+      bootstrap_only:
+        description: Compilar apenas o instalador online com um fixture local
+        type: boolean
+        default: false
 permissions:
   contents: read
 concurrency:
-  group: caeser-windows-${{ github.ref }}
+  group: caeser-windows-${{ github.ref }}${{ inputs.bootstrap_only && '-bootstrap' || '' }}
   cancel-in-progress: true
 jobs:
+  bootstrap-compile:
+    if: inputs.bootstrap_only == true
+    runs-on: windows-2025
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Compilar instalador online sem publicar payload de teste
+        shell: pwsh
+        run: |
+          [xml]$props = Get-Content -Raw Windows/Directory.Build.props
+          $version = $props.Project.PropertyGroup.Version
+          $work = Join-Path $env:RUNNER_TEMP ('Caeser-bootstrap-compile-' + [Guid]::NewGuid().ToString('N'))
+          New-Item -ItemType Directory -Path $work | Out-Null
+          $payload = Join-Path $work "Caeser-$version-Windows-x64-Setup.exe"
+          [IO.File]::WriteAllBytes($payload, [Text.Encoding]::ASCII.GetBytes('MZ-not-an-installer-local-compile-fixture'))
+          ./Windows/Scripts/BuildBootstrap.ps1 -Installer $payload -OutputDirectory $work
   build-and-test:
+    if: inputs.bootstrap_only != true
     runs-on: windows-2025
     timeout-minutes: 25
     defaults:
@@ -119,6 +141,8 @@ jobs:
         run: ./Scripts/Package.ps1
       - name: Testar instalação, abertura e desinstalação
         run: ./Scripts/TestInstaller.ps1
+      - name: Testar instalador online e medir redução real
+        run: ./Scripts/TestBootstrap.ps1
       - name: Guardar pacotes Windows
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
@@ -135,5 +159,6 @@ jobs:
             Windows/artifacts/portable-ui/
             Windows/artifacts/installer-test.log
             Windows/artifacts/tools-versions.json
+            Windows/artifacts/bootstrap-qa/
             Windows/TestResults/
           retention-days: 7

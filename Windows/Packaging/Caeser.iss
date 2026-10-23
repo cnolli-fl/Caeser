@@ -26,6 +26,7 @@ OutputBaseFilename=Caeser-{#AppVersion}-Windows-x64-Setup
 SetupIconFile=..\Caeser.App\Assets\Caeser.ico
 UninstallDisplayIcon={app}\Caeser.exe
 Compression=lzma2/ultra64
+LZMAUseSeparateProcess=yes
 SolidCompression=yes
 WizardStyle=modern
 CloseApplications=yes

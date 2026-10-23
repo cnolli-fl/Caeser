@@ -51,6 +51,8 @@ Copy-Item (Join-Path $ToolsDirectory 'Licenses') $sourceCandidate -Recurse -Forc
 Copy-Item (Join-Path $ToolsDirectory 'tools.lock.json') $sourceCandidate
 Copy-Item (Join-Path $windowsRoot 'Scripts') $sourceCandidate -Recurse
 Copy-Item (Join-Path $windowsRoot 'Packaging') $sourceCandidate -Recurse
+Copy-Item (Join-Path $windowsRoot 'Caeser.Launcher') $sourceCandidate -Recurse
+Copy-Item (Join-Path $windowsRoot 'Caeser.Bootstrap') $sourceCandidate -Recurse
 Compress-Archive -Path (Join-Path $sourceCandidate '*') -DestinationPath (Join-Path $dist "Caeser-$version-Windows-x64-Fontes-Terceiros.zip") -CompressionLevel Optimal -Force
 # Test the actual portable ZIP, extracted under a different path with spaces and
 # Unicode, including launcher argument forwarding. Never test only build output.
@@ -69,6 +71,11 @@ $compiler = Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Inno Se
 if (-not (Test-Path $compiler)) { throw 'Instale o Inno Setup 6 no computador de desenvolvimento.' }
 & $compiler "/DSourceDirectory=$candidate" "/DOutputDirectory=$dist" "/DAppVersion=$version" (Join-Path $windowsRoot 'Packaging\Caeser.iss')
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao criar o instalador.' }
+& (Join-Path $PSScriptRoot 'BuildBootstrap.ps1') -Installer (Join-Path $dist "Caeser-$version-Windows-x64-Setup.exe") -OutputDirectory $dist
+@{ version = $version; installedBytes = [long](Get-ChildItem $candidate -Recurse -File | Measure-Object -Property Length -Sum).Sum;
+   files = @(Get-ChildItem $candidate -Recurse -File).Count;
+   tools = @(Get-ChildItem $payloadTools -File | Select-Object Name, Length) } |
+    ConvertTo-Json -Depth 5 | Set-Content -Encoding utf8 (Join-Path $dist 'package-size.json')
 $checksums = Get-ChildItem $dist -File | Where-Object { $_.Extension -in @('.zip', '.exe') } | ForEach-Object {
     "$((Get-FileHash $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant())  $($_.Name)"
 }

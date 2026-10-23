@@ -66,6 +66,9 @@ jobs:
           prefix = f'Caeser-{version}-Windows-x64'
           directory = pathlib.Path('package')
           names = [prefix + '-Setup.exe', prefix + '.zip', prefix + '-Fontes-Terceiros.zip']
+          online = tuple(map(int, version.split('.'))) >= (2, 2, 0)
+          if online:
+              names.append(prefix + '-Online.exe')
           manifest = {}
           for line in (directory / (prefix + '-SHA256SUMS.txt')).read_text(encoding='utf-8-sig').splitlines():
               digest, name = line.split(maxsplit=1)
@@ -83,6 +86,13 @@ jobs:
                   with path.open('rb') as stream:
                       assert stream.read(2) == b'MZ', 'Instalador inválido'
               print(f'Integridade OK: {name}: {digest}')
+          if online:
+              metadata = json.loads((directory / 'bootstrap-metadata.json').read_text(encoding='utf-8-sig'))
+              assert metadata['version'] == version and metadata['payload'] == names[0]
+              assert metadata['sha256'] == manifest[names[0]] and metadata['bytes'] == (directory / names[0]).stat().st_size
+              assert metadata['online'] == names[3] and metadata['onlineBytes'] == (directory / names[3]).stat().st_size < 1024 * 1024
+              report = json.loads((directory / 'optimization-report.json').read_text(encoding='utf-8-sig'))
+              assert report['succeeded'] and report['installedBytes'] < report['previousInstalledBytes']
           def api(endpoint, *args):
               return json.loads(subprocess.check_output(['gh', 'api', f'repos/{repo}/{endpoint}', *args]))
           def release(tag_name):
@@ -97,10 +107,15 @@ jobs:
               assert asset['digest'] == 'sha256:' + manifest[name], f'Hash remoto diferente: {name}'
           upload('fontes-terceiros', names[2])
           upload(tag, names[0])
+          if online:
+              upload(tag, names[3])
           draft = release(tag)
-          assert draft['draft'] and {a['name'] for a in draft['assets']} == {names[0]}
+          expected_assets = {names[0], names[3]} if online else {names[0]}
+          assert draft['draft'] and {a['name'] for a in draft['assets']} == expected_assets
           body = draft['body'] or ''
           hashes = f'\n\nSHA-256 do instalador: `{manifest[names[0]]}`.\n\nSHA-256 dos fontes: `{manifest[names[2]]}`.\n'
+          if online:
+              hashes += f'\nSHA-256 do instalador online: `{manifest[names[3]]}`.\n'
           if manifest[names[0]] not in body:
               body = body.replace('</details>', hashes + '\n</details>') if '</details>' in body else body + hashes
           result = api(f'releases/{draft["id"]}', '--method', 'PATCH', '-f', 'body=' + body, '-F', 'draft=false', '-f', 'make_latest=false')
