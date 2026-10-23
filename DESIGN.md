@@ -1,3 +1,25 @@
+# Experimento Ocean Blue — branch codex/ocean-blue
+
+Direção solicitada: azul oceano vivo, limpo, com uma lembrança discreta de Frutiger Aero. Mantém a composição e os controles nativos. A seleção recebe um gradiente vertical azul com um reflexo fino; o fundo tem iluminação ciano discreta. O ícone original da marca permanece preservado.
+
+Paleta `OceanPalette`, compartilhada com as folhas:
+
+| Papel | Claro | Escuro |
+| --- | --- | --- |
+| Fundo | #EDF6FC | #101E2B |
+| Conteúdo | #FFFFFF | #172B3C |
+| Ações | #0064B5 | #42AEFF |
+| Trilho da seleção | #E1EDF6 | #102332 |
+| Bordas | #9BBACF | #52778F |
+
+O texto permanece semântico, com as adaptações de acessibilidade do macOS. Reduzir Transparência remove a iluminação ambiente; Aumentar Contraste reforça as bordas. A seleção usa branco sobre os extremos #056EBD e #004F99 (ambos acima de 4,5:1).
+
+Ao iniciar um novo download válido, a fila é retomada automaticamente. Links inválidos e envios compostos apenas por duplicatas não retomam uma fila pausada. Abrir o aplicativo ainda não inicia downloads; pausa explícita continua deixando o item atual terminar. A ação passa a dizer “Baixar e continuar fila”, “Adicionar e baixar” ou “Baixar todos”, conforme o contexto.
+
+Validação: compilação Debug arm64 concluída; suíte com 36 testes, sendo 35 aprovados e 1 teste de rede optativo não executado. A aparência escura foi conferida no aplicativo separado Caeser Ocean. O tema claro está implementado, mas ainda não foi conferido na interface ao vivo.
+
+---
+
 # Caeser — direção visual 2.1.0
 
 Utilitário macOS em SwiftUI. A tela tem um trabalho: levar um link até um arquivo local com a origem e o andamento claros. A identidade permanece na nota musical original e em um único destaque violeta; o restante usa os componentes do Mac. A imagem neon enviada pelo usuário foi preservada tanto no ícone quanto no cabeçalho: a revisão melhora a apresentação, sem redesenhar a marca.

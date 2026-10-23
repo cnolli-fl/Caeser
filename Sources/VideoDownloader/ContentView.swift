@@ -39,7 +39,7 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity)
             }
         }
-        .tint(.purple)
+        .tint(OceanPalette.accent)
         .sheet(isPresented: $viewModel.showsHistory) { DownloadHistoryView(model: viewModel) }
         .sheet(isPresented: $updates.showsDetails) { ReleaseUpdateView(model: updates) }
         .toolbar {
@@ -83,16 +83,18 @@ struct ContentView: View {
     }
 
     private var downloadActionTitle: String {
-        if viewModel.isDownloading || viewModel.isQueuePaused || viewModel.inputLinkCount > 1 { return "Adicionar à fila" }
+        if viewModel.isQueuePaused { return "Baixar e continuar fila" }
+        if viewModel.isDownloading { return "Adicionar e baixar" }
+        if viewModel.inputLinkCount > 1 { return "Baixar todos" }
         return viewModel.effectiveFormat == .mp3 ? "Baixar MP3" : "Baixar"
     }
 
     private var background: some View {
         ZStack(alignment: .topTrailing) {
-            Color(nsColor: .windowBackgroundColor)
+            OceanPalette.canvas
             if !reduceTransparency {
                 RadialGradient(
-                    colors: [.purple.opacity(colorScheme == .dark ? 0.13 : 0.06), .clear],
+                    colors: [OceanPalette.aqua.opacity(colorScheme == .dark ? 0.16 : 0.22), .clear],
                     center: .topTrailing, startRadius: 0, endRadius: 520
                 )
                 .allowsHitTesting(false)
@@ -197,11 +199,11 @@ struct ContentView: View {
         .padding(24)
         .background {
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color(nsColor: .controlBackgroundColor).opacity(reduceTransparency ? 1 : 0.88))
+                .fill(OceanPalette.surface.opacity(reduceTransparency ? 1 : 0.96))
         }
         .overlay {
             RoundedRectangle(cornerRadius: 20)
-                .strokeBorder(Color(nsColor: .separatorColor).opacity(contrast == .increased ? 1 : 0.45),
+                .strokeBorder(OceanPalette.border.opacity(contrast == .increased ? 1 : 0.55),
                               lineWidth: contrast == .increased ? 1.5 : 0.5)
         }
         .disabled(viewModel.isInstalling)
@@ -408,8 +410,9 @@ private struct SourceSelector: View {
     @GestureState(resetTransaction: Transaction(animation: .spring(response: 0.28, dampingFraction: 0.9)))
     private var dragCenter: CGFloat? = nil
 
-    // White text on #7445C4 has a contrast ratio above 6:1 in both appearances.
-    private let selectedColor = Color(red: 116 / 255, green: 69 / 255, blue: 196 / 255)
+    // Both endpoints keep white labels above 4.5:1.
+    private let selectedColors = [Color(red: 0.02, green: 0.43, blue: 0.74),
+                                  Color(red: 0.0, green: 0.31, blue: 0.60)]
 
     var body: some View {
         GeometryReader { geometry in
@@ -419,9 +422,13 @@ private struct SourceSelector: View {
 
             ZStack {
                 RoundedRectangle(cornerRadius: 11, style: .continuous)
-                    .fill(Color(nsColor: .quaternaryLabelColor).opacity(0.35))
+                    .fill(OceanPalette.selectionTrack)
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(selectedColor)
+                    .fill(LinearGradient(colors: selectedColors, startPoint: .top, endPoint: .bottom))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(.white.opacity(contrast == .increased ? 0.65 : 0.25), lineWidth: 1)
+                    }
                     .frame(width: max(0, segmentWidth - 6), height: 34)
                     .position(x: center, y: 20)
                     .animation(reduceMotion || dragCenter != nil ? nil :
@@ -583,5 +590,25 @@ struct CaeserLogo: View {
             }
         }
         .aspectRatio(1, contentMode: .fit)
+    }
+}
+
+
+/// Ocean roles shared by the main window and its sheets; native text stays semantic.
+enum OceanPalette {
+    static let accent = adaptive(light: 0x0064B5, dark: 0x42AEFF)
+    static let canvas = adaptive(light: 0xEDF6FC, dark: 0x101E2B)
+    static let surface = adaptive(light: 0xFFFFFF, dark: 0x172B3C)
+    static let selectionTrack = adaptive(light: 0xE1EDF6, dark: 0x102332)
+    static let border = adaptive(light: 0x9BBACF, dark: 0x52778F)
+    static let aqua = Color(red: 0.16, green: 0.72, blue: 0.91)
+
+    private static func adaptive(light: UInt32, dark: UInt32) -> Color {
+        Color(nsColor: NSColor(name: nil) { appearance in
+            let hex = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light
+            return NSColor(srgbRed: Double((hex >> 16) & 255) / 255,
+                           green: Double((hex >> 8) & 255) / 255,
+                           blue: Double(hex & 255) / 255, alpha: 1)
+        })
     }
 }

@@ -261,6 +261,44 @@ struct QueueExecutionTests {
         #expect(FileManager.default.fileExists(atPath: file.path))
     }
 
+    @Test func newDownloadResumesRestoredQueueWithOneAction() async throws {
+        let h = LibraryHarness(); defer { h.cleanup() }
+        let request = DownloadRequest(url: videoLink, source: .video, quality: .best, format: .mp3,
+                                      destination: h.directory)
+        let library = DownloadLibrary(items: [QueueItem(request: request)])
+        h.defaults.set(try JSONEncoder().encode(library), forKey: "downloadLibrary.v1")
+        let model = h.model()
+        #expect(model.isQueuePaused)
+        #expect(h.processes.isEmpty)
+        model.destinationURL = h.directory
+        model.urlText = "https://youtube.com/watch?v=new-download"
+        model.startDownload()
+        #expect(!model.isQueuePaused)
+        #expect(model.isDownloading)
+        #expect(h.processes.count == 1)
+        #expect(model.queuedItems.count == 2)
+        h.processes[0].finish(0)
+        try await eventually { h.processes.count == 2 }
+        h.processes[1].finish(0)
+        try await eventually { model.queuedItems.isEmpty }
+    }
+
+    @Test func invalidOrDuplicateInputDoesNotResumePausedQueue() throws {
+        let h = LibraryHarness(); defer { h.cleanup() }
+        let request = DownloadRequest(url: videoLink, source: .video, quality: .best, format: .mp3,
+                                      destination: h.directory)
+        h.defaults.set(try JSONEncoder().encode(DownloadLibrary(items: [QueueItem(request: request)])),
+                       forKey: "downloadLibrary.v1")
+        let model = h.model()
+        model.destinationURL = h.directory; model.format = .mp3
+        model.urlText = "--invalid"; model.startDownload()
+        #expect(model.isQueuePaused)
+        model.urlText = videoLink.absoluteString; model.startDownload()
+        #expect(model.isQueuePaused)
+        #expect(h.processes.isEmpty)
+        #expect(model.queuedItems.count == 1)
+    }
+
     @Test func stalePreviewCannotReplaceTheCurrentLink() async throws {
         let suite = "Caeser-preview-tests-\(UUID())"
         let defaults = UserDefaults(suiteName: suite)!
