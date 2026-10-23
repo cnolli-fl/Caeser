@@ -93,6 +93,7 @@ jobs:
               assert metadata['online'] == names[3] and metadata['onlineBytes'] == (directory / names[3]).stat().st_size < 1024 * 1024
               report = json.loads((directory / 'optimization-report.json').read_text(encoding='utf-8-sig'))
               assert report['succeeded'] and report['installedBytes'] < report['previousInstalledBytes']
+              assert report['setupBytes'] < report['previousSetupBytes'] and report['installedFiles'] < report['previousFiles']
           def api(endpoint, *args):
               return json.loads(subprocess.check_output(['gh', 'api', f'repos/{repo}/{endpoint}', *args]))
           def release(tag_name):

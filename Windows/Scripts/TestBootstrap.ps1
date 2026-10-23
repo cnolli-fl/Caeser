@@ -80,6 +80,8 @@ try {
     $after = [long](Get-ChildItem $destination -Recurse -File | Measure-Object Length -Sum).Sum
     $filesAfter = @(Get-ChildItem $destination -Recurse -File).Count
     if ($after -ge $before) { throw 'A instalação otimizada não ficou menor que a 2.1.0.' }
+    if ($filesAfter -ge $filesBefore) { throw 'A instalação não reduziu a quantidade de arquivos.' }
+    if ((Get-Item $installer).Length -ge (Get-Item $previous).Length) { throw 'O instalador completo não ficou menor que o da 2.1.0.' }
     & (Join-Path $PSScriptRoot 'TestUi.ps1') -ApplicationDirectory $destination -OutputDirectory (Join-Path $qa 'installed-ui')
     @{ succeeded = $true; previousInstalledBytes = $before; installedBytes = $after; previousFiles = $filesBefore; installedFiles = $filesAfter; previousSetupBytes = (Get-Item $previous).Length;
        setupBytes = (Get-Item $installer).Length; onlineBytes = (Get-Item $online).Length;
