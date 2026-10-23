@@ -27,7 +27,8 @@ export PKG_CONFIG_PATH="$task_prefix/lib/pkgconfig"
         --disable-autodetect --enable-shared --disable-static --disable-doc --disable-debug --disable-ffplay \
         --enable-schannel --enable-w32threads --disable-pthreads \
         --disable-encoders --enable-encoder=libmp3lame,aac,mjpeg,png --enable-libmp3lame \
-        --extra-cflags="-I$task_prefix/include" --extra-ldflags="-L$task_prefix/lib -static-libgcc"
+        --extra-cflags="-I$task_prefix/include" --extra-ldflags="-L$task_prefix/lib -static-libgcc" \
+        --extra-libs="-Wl,-Bstatic -lwinpthread -Wl,-Bdynamic"
     make -j4
     make install
 )
@@ -36,7 +37,7 @@ cp "$task_prefix/bin/"*.dll "$task_output/"
 cp "$task_build/ffmpeg-9.0.2/COPYING.LGPLv2.1" "$task_output/Licenses/FFmpeg-LGPL-2.1.txt"
 cp "$task_build/lame-3.100/COPYING" "$task_output/Licenses/LAME-LGPL.txt"
 mkdir -p "$task_output/Licenses/MinGW-runtime"
-for task_notice in /ucrt64/share/licenses/gcc-libs/* /ucrt64/share/licenses/crt-git/* /ucrt64/share/licenses/headers-git/*; do
+for task_notice in /ucrt64/share/licenses/gcc-libs/* /ucrt64/share/licenses/crt-git/* /ucrt64/share/licenses/headers-git/* /ucrt64/share/licenses/libwinpthread/* /ucrt64/share/licenses/winpthreads/*; do
     if [ -f "$task_notice" ]; then
         task_owner="$(basename "$(dirname "$task_notice")")"
         cp "$task_notice" "$task_output/Licenses/MinGW-runtime/$task_owner-$(basename "$task_notice")"

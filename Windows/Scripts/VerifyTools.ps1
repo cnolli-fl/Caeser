@@ -38,7 +38,7 @@ function Invoke-Tool([string]$Name, [string[]]$Arguments) {
         }
         $output = $stdout.GetAwaiter().GetResult()
         $errors = $stderr.GetAwaiter().GetResult()
-        if ($process.ExitCode -ne 0) { throw "$Name falhou: $errors $output" }
+        if ($process.ExitCode -ne 0) { throw "$Name falhou (código $($process.ExitCode)): $errors $output" }
         return $output + $errors
     } finally { $process.Dispose() }
 }
