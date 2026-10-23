@@ -1,6 +1,6 @@
 # Experimento Ocean Blue — branch codex/ocean-blue
 
-Direção solicitada: azul oceano vivo, limpo, com uma lembrança discreta de Frutiger Aero. Mantém a composição e os controles nativos. A seleção recebe um gradiente vertical azul com um reflexo fino; o fundo tem iluminação ciano discreta. A nota musical mantém sua silhueta, agora com ciano no topo e azul oceano na base, sobre um fundo marinho. O novo arquivo `CaeserIconOcean.png` alimenta a logo interna e todos os tamanhos do AppIcon; o original foi guardado em `CaeserIconOriginal.png`.
+Direção solicitada: azul oceano vivo, limpo, com uma lembrança discreta de Frutiger Aero. Mantém a composição e os controles nativos. A seleção recebe um gradiente vertical azul com um reflexo fino; o fundo tem iluminação ciano discreta. A identidade experimental usa um bonequinho azul translúcido, inspirado na referência Frutiger Aero fornecida pelo usuário: cabeça esférica sem rosto, corpo arredondado e dois braços simples. `CaeserMascotOcean.png`, com fundo transparente, alimenta a logo interna e os tamanhos do AppIcon. As notas musicais anteriores permanecem guardadas como fontes históricas.
 
 Paleta `OceanPalette`, compartilhada com as folhas:
 
