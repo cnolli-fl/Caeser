@@ -38,8 +38,11 @@ Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortugue
 [Tasks]
 Name: "desktopicon"; Description: "Criar atalho na área de trabalho"; Flags: unchecked
 
+[Dirs]
+Name: "{app}"; BeforeInstall: MigratePreviousInstallation
+
 [Files]
-Source: "{#SourceDirectory}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb"; BeforeInstall: MigratePreviousInstallation
+Source: "{#SourceDirectory}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb"
 
 [Icons]
 Name: "{autoprograms}\Caeser"; Filename: "{app}\Caeser.exe"
@@ -65,7 +68,8 @@ var
 begin
   if MigrationChecked then Exit;
   MigrationChecked := True;
-  { BeforeInstall runs after Restart Manager and before any payload is copied.
+  { The Dirs callback runs after Restart Manager, before the new uninstaller
+    is staged. Running this from Files would delete its staged temporary file.
     The previous uninstaller removes its recorded files only, not user extras.
     Migrate flat installs and raw notices once; later upgrades are in-place. }
   if (FileExists(ExpandConstant('{app}\Caeser.dll')) and
