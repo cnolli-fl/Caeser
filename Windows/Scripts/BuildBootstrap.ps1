@@ -28,7 +28,8 @@ if ($LASTEXITCODE -ne 0) { throw 'Falha nos recursos do instalador online.' }
 $output = Join-Path $OutputDirectory "Caeser-$version-Windows-x64-Online.exe"
 foreach ($testing in @($false, $true)) {
     $target = if ($testing) { Join-Path $tests 'Bootstrap.Test.exe' } else { $output }
-    $extra = if ($testing) { @('/DCAESER_BOOTSTRAP_TEST') } else { @() }
+    [string[]]$extra = @()
+    if ($testing) { $extra = @('/DCAESER_BOOTSTRAP_TEST') }
     & cl.exe /nologo /O1 /MT /W4 /utf-8 /std:c++17 /EHsc /DUNICODE /D_UNICODE /D_WIN32_WINNT=0x0A00 @extra "/I$build" (Join-Path $windowsRoot 'Caeser.Bootstrap\main.cpp') $res "/Fe:$target" "/Fo:$(Join-Path $build ('bootstrap-' + $testing + '.obj'))" /link winhttp.lib bcrypt.lib comctl32.lib shell32.lib ole32.lib uuid.lib user32.lib /MANIFEST:NO /SUBSYSTEM:WINDOWS /MACHINE:X64 /DYNAMICBASE /NXCOMPAT /HIGHENTROPYVA
     if ($LASTEXITCODE -ne 0) { throw 'Falha na compilação do instalador online.' }
 }
