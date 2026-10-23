@@ -2,6 +2,32 @@
 
 Windows **2.2.1** · macOS **3.0.1**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
 
+## Baixar para Windows
+
+**Caeser 2.2.1 · Windows 10 22H2 ou Windows 11 · x64 (Intel/AMD)**
+
+[**Baixar instalador online — 249 KB**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.1/Caeser-2.2.1-Windows-x64-Online.exe)
+
+O instalador pequeno baixa o pacote completo de aproximadamente **136 MB** durante a instalação. Prefere instalar sem internet? [Baixe o instalador completo](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.1/Caeser-2.2.1-Windows-x64-Setup.exe).
+
+[Notas da versão](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.2.1) · [Todas as versões Windows](https://github.com/cnolli-fl/Caeser/releases?q=tag%3Awindows-v)
+
+## Baixar para Mac
+
+**Caeser 3.0.1 · macOS 26 ou mais recente · Apple Silicon (M1 ou posterior)**
+
+[**Baixar instalador para Mac (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v3.0.1/Caeser-3.0.1-macOS-AppleSilicon.dmg)
+
+Abra o arquivo e arraste o Caeser para Aplicativos. As ferramentas já estão incluídas; não é preciso instalar Homebrew ou Python.
+
+[Notas da versão](https://github.com/cnolli-fl/Caeser/releases/tag/v3.0.1) · [Todas as versões Mac](https://github.com/cnolli-fl/Caeser/releases?q=tag%3Av)
+
+Escolha **somente um instalador do seu sistema**. Os arquivos automáticos **Source code (.zip / .tar.gz)** são para desenvolvimento, não para instalar o app. O README é esta página e não precisa ser baixado.
+
+O Mac usa assinatura local, sem notarização da Apple; o Windows não tem assinatura Authenticode. Podem aparecer avisos de segurança na primeira abertura. Consulte as instruções de instalação para [Mac](docs/INSTALACAO.md) ou [Windows](Windows/README.md), sem desativar as proteções do sistema.
+
+## Novidades
+
 **Correções da 2.2.1:** prévia de vídeo/música com título e capa progressivos, atualização correta dos controles e botões alinhados, com estados de interação consistentes. O design e as logos continuam os mesmos.
 
 **Desde o Windows 2.2.0:** instalador online bem pequeno e aplicativo mais enxuto, mantendo o design e as funções. O instalador baixa o pacote completo durante a instalação, com progresso, cancelamento e conferência de integridade. Quem já usa a 2.1.0 pode atualizar pelo aplicativo. [Como funciona](docs/ATUALIZACAO-WINDOWS-NO-APP.md).
@@ -15,12 +41,6 @@ Novidades no Mac **3.0.0** e no Windows **2.0.0**: prévia, fila de downloads, h
 **Baixe vídeos e músicas no Mac ou Windows de um jeito simples e muito rápido.**
 
 O Caeser foi criado para facilitar o caminho entre o link e o arquivo salvo: cole o endereço, escolha o formato e a pasta e clique em **Baixar**. Com interface nativa para cada sistema, sem precisar montar comandos a cada download.
-
-[**Baixar para Mac — 3.0.1 (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v3.0.1/Caeser-3.0.1-macOS-AppleSilicon.dmg)
-
-[**Baixar para Windows — 2.2.1 (instalador online)**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.1/Caeser-2.2.1-Windows-x64-Online.exe)
-
-[Instalador completo do Windows, para instalar sem internet](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.1/Caeser-2.2.1-Windows-x64-Setup.exe).
 
 **Para usar o app, escolha somente um instalador do seu sistema.** No Windows, o online baixa o aplicativo e as ferramentas depois; o completo já contém tudo. O README é esta página; não é preciso baixá-lo. Os arquivos **Source code (.zip / .tar.gz)** são gerados automaticamente pelo GitHub e servem para desenvolver o projeto.
 
