@@ -1,8 +1,10 @@
 # Caeser
 
-Windows **2.2.0** · macOS **3.0.1**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
+Windows **2.2.1** · macOS **3.0.1**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
 
-**Novo no Windows 2.2.0:** instalador online bem pequeno e aplicativo mais enxuto, mantendo o design e as funções. O instalador baixa o pacote completo durante a instalação, com progresso, cancelamento e conferência de integridade. Quem já usa a 2.1.0 pode atualizar pelo aplicativo. [Como funciona](docs/ATUALIZACAO-WINDOWS-NO-APP.md).
+**Correções da 2.2.1:** prévia de vídeo/música com título e capa progressivos, atualização correta dos controles e botões alinhados, com estados de interação consistentes. O design e as logos continuam os mesmos.
+
+**Desde o Windows 2.2.0:** instalador online bem pequeno e aplicativo mais enxuto, mantendo o design e as funções. O instalador baixa o pacote completo durante a instalação, com progresso, cancelamento e conferência de integridade. Quem já usa a 2.1.0 pode atualizar pelo aplicativo. [Como funciona](docs/ATUALIZACAO-WINDOWS-NO-APP.md).
 
 Download inicial de **249 KB**. Pacote completo de **136,0 MB** (antes 166,3 MB); instalação **13,7% menor**, com cerca de **90% menos arquivos** na comparação com a 2.1.0. [Medições e testes](Windows/VALIDACAO-2.2.0.md).
 
@@ -16,9 +18,9 @@ O Caeser foi criado para facilitar o caminho entre o link e o arquivo salvo: col
 
 [**Baixar para Mac — 3.0.1 (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v3.0.1/Caeser-3.0.1-macOS-AppleSilicon.dmg)
 
-[**Baixar para Windows — 2.2.0 (instalador online)**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.0/Caeser-2.2.0-Windows-x64-Online.exe)
+[**Baixar para Windows — 2.2.1 (instalador online)**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.1/Caeser-2.2.1-Windows-x64-Online.exe)
 
-[Instalador completo do Windows, para instalar sem internet](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.0/Caeser-2.2.0-Windows-x64-Setup.exe).
+[Instalador completo do Windows, para instalar sem internet](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.1/Caeser-2.2.1-Windows-x64-Setup.exe).
 
 **Para usar o app, escolha somente um instalador do seu sistema.** No Windows, o online baixa o aplicativo e as ferramentas depois; o completo já contém tudo. O README é esta página; não é preciso baixá-lo. Os arquivos **Source code (.zip / .tar.gz)** são gerados automaticamente pelo GitHub e servem para desenvolver o projeto.
 
@@ -46,7 +48,7 @@ Por trás da interface, o Caeser usa yt-dlp, FFmpeg e, para links do Spotify, sp
 
 ## Aplicativo completo
 
-### Windows 2.2.0
+### Windows 2.2.1
 
 Prévia de vídeos e músicas, correspondência Spotify → YouTube usada no download, fila persistente e serial, histórico e preferências por origem. O botão de atualização oferece novas versões Windows estáveis sem confundir com as releases Mac. Na instalação registrada, versões compatíveis podem ser baixadas e verificadas no app; você escolhe quando instalar e reiniciar. Cópias portáteis e releases sem dados de integridade continuam com instalação manual.
 
@@ -58,7 +60,7 @@ A 1.1.2 corrige o fechamento ao clicar em Spotify e estabiliza o seletor por cli
 
 Os [fontes das ferramentas de terceiros](https://github.com/cnolli-fl/Caeser/releases/tag/fontes-terceiros) ficam na área para desenvolvedores e redistribuidores. Não são necessários para usar o app. Os avisos de licença continuam no pacote. A atualização remove os arquivos registrados pela instalação antiga, preservando preferências, downloads e arquivos extras do usuário.
 
-Os testes cobrem lógica, processos, ferramentas incluídas, abertura nos dois temas, interação real com o seletor, prévia, fila e histórico, download de áudio original servido localmente com conversão MP3 e instalação, abertura e desinstalação no Windows do GitHub. Isso não substitui a validação em PCs reais com Windows 10/11 nem garante disponibilidade dos serviços externos. Os resultados e os limites estão nas [notas da release Windows](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.2.0).
+Os testes cobrem lógica, processos, ferramentas incluídas, abertura nos dois temas, interação real com o seletor, prévia, fila e histórico, download de áudio original servido localmente com conversão MP3 e instalação, abertura e desinstalação no Windows do GitHub. Isso não substitui a validação em PCs reais com Windows 10/11 nem garante disponibilidade dos serviços externos. Os resultados e os limites estão nas [notas da release Windows](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.2.1).
 
 ### Mac 3.0.1
 

@@ -2,9 +2,17 @@
 
 Versão Windows do Caeser, separada do aplicativo SwiftUI. A versão macOS continua nos diretórios existentes, sem migração nem alteração do aplicativo publicado.
 
-**Versão Windows: 2.2.0.** Implementação nativa em C#/.NET 10 e WinUI 3. A numeração é independente da edição Mac 3.0.1.
+**Versão Windows: 2.2.1.** Implementação nativa em C#/.NET 10 e WinUI 3. A numeração é independente da edição Mac 3.0.1.
 
-[Baixar instalador online](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.0/Caeser-2.2.0-Windows-x64-Online.exe) · [Instalador completo](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.0/Caeser-2.2.0-Windows-x64-Setup.exe) · [Novidades e instruções](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.2.0)
+[Baixar instalador online](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.1/Caeser-2.2.1-Windows-x64-Online.exe) · [Instalador completo](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.1/Caeser-2.2.1-Windows-x64-Setup.exe) · [Novidades e instruções](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.2.1)
+
+### Correções na 2.2.1
+
+Prévias mostram título e capa pelos dados públicos do serviço enquanto a extração busca duração e correspondência quando disponíveis. Campos opcionais ausentes não invalidam o JSON; falhas no extrator não apagam uma prévia básica válida. Corrigida a notificação de mudanças exigida pelo WinUI; os testes conferem os controles visíveis após uma resposta assíncrona e a rejeição de resultados de links antigos. É possível tentar novamente pelo próprio formulário.
+
+Botões do topo com altura e alinhamento consistentes, destaque violeta mantido no hover/pressionado, foco de teclado e estados desabilitados nativos. Ações da fila usam o ícone nativo de mais opções. Layout, logos e qualidade dos downloads preservados.
+
+[Testes e limites da correção 2.2.1](VALIDACAO-2.2.1.md).
 
 ### Novidade na 2.2.0
 
@@ -44,7 +52,7 @@ A distribuição otimizada mantém apenas **Caeser.exe**, **Aplicativo**, **Docu
 
 Interface e instalador usam português brasileiro. Satélites de tradução não utilizados são excluídos da saída gerada. Além de pt-BR, são preservados apenas o pequeno fallback interno en-US exigido pelo carregador nativo do WinUI, os arquivos neutros do runtime e os textos originais das licenças. O projeto referencia somente os componentes Windows App SDK que usa, sem IA/ML, Search ou Widgets.
 
-Os [fontes das ferramentas](https://github.com/cnolli-fl/Caeser/releases/download/fontes-terceiros/Caeser-2.2.0-Windows-x64-Fontes-Terceiros.zip) ficam na área Fontes de terceiros, no arquivo correspondente ao pacote, em vez de ocuparem espaço na instalação. Os avisos de licença continuam em Documentacao. Não é necessário baixar os fontes para usar o Caeser; quem redistribuir os binários deve disponibilizar também os fontes correspondentes, conforme [THIRD-PARTY.md](THIRD-PARTY.md).
+Os [fontes das ferramentas](https://github.com/cnolli-fl/Caeser/releases/download/fontes-terceiros/Caeser-2.2.1-Windows-x64-Fontes-Terceiros.zip) ficam na área Fontes de terceiros, no arquivo correspondente ao pacote, em vez de ocuparem espaço na instalação. Os avisos de licença continuam em Documentacao. Não é necessário baixar os fontes para usar o Caeser; quem redistribuir os binários deve disponibilizar também os fontes correspondentes, conforme [THIRD-PARTY.md](THIRD-PARTY.md).
 
 Ao migrar uma instalação com arquivos antigos ou avisos legais soltos, o instalador usa o desinstalador registrado dessa mesma pasta para remover somente os arquivos conhecidos. Não apaga a pasta inteira nem os downloads e preferências. Arquivos extras do usuário permanecem, inclusive dentro das pastas antigas. Atualizações posteriores usam substituição normal dos arquivos.
 
@@ -122,7 +130,7 @@ Etapas:
 6. Extrair o ZIP em um caminho com espaços e acentos e abrir pelo launcher, validando o pacote que o usuário recebe.
 7. Instalar, conferir a versão instalada, abrir e desinstalar o app apenas na VM descartável do GitHub Actions.
 
-Os instaladores aprovados são publicados na release Windows windows-v2.2.0. O Mac usa sua própria release; os instaladores de versões anteriores continuam disponíveis.
+Os instaladores aprovados são publicados na release Windows windows-v2.2.1. O Mac usa sua própria release; os instaladores de versões anteriores continuam disponíveis.
 
 A 1.1.2 foi validada no [workflow 39783492094](https://github.com/cnolli-fl/Caeser/actions/runs/39783492094): 39 testes de lógica/processos e mais 1 teste real das ferramentas incluídas, além da interação com a interface, abertura dos pacotes e atualização/desinstalação. Os pacotes publicados são os mesmos arquivos testados nesse workflow; as notas, os links e o changelog foram atualizados depois, sem modificar o código funcional.
 
@@ -132,7 +140,7 @@ As capturas são inspecionadas para conferir a aparência; o teste também verif
 
 ## Releases no GitHub
 
-Cada plataforma tem sua numeração. A distribuição Windows usa a tag windows-v2.2.0; o Mac usa v3.0.1. O README principal mantém links separados. Os nomes dos instaladores públicos identificam plataforma e arquitetura:
+Cada plataforma tem sua numeração. A distribuição Windows usa a tag windows-v2.2.1; o Mac usa v3.0.1. O README principal mantém links separados. Os nomes dos instaladores públicos identificam plataforma e arquitetura:
 
 - `Caeser-X.Y.Z-macOS-AppleSilicon.dmg`
 - `Caeser-X.Y.Z-Windows-x64-Online.exe`

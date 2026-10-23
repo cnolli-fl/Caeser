@@ -1,5 +1,14 @@
 # Mudanças
 
+## Windows 2.2.1 — 2026-10-23
+
+- Corrigida a notificação de propriedades para o formato exigido pelo WinUI, atualizando prévia, textos e estado dos controles após operações assíncronas.
+- Título e capa via dados públicos YouTube/Spotify enquanto duração e correspondência são buscadas. Falhas de extração não descartam uma prévia básica válida.
+- Campos opcionais ausentes do yt-dlp agora usam `null` válido no JSON; prévia não exige formatos disponíveis para download.
+- Cancelamento e troca de link impedem que resultados antigos substituam a prévia atual. Opção de tentar novamente no formulário e ilustração discreta quando não houver capa.
+- Botões alinhados, altura consistente, estados normal/hover/pressionado em violeta e mais opções da fila com ícone nativo. Foco, contraste e comportamento desabilitado preservados.
+- Novos testes do fluxo assíncrono, dos controles visíveis e da prévia com as ferramentas reais incluídas. Instalador online pequeno e pacote enxuto mantidos; Mac sem alterações.
+
 ## Windows 2.2.0 — 2026-10-23
 
 - Instalador online de 248.832 bytes (~249 KB). Pacote completo de 166,3 para 136,0 MB (18,2% menor); instalação de 425,9 para 367,5 MB (13,7% menor), com 3.283 → 328 arquivos medidos após atualizar da 2.1.0.

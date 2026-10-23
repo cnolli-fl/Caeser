@@ -1,53 +1,41 @@
-# Caeser 2.2.0 para Windows
+# Caeser 2.2.1 para Windows
 
-Instalador online pequeno e aplicativo mais enxuto, com o mesmo design, prévia, fila, histórico e qualidade dos downloads.
+Correções da prévia de vídeos/músicas e dos botões, mantendo o design, as logos e o pacote enxuto da 2.2.0.
 
-Comparado à 2.1.0, no mesmo ambiente de teste:
+Online com **249 KB**; completo com **136,0 MB**. O online baixa esses 136,0 MB durante a instalação.
 
-- **Instalador online: 249 KB** (248.832 bytes). Baixa o pacote completo depois.
-- **Pacote completo: 166,3 → 136,0 MB**, redução de **18,2%** no download.
-- **Instalação: 425,9 → 367,5 MB**, redução de **13,7%**; arquivos medidos de **3.283 → 328**, cerca de **90% menos**.
+## O que foi corrigido
 
-## Qual arquivo baixar?
+- **Prévia progressiva:** título e capa usam os dados públicos do YouTube/Spotify, sem esperar toda a extração. Duração, artista e correspondência no YouTube são acrescentados quando disponíveis.
+- Corrigida a notificação de mudanças exigida pelo WinUI para atualizar os controles depois da busca.
+- Campos opcionais ausentes, como capa ou duração, não tornam o JSON da prévia inválido. A busca de metadados não exige formatos disponíveis para baixar.
+- Se a extração completa falhar, uma prévia básica já carregada permanece visível. Trocar ou apagar o link cancela a busca anterior e impede títulos/capas antigos no novo link.
+- Opção de **Tentar prévia novamente**, sem precisar apagar e colar tudo; imagem discreta quando não houver capa.
+- **Botões alinhados:** altura consistente no topo, destaque violeta também no hover e ao pressionar, estados desabilitados e foco de teclado preservados. Mais opções da fila agora usa o ícone nativo correto.
+- Sem redesenho, mudanças na fila/histórico ou redução da qualidade MP3. O Mac permanece na 3.0.1, sem alterações.
 
-- **[Online.exe — recomendado](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.0/Caeser-2.2.0-Windows-x64-Online.exe):** escolha **Baixar e instalar**; ele baixa o pacote completo e inicia a instalação. Mostra progresso e permite cancelar.
-- **[Setup.exe — completo](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.0/Caeser-2.2.0-Windows-x64-Setup.exe):** alternativa para guardar e instalar sem internet. Contém o mesmo aplicativo e as mesmas ferramentas.
+## Baixar
 
-**Escolha somente um.** O instalador online é pequeno porque baixa os arquivos depois: o pacote completo ainda será transferido durante a instalação. A janela informa o tamanho. Não é uma atualização diferencial.
+- **[Instalador online — recomendado](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.1/Caeser-2.2.1-Windows-x64-Online.exe):** pequeno; baixa o pacote completo durante a instalação, com progresso e cancelamento.
+- **[Instalador completo](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.1/Caeser-2.2.1-Windows-x64-Setup.exe):** alternativa para guardar e instalar offline.
 
-Quem já usa a **2.1.0** instalada pode atualizar por **Instalar e reiniciar** dentro do Caeser. Esse fluxo continua usando o instalador completo, conferido antes de executar. Nenhuma atualização é instalada sem confirmação.
+Escolha somente um. O online transfere o pacote completo depois, não é uma atualização diferencial. Quem já tem a 2.1.0 ou posterior instalada pode usar **Instalar e reiniciar** no aplicativo.
 
-## O que ficou mais leve
+Windows 10 22H2 ou Windows 11 x64, Intel/AMD. Ferramentas e runtimes incluídos; não precisa instalar Python, .NET, FFmpeg ou yt-dlp separadamente. Feche o Caeser antes de instalar. Downloads, preferências, fila e histórico são preservados.
 
-- yt-dlp e spotDL compartilham uma única cópia do Python e das dependências.
-- FFmpeg e FFprobe compartilham as DLLs da mesma compilação, sem depender de ferramentas instaladas no PC.
-- Avisos legais completos agrupados em `Documentacao/Ferramentas.zip`, em vez de milhares de arquivos soltos. Não foram apagadas licenças.
-- Compressão do instalador melhorada. Fontes, caches de construção e arquivos de testes não são instalados no PC.
-- Mantidos os extratores, os codecs, MP3 na configuração de máxima qualidade e todos os recursos do aplicativo. Nenhum redesenho da interface.
+Os instaladores continuam sem assinatura Authenticode. Avisos de fornecedor desconhecido/SmartScreen podem aparecer; os controles de segurança não foram desativados. O instalador online confere tamanho e SHA-256 fixados na construção antes de iniciar o pacote.
 
-## Instalação e segurança
+## Testes e limites
 
-Requer **Windows 10 22H2 ou Windows 11 x64 (Intel/AMD)**. Instalação para o seu usuário, sem exigir administrador. Não é necessário instalar .NET, Python, FFmpeg, Deno ou yt-dlp separadamente. Windows ARM64 e 32 bits não são alvos validados.
+Testes do fluxo real assíncrono de prévia até os controles XAML, resultado antigo após troca de link, atualização do botão Baixar, ausência de campos e falha dos serviços/extratores. Prévia com as ferramentas empacotadas usando áudio original local; interface em claro/escuro, ZIP portátil, instalação, atualização e reabertura do aplicativo. Os testes não baixam músicas de terceiros.
 
-Feche o Caeser antes de instalar. Downloads, preferências, fila e histórico são preservados. A migração remove somente os arquivos registrados pelo instalador antigo, sem apagar a pasta inteira nem arquivos extras do usuário. O computador não é reiniciado à força.
+As consultas públicas YouTube/Spotify foram verificadas separadamente. Os serviços podem limitar consultas, vídeos privados/restritos podem não ter prévia e a extração completa pode continuar indisponível. Título/capa básicos não comprovam que o conteúdo poderá ser baixado. Spotify fornece metadados; o áudio vem do YouTube.
 
-O instalador online usa HTTPS e confere **tamanho e SHA-256 fixados na construção** antes de iniciar o pacote. Arquivos incompletos, alterados e redirecionamentos fora dos servidores permitidos são recusados. Os controles de segurança do Windows são preservados.
-
-**Os dois instaladores não têm assinatura Authenticode.** Avisos de fornecedor desconhecido ou SmartScreen podem aparecer, inclusive ao abrir o pacote baixado pelo instalador online. O hash verifica integridade, mas não substitui uma assinatura independente do editor.
-
-## Verificação
-
-Testes no runner Windows: lógica e processos, interface nos dois temas, ferramentas com ambiente isolado, download de áudio original servido localmente e conversão MP3, ZIP extraído em caminho com espaços e acentos, instalação/atualização/desinstalação e reabertura real do aplicativo. O instalador online é testado com pacote válido, alterado, truncado, redirecionamento indevido e cancelamento pelo diálogo.
-
-[Execução aprovada e artefatos de teste](https://github.com/cnolli-fl/Caeser/actions/runs/39900546450) · [Medições e limites](https://github.com/cnolli-fl/Caeser/blob/windows-v2.2.0/Windows/VALIDACAO-2.2.0.md).
-
-A atualização da 2.1.0 é comparada em disco e preserva arquivos extras, inclusive dentro das pastas antigas. As listas de extratores e codecs são comparadas antes e depois. Esses testes não substituem a validação em PCs reais com Windows 10/11, o ciclo público de download pelo GitHub nem a confirmação manual de eventuais avisos do SmartScreen. Serviços externos podem mudar ou limitar downloads. Spotify fornece metadados; o áudio vem do YouTube.
-
-[Detalhes do atualizador](https://github.com/cnolli-fl/Caeser/blob/windows-v2.2.0/docs/ATUALIZACAO-WINDOWS-NO-APP.md) · [Mac 3.0.1 — sem mudanças](https://github.com/cnolli-fl/Caeser/releases/tag/v3.0.1)
+[Execução aprovada](https://github.com/cnolli-fl/Caeser/actions/runs/39903516487) · [Verificações e limites](https://github.com/cnolli-fl/Caeser/blob/windows-v2.2.1/Windows/VALIDACAO-2.2.1.md).
 
 <details>
 <summary>Integridade e fontes de terceiros</summary>
 
-[Fontes correspondentes e receitas](https://github.com/cnolli-fl/Caeser/releases/download/fontes-terceiros/Caeser-2.2.0-Windows-x64-Fontes-Terceiros.zip). Licenças completas continuam na instalação. Não é necessário baixar os fontes para usar o aplicativo.
+[Fontes correspondentes e receitas](https://github.com/cnolli-fl/Caeser/releases/download/fontes-terceiros/Caeser-2.2.1-Windows-x64-Fontes-Terceiros.zip). Avisos de licença permanecem na instalação, agrupados em ZIP.
 
 </details>
