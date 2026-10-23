@@ -39,7 +39,7 @@ Name: "brazilianportuguese"; MessagesFile: "compiler:Languages\BrazilianPortugue
 Name: "desktopicon"; Description: "Criar atalho na área de trabalho"; Flags: unchecked
 
 [Files]
-Source: "{#SourceDirectory}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb"
+Source: "{#SourceDirectory}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs; Excludes: "*.pdb"; BeforeInstall: MigratePreviousInstallation
 
 [Icons]
 Name: "{autoprograms}\Caeser"; Filename: "{app}\Caeser.exe"
@@ -50,33 +50,48 @@ Filename: "{app}\Caeser.exe"; Description: "Abrir Caeser"; Flags: nowait postins
 Filename: "{app}\Caeser.exe"; Flags: nowait runasoriginaluser; Check: IsCaeserUpdate
 
 [Code]
+var
+  MigrationChecked: Boolean;
+
 function IsCaeserUpdate: Boolean;
 begin
   Result := ExpandConstant('{param:CAESERUPDATE|0}') = '1';
 end;
 
-function PrepareToInstall(var NeedsRestart: Boolean): String;
+procedure MigratePreviousInstallation;
 var
-  PreviousUninstaller: String;
-  ExitCode: Integer;
+  PreviousUninstaller, UninstallerName: String;
+  ExitCode, I: Integer;
 begin
-  Result := '';
-  { The legacy installer recorded its own files. Let it remove only those
-    recorded files rather than recursively deleting a user's app directory. }
-  if FileExists(ExpandConstant('{app}\Caeser.dll')) and
-     FileExists(ExpandConstant('{app}\Tools\tools.lock.json')) then
+  if MigrationChecked then Exit;
+  MigrationChecked := True;
+  { BeforeInstall runs after Restart Manager and before any payload is copied.
+    The previous uninstaller removes its recorded files only, not user extras.
+    Migrate flat installs and raw notices once; later upgrades are in-place. }
+  if (FileExists(ExpandConstant('{app}\Caeser.dll')) and
+      FileExists(ExpandConstant('{app}\Tools\tools.lock.json'))) or
+     (DirExists(ExpandConstant('{app}\Documentacao\Ferramentas')) and
+      not FileExists(ExpandConstant('{app}\Documentacao\Ferramentas.zip'))) then
   begin
-    PreviousUninstaller := ExpandConstant('{app}\unins000.exe');
-    if not FileExists(PreviousUninstaller) then
-    begin
-      Result := 'Desinstale a versão anterior do Caeser antes de instalar esta atualização.';
-      Exit;
-    end;
+    if not RegQueryStringValue(HKCU,
+      'Software\Microsoft\Windows\CurrentVersion\Uninstall\{8362D1BB-D499-462E-9633-409161F21111}_is1',
+      'UninstallString', PreviousUninstaller) then
+      RaiseException('Desinstale a versão anterior do Caeser antes de instalar esta atualização.');
+    PreviousUninstaller := RemoveQuotes(PreviousUninstaller);
+    UninstallerName := Lowercase(ExtractFileName(PreviousUninstaller));
+    if (CompareText(AddBackslash(ExtractFileDir(PreviousUninstaller)),
+        AddBackslash(ExpandConstant('{app}'))) <> 0) or
+       (Length(UninstallerName) <> 12) or (Copy(UninstallerName, 1, 5) <> 'unins') or
+       (Copy(UninstallerName, 9, 4) <> '.exe') or not FileExists(PreviousUninstaller) then
+      RaiseException('O desinstalador anterior não corresponde a esta pasta do Caeser.');
+    for I := 6 to 8 do
+      if (UninstallerName[I] < '0') or (UninstallerName[I] > '9') then
+        RaiseException('Nome inesperado do desinstalador anterior.');
     Log('Removendo arquivos registrados da instalação antiga; downloads e preferências são preservados.');
     if not Exec(PreviousUninstaller, '/VERYSILENT /SUPPRESSMSGBOXES /NORESTART', '', SW_HIDE,
       ewWaitUntilTerminated, ExitCode) then
-      Result := 'Não foi possível remover a instalação anterior. Feche o Caeser e tente novamente.'
+      RaiseException('Não foi possível remover a instalação anterior. Feche o Caeser e tente novamente.')
     else if ExitCode <> 0 then
-      Result := 'A remoção da instalação anterior não terminou. Desinstale o Caeser e tente novamente.';
+      RaiseException('A remoção da instalação anterior não terminou. Desinstale o Caeser e tente novamente.');
   end;
 end;

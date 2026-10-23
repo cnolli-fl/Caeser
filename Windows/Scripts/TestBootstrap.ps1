@@ -47,6 +47,12 @@ try {
     $old = Start-Process $previous -ArgumentList @('/VERYSILENT', '/SUPPRESSMSGBOXES', '/NORESTART', ('/DIR="' + $destination + '"')) -PassThru
     if (-not $old.WaitForExit(120000) -or $old.ExitCode -ne 0) { throw 'A instalação de referência falhou.' }
     $before = [long](Get-ChildItem $destination -Recurse -File | Measure-Object Length -Sum).Sum
+    $filesBefore = @(Get-ChildItem $destination -Recurse -File).Count
+    $oldNotices = Join-Path $destination 'Documentacao\Ferramentas'
+    $registeredNotice = (Get-ChildItem $oldNotices -Recurse -File | Select-Object -First 1).FullName
+    if (-not $registeredNotice) { throw 'A referência não contém os avisos legais anteriores.' }
+    $nestedSentinel = Join-Path $oldNotices 'arquivo-extra-do-usuario.txt'
+    'Preservar também dentro das pastas antigas.' | Set-Content $nestedSentinel
     $oldTools = Join-Path $destination 'Aplicativo\Tools'
     $extractorsBefore = (& (Join-Path $oldTools 'yt-dlp.exe') --ignore-config --list-extractors | Out-String).Trim()
     if ($LASTEXITCODE -ne 0 -or $extractorsBefore.Length -lt 1000) { throw 'Falha ao inventariar extratores anteriores.' }
@@ -64,15 +70,18 @@ try {
     if (-not $reopened) { throw 'O Caeser não abriu depois da instalação online.' }
     $reopened | Stop-Process -Force
     if (-not (Test-Path $sentinel)) { throw 'Um arquivo extra do usuário foi removido.' }
+    if (-not (Test-Path $nestedSentinel)) { throw 'Um arquivo extra na pasta de documentação foi removido.' }
+    if ((Test-Path $registeredNotice) -or -not (Test-Path (Join-Path $destination 'Documentacao\Ferramentas.zip'))) { throw 'Os avisos antigos não foram substituídos pelo arquivo completo organizado.' }
     $newTools = Join-Path $destination 'Aplicativo\Tools'
     $extractorsAfter = (& (Join-Path $newTools 'yt-dlp.exe') --ignore-config --list-extractors | Out-String).Trim()
     if ($LASTEXITCODE -ne 0 -or $extractorsAfter -cne $extractorsBefore) { throw 'O conjunto de extratores mudou durante a otimização.' }
     $codecsAfter = (& (Join-Path $newTools 'ffmpeg.exe') -hide_banner -codecs 2>&1 | Out-String).Trim()
     if ($LASTEXITCODE -ne 0 -or $codecsAfter -cne $codecsBefore) { throw 'O conjunto de codecs mudou durante a otimização.' }
     $after = [long](Get-ChildItem $destination -Recurse -File | Measure-Object Length -Sum).Sum
+    $filesAfter = @(Get-ChildItem $destination -Recurse -File).Count
     if ($after -ge $before) { throw 'A instalação otimizada não ficou menor que a 2.1.0.' }
     & (Join-Path $PSScriptRoot 'TestUi.ps1') -ApplicationDirectory $destination -OutputDirectory (Join-Path $qa 'installed-ui')
-    @{ succeeded = $true; previousInstalledBytes = $before; installedBytes = $after; previousSetupBytes = (Get-Item $previous).Length;
+    @{ succeeded = $true; previousInstalledBytes = $before; installedBytes = $after; previousFiles = $filesBefore; installedFiles = $filesAfter; previousSetupBytes = (Get-Item $previous).Length;
        setupBytes = (Get-Item $installer).Length; onlineBytes = (Get-Item $online).Length;
        corruptRejected = $true; truncatedRejected = $true; redirectRejected = $true; cancellation = $true; reopened = $true } |
         ConvertTo-Json | Set-Content -Encoding utf8 (Join-Path $qa 'result.json')
