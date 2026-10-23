@@ -1,6 +1,8 @@
 # Caeser
 
-Windows **2.0.1** · macOS **3.0.1**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
+Windows **2.1.0** · macOS **3.0.1**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
+
+**Novo no Windows 2.1.0:** baixe a atualização no aplicativo e escolha **Instalar e reiniciar**, com conferência de integridade e preservação dos dados. Instale a 2.1.0 manualmente uma vez para obter o recurso; ele será usado nas próximas versões compatíveis. [Como funciona](docs/ATUALIZACAO-WINDOWS-NO-APP.md).
 
 **Pequena atualização visual:** histórico mais proporcional, com linhas compactas, ações alinhadas e textos longos contidos. Filas, preferências e downloads são preservados.
 
@@ -12,7 +14,7 @@ O Caeser foi criado para facilitar o caminho entre o link e o arquivo salvo: col
 
 [**Baixar para Mac — 3.0.1 (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v3.0.1/Caeser-3.0.1-macOS-AppleSilicon.dmg)
 
-[**Baixar para Windows — 2.0.1 (.exe)**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.0.1/Caeser-2.0.1-Windows-x64-Setup.exe)
+[**Baixar para Windows — 2.1.0 (.exe)**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.1.0/Caeser-2.1.0-Windows-x64-Setup.exe)
 
 **Para usar o app, baixe somente o instalador do seu sistema.** As ferramentas já estão incluídas. O README é esta página; não é preciso baixá-lo. Os arquivos **Source code (.zip / .tar.gz)** são gerados automaticamente pelo GitHub e servem para desenvolver o projeto.
 
@@ -40,9 +42,9 @@ Por trás da interface, o Caeser usa yt-dlp, FFmpeg e, para links do Spotify, sp
 
 ## Aplicativo completo
 
-### Windows 2.0.1
+### Windows 2.1.0
 
-Prévia de vídeos e músicas, correspondência Spotify → YouTube usada no download, fila persistente e serial, histórico e preferências por origem. O botão de atualização oferece novas versões Windows estáveis sem confundir com as releases Mac. A instalação da atualização continua manual, com o app fechado.
+Prévia de vídeos e músicas, correspondência Spotify → YouTube usada no download, fila persistente e serial, histórico e preferências por origem. O botão de atualização oferece novas versões Windows estáveis sem confundir com as releases Mac. Na instalação registrada, versões compatíveis podem ser baixadas e verificadas no app; você escolhe quando instalar e reiniciar. Cópias portáteis e releases sem dados de integridade continuam com instalação manual.
 
 Baixe o instalador .exe e siga as etapas; a instalação é por usuário e não pede acesso de administrador. O instalador é o único arquivo necessário para usar o Caeser.
 

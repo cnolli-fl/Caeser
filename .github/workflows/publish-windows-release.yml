@@ -39,7 +39,9 @@ jobs:
           assert data['path'] == '.github/workflows/caeser-windows.yml'
           assert data['head_repository']['full_name'] == repo
           tag = f'windows-v{version}'
-          subprocess.run(['git', 'diff', '--quiet', data['head_sha'], tag, '--', 'Windows', 'Sources/VideoDownloader/Resources'], check=True)
+          # Release notes may be finalized after the build; executable sources,
+          # project settings, packaging scripts and assets must remain identical.
+          subprocess.run(['git', 'diff', '--quiet', data['head_sha'], tag, '--', 'Windows', 'Sources/VideoDownloader/Resources', ':(exclude,glob)Windows/**/*.md'], check=True)
           props = subprocess.check_output(['git', 'show', f'{tag}:Windows/Directory.Build.props'], text=True)
           assert f'<Version>{version}</Version>' in props
           release = next(r for r in json.loads(subprocess.check_output(['gh', 'api', f'repos/{repo}/releases?per_page=100'])) if r['tag_name'] == tag)

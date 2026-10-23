@@ -1,6 +1,6 @@
-# Atualização pelo aplicativo — candidato Windows 2.1.0
+# Atualização pelo aplicativo — Windows 2.1.0
 
-A implementação permanece na branch `codex/windows-in-app-updates`, sem mudar a release pública 2.0.1 ou o aplicativo Mac.
+Disponível a partir da edição Windows 2.1.0. O aplicativo Mac não é alterado por esta atualização.
 
 ## Fluxo
 

@@ -1,5 +1,14 @@
 # Mudanças
 
+## Windows 2.1.0 — 2026-10-22
+
+- Download de atualizações dentro do aplicativo, com progresso e cancelamento.
+- Conferência de origem, tamanho e SHA-256 antes de habilitar **Instalar e reiniciar**, com nova conferência antes de executar.
+- Fila salva e pausada antes da instalação; reabertura do Caeser pelo instalador, sem reinício forçado do computador.
+- Mantidos os avisos normais de segurança do Windows. Limpeza dos arquivos temporários conhecidos após um dia, sem remover dados do usuário.
+- Alternativa manual para cópias portáteis ou releases incompatíveis. A primeira instalação da 2.1.0 ainda é manual; as próximas releases compatíveis podem usar o fluxo integrado.
+- Testes de integridade, cancelamento, alterações de arquivo, interface nos dois temas e instalação com reabertura no runner Windows. Mac permanece na 3.0.1.
+
 ## macOS 3.0.1 e Windows 2.0.1 — 2026-10-22
 
 - Histórico com proporções equilibradas, linhas compactas, datas e ações alinhadas.
