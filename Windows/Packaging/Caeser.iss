@@ -5,7 +5,7 @@
   #error OutputDirectory must point to the artifact directory
 #endif
 #ifndef AppVersion
-  #define AppVersion "2.0.1"
+  #define AppVersion "2.1.0"
 #endif
 
 [Setup]
@@ -45,9 +45,15 @@ Name: "{autoprograms}\Caeser"; Filename: "{app}\Caeser.exe"
 Name: "{autodesktop}\Caeser"; Filename: "{app}\Caeser.exe"; Tasks: desktopicon
 
 [Run]
-Filename: "{app}\Caeser.exe"; Description: "Abrir Caeser"; Flags: nowait postinstall skipifsilent
+Filename: "{app}\Caeser.exe"; Description: "Abrir Caeser"; Flags: nowait postinstall skipifsilent; Check: not IsCaeserUpdate
+Filename: "{app}\Caeser.exe"; Flags: nowait runasoriginaluser; Check: IsCaeserUpdate
 
 [Code]
+function IsCaeserUpdate: Boolean;
+begin
+  Result := ExpandConstant('{param:CAESERUPDATE|0}') = '1';
+end;
+
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
   PreviousUninstaller: String;

@@ -2,7 +2,11 @@ using System.Net.Http;
 using System.Text.Json;
 
 namespace Caeser.Core;
-public sealed record ReleaseUpdate(string Version, Uri Page, Uri Download);
+public sealed record ReleaseUpdate(string Version, Uri Page, Uri Download, string? Sha256 = null, long Size = 0)
+{
+    public bool CanInstall => System.Version.TryParse(Version, out var version) && version >= new System.Version(2, 1, 0) &&
+        Size is > 0 and <= UpdateInstaller.MaximumBytes && Sha256?.Length == 64 && Sha256.All(Uri.IsHexDigit);
+}
 public static class ReleaseUpdates
 {
     private static readonly HttpClient client = new() { Timeout = TimeSpan.FromSeconds(20) };
@@ -20,9 +24,14 @@ public static class ReleaseUpdates
             var page = $"https://github.com/cnolli-fl/Caeser/releases/tag/{tag}";
             var download = $"https://github.com/cnolli-fl/Caeser/releases/download/{tag}/{name}";
             if (release.GetProperty("html_url").GetString() != page) continue;
-            if (release.GetProperty("assets").EnumerateArray().Any(a => a.GetProperty("name").GetString() == name &&
-                a.GetProperty("size").GetInt64() > 0 && a.GetProperty("state").GetString() == "uploaded" && a.GetProperty("browser_download_url").GetString() == download))
-                matches.Add((version, new(text, new(page), new(download))));
+            var asset = release.GetProperty("assets").EnumerateArray().FirstOrDefault(a => a.GetProperty("name").GetString() == name &&
+                a.GetProperty("size").GetInt64() > 0 && a.GetProperty("state").GetString() == "uploaded" && a.GetProperty("browser_download_url").GetString() == download);
+            if (asset.ValueKind == JsonValueKind.Object)
+            {
+                var digest = asset.TryGetProperty("digest", out var value) ? value.GetString() : null;
+                matches.Add((version, new(text, new(page), new(download),
+                    digest?.StartsWith("sha256:", StringComparison.Ordinal) == true ? digest[7..] : null, asset.GetProperty("size").GetInt64())));
+            }
         }
         return matches.OrderByDescending(x => x.Version).FirstOrDefault().Update;
     }

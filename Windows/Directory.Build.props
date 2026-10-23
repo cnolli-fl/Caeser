@@ -4,8 +4,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <LangVersion>latest</LangVersion>
     <Deterministic>true</Deterministic>
-    <Version>2.0.1</Version>
-    <InformationalVersion>2.0.1</InformationalVersion>
+    <Version>2.1.0</Version>
+    <InformationalVersion>2.1.0</InformationalVersion>
     <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
     <Authors>Caio Nolli</Authors>
     <Company>Caeser</Company>

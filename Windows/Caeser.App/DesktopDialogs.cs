@@ -10,6 +10,7 @@ namespace Caeser.App;
 public sealed partial class MainWindow
 {
     private bool desktopDialog;
+    private CancellationTokenSource? updateCancellation;
     private void Pause_Click(object sender, RoutedEventArgs e) => ViewModel.TogglePause();
     private void CancelCurrent_Click(object sender, RoutedEventArgs e) => ViewModel.Cancel();
     private void QueueUp_Click(object sender, RoutedEventArgs e) { if (((MenuFlyoutItem)sender).Tag is LibraryItem item) ViewModel.Move(item, -1); }
@@ -25,16 +26,88 @@ public sealed partial class MainWindow
         {
             await ViewModel.CheckUpdatesAsync(true);
             var update = ViewModel.Update;
-            var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, Title = "Atualizações do Caeser",
-                Content = ViewModel.UpdateMessage + (update != null ? "\nBaixe o instalador oficial e feche o Caeser antes de instalar. Sua fila, histórico e preferências ficam preservados." : ""),
-                CloseButtonText = update != null ? "Depois" : "Concluído", PrimaryButtonText = update != null ? "Baixar atualização" : "",
+            var installation = InstalledDirectory();
+            var automatic = update?.CanInstall == true && installation != null;
+            var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, RequestedTheme = Root.ActualTheme, Title = "Atualizações do Caeser",
+                Content = ViewModel.UpdateMessage + (update == null ? "" : automatic
+                    ? "\nBaixe a atualização por aqui e escolha quando instalar e reiniciar. Sua fila, histórico e preferências serão preservados."
+                    : "\nEsta versão ou cópia portátil requer instalação manual. Abra o instalador oficial pela página da release."),
+                CloseButtonText = update != null ? "Depois" : "Concluído", PrimaryButtonText = update != null ? automatic ? "Baixar no aplicativo" : "Abrir download" : "",
                 SecondaryButtonText = update != null ? "Ver novidades" : "" };
             var result = await dialog.ShowAsync();
             if (update != null && result != ContentDialogResult.None)
-                await Launcher.LaunchUriAsync(result == ContentDialogResult.Primary ? update.Download : update.Page);
+            {
+                if (result == ContentDialogResult.Primary && automatic)
+                {
+                    if (ViewModel.IsBusy) ViewModel.ReportError("Espere o download atual terminar antes de atualizar.");
+                    else await DownloadUpdateAsync(update, installation!);
+                }
+                else await Launcher.LaunchUriAsync(result == ContentDialogResult.Primary ? update.Download : update.Page);
+            }
         }
         catch (Exception error) { ViewModel.ReportError("Não consegui abrir a atualização: " + error.Message); }
         finally { desktopDialog = false; }
+    }
+    private static string? InstalledDirectory()
+    {
+        try
+        {
+            var application = new DirectoryInfo(AppContext.BaseDirectory);
+            if (application.Name != "Aplicativo" || application.Parent is not { } parent) return null;
+            using var key = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Uninstall\{8362D1BB-D499-462E-9633-409161F21111}_is1");
+            var registered = key?.GetValue("InstallLocation") as string;
+            return registered != null && Path.GetFullPath(registered).TrimEnd(Path.DirectorySeparatorChar).Equals(parent.FullName, StringComparison.OrdinalIgnoreCase)
+                && File.Exists(Path.Combine(parent.FullName, "Caeser.exe")) ? parent.FullName : null;
+        }
+        catch { return null; }
+    }
+    private async Task DownloadUpdateAsync(ReleaseUpdate update, string installation)
+    {
+        using var cancellation = new CancellationTokenSource(); updateCancellation = cancellation;
+        var message = new TextBlock { Text = "Baixando a atualização…", TextWrapping = TextWrapping.Wrap, MaxWidth = 400 };
+        var progress = new ProgressBar { Minimum = 0, Maximum = 100, Value = 0 };
+        AutomationProperties.SetName(progress, "Download da atualização");
+        var body = new StackPanel { Spacing = 16, MinWidth = 300 }; body.Children.Add(message); body.Children.Add(progress);
+        var dialog = new ContentDialog { XamlRoot = Root.XamlRoot, RequestedTheme = Root.ActualTheme, Title = $"Caeser {update.Version}",
+            Content = body, CloseButtonText = "Cancelar", PrimaryButtonText = "Instalar e reiniciar", IsPrimaryButtonEnabled = false };
+        string? path = null; bool launched = false, dismissed = false;
+        var shown = dialog.ShowAsync().AsTask();
+        try
+        {
+            var transfer = new UpdateInstaller().DownloadAsync(update, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Caeser", "Updates"),
+                new Progress<double>(value => { if (!dismissed) { progress.Value = value; message.Text = value >= 100 ? "Conferindo integridade…" : $"Baixando atualização · {value:0}%"; } }), cancellation.Token);
+            if (await Task.WhenAny(transfer, shown) == shown) cancellation.Cancel();
+            path = await transfer;
+            if (cancellation.IsCancellationRequested || shown.IsCompleted) return;
+            message.Text = "Atualização pronta. Ao instalar, o Caeser será fechado e aberto novamente. Sua fila será preservada e voltará pausada.";
+            progress.Value = 100; dialog.IsPrimaryButtonEnabled = true; dialog.CloseButtonText = "Depois";
+            if (await shown == ContentDialogResult.Primary)
+            {
+                ViewModel.PauseForUpdate();
+                await UpdateInstaller.LaunchAsync(path, installation, update);
+                launched = true; allowClose = true; Close();
+            }
+        }
+        catch (OperationCanceledException)
+        {
+            if (!shown.IsCompleted && !cancellation.IsCancellationRequested)
+            { message.Text = "A atualização demorou demais. Tente novamente quando sua conexão melhorar."; progress.Visibility = Visibility.Collapsed; dialog.CloseButtonText = "Fechar"; await shown; }
+        }
+        catch (Exception error)
+        {
+            if (!shown.IsCompleted)
+            {
+                message.Text = "Não consegui concluir a atualização. Nada foi instalado. " + error.Message;
+                progress.Visibility = Visibility.Collapsed; dialog.IsPrimaryButtonEnabled = false; dialog.CloseButtonText = "Fechar"; await shown;
+            }
+            else ViewModel.ReportError("Não consegui iniciar a instalação. " + error.Message);
+        }
+        finally
+        {
+            dismissed = true; cancellation.Cancel(); updateCancellation = null;
+            if (!shown.IsCompleted) { dialog.Hide(); await shown; }
+            if (path != null && !launched) UpdateInstaller.DeleteDownload(path);
+        }
     }
     private async void History_Click(object sender, RoutedEventArgs e)
     {

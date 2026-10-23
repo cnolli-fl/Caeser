@@ -101,6 +101,7 @@ public sealed partial class MainWindow : Window
     }
     private async void Window_Closing(AppWindow sender, AppWindowClosingEventArgs e)
     {
+        updateCancellation?.Cancel();
         if (allowClose || !ViewModel.IsBusy) return;
         e.Cancel = true;
         if (closingPrompt) return;

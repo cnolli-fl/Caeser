@@ -36,6 +36,22 @@ try {
     if ((Get-ChildItem $destination -File -Filter '*.dll').Count -gt 0) { throw 'Bibliotecas internas ficaram soltas na raiz da instalação.' }
     if (Test-Path (Join-Path $destination 'Tools')) { throw 'A atualização deixou ferramentas/fontes da instalação antiga na raiz.' }
     if (-not (Test-Path $sentinel)) { throw 'A atualização apagou um arquivo não registrado do usuário.' }
+    # Exercise the installer contract used by the in-app updater, only here
+    # in the disposable runner. Never launch a future public/fake release.
+    $automatic = Start-Process -FilePath $installer -ArgumentList ($arguments + @('/CAESERUPDATE=1')) -PassThru
+    if (-not $automatic.WaitForExit(120000)) { $automatic.Kill($true); throw 'A instalação iniciada pelo atualizador não terminou.' }
+    if ($automatic.ExitCode -ne 0) { throw 'O modo de atualização pelo aplicativo falhou.' }
+    $appPath = Join-Path $destination 'Aplicativo\Caeser.exe'
+    $reopened = $null
+    for ($attempt = 0; $attempt -lt 30; $attempt++) {
+        $reopened = Get-Process -Name Caeser -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $appPath -and $_.MainWindowHandle -ne 0 }
+        if ($reopened) { break }
+        Start-Sleep -Milliseconds 500
+    }
+    if (-not $reopened) { throw 'O Caeser não abriu novamente após a atualização.' }
+    # Only terminate the exact temporary test application's process.
+    $reopened | Stop-Process -Force
+    if (-not (Test-Path $sentinel)) { throw 'A atualização automática apagou o arquivo de teste do usuário.' }
     & (Join-Path $PSScriptRoot 'TestUi.ps1') -ApplicationDirectory $destination -OutputDirectory (Join-Path $windowsRoot 'artifacts\installed-ui')
 } finally {
     # Inno reserves a new uninsNNN name before PrepareToInstall runs. During

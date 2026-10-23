@@ -139,6 +139,13 @@ public sealed partial class DownloadViewModel
         library.Items.Add(new() { Request = item.Request, Title = item.Title, Preview = item.Preview }); Persist(); RefreshLibrary(); PumpQueue();
     }
     public void ClearHistory() { library.Items.RemoveAll(i => !i.Pending); Persist(); Changed(); }
+    public void PauseForUpdate()
+    {
+        if (IsBusy) throw new InvalidOperationException("Espere o download atual terminar antes de instalar a atualização.");
+        library.Paused = true;
+        // Unlike routine persistence, failure must prevent replacing the app.
+        libraryStore.Save(library); Changed();
+    }
     internal void ConfigureFeatureSmoke()
     {
         previewCancellation?.Cancel();
