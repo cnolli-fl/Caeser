@@ -36,7 +36,8 @@ public sealed partial class DownloadViewModel : INotifyPropertyChanged
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
-    private void Changed() => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(null));
+    // WinUI's all-properties notification uses an empty name, not WPF's null.
+    private void Changed() => PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(string.Empty));
     public static IReadOnlyList<Choice<VideoQuality>> Qualities { get; } =
     [
         new("Melhor disponível", VideoQuality.Best), new("Até 4K (2160p)", VideoQuality.P2160),

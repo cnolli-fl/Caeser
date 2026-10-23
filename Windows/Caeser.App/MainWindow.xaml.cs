@@ -65,6 +65,7 @@ public sealed partial class MainWindow : Window
     }
     private async void Download_Click(object sender, RoutedEventArgs e)
     { await ViewModel.StartAsync(); }
+    private void PreviewRetry_Click(object sender, RoutedEventArgs e) => ViewModel.RetryPreview();
     private async void DownloadShortcut(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs e)
     { e.Handled = true; await ViewModel.StartAsync(); }
     private void LinkShortcut(KeyboardAccelerator sender, KeyboardAcceleratorInvokedEventArgs e)

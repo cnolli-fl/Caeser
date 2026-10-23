@@ -12,6 +12,12 @@
             <SolidColorBrush x:Key="CaeserAccent" Color="#7445C4" />
             <SolidColorBrush x:Key="CaeserOnAccent" Color="White" />
             <SolidColorBrush x:Key="CaeserGlow" Color="#2B1635" />
+            <SolidColorBrush x:Key="AccentButtonBackground" Color="#7445C4" />
+            <SolidColorBrush x:Key="AccentButtonBackgroundPointerOver" Color="#8050D2" />
+            <SolidColorBrush x:Key="AccentButtonBackgroundPressed" Color="#6538AB" />
+            <SolidColorBrush x:Key="AccentButtonForeground" Color="White" />
+            <SolidColorBrush x:Key="AccentButtonForegroundPointerOver" Color="White" />
+            <SolidColorBrush x:Key="AccentButtonForegroundPressed" Color="White" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="Light">
             <SolidColorBrush x:Key="CaeserBackground" Color="#F5F5F5" />
@@ -23,6 +29,12 @@
             <SolidColorBrush x:Key="CaeserAccent" Color="#7445C4" />
             <SolidColorBrush x:Key="CaeserOnAccent" Color="White" />
             <SolidColorBrush x:Key="CaeserGlow" Color="#F0E8F7" />
+            <SolidColorBrush x:Key="AccentButtonBackground" Color="#7445C4" />
+            <SolidColorBrush x:Key="AccentButtonBackgroundPointerOver" Color="#8050D2" />
+            <SolidColorBrush x:Key="AccentButtonBackgroundPressed" Color="#6538AB" />
+            <SolidColorBrush x:Key="AccentButtonForeground" Color="White" />
+            <SolidColorBrush x:Key="AccentButtonForegroundPointerOver" Color="White" />
+            <SolidColorBrush x:Key="AccentButtonForegroundPressed" Color="White" />
         </ResourceDictionary>
         <ResourceDictionary x:Key="HighContrast">
             <SolidColorBrush x:Key="CaeserBackground" Color="{ThemeResource SystemColorWindowColor}" />
@@ -34,6 +46,12 @@
             <SolidColorBrush x:Key="CaeserAccent" Color="{ThemeResource SystemColorHighlightColor}" />
             <SolidColorBrush x:Key="CaeserOnAccent" Color="{ThemeResource SystemColorHighlightTextColor}" />
             <SolidColorBrush x:Key="CaeserGlow" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="AccentButtonBackground" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="AccentButtonBackgroundPointerOver" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="AccentButtonBackgroundPressed" Color="{ThemeResource SystemColorHighlightColor}" />
+            <SolidColorBrush x:Key="AccentButtonForeground" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="AccentButtonForegroundPointerOver" Color="{ThemeResource SystemColorHighlightTextColor}" />
+            <SolidColorBrush x:Key="AccentButtonForegroundPressed" Color="{ThemeResource SystemColorHighlightTextColor}" />
         </ResourceDictionary>
     </ResourceDictionary.ThemeDictionaries>
     <Style x:Key="CaeserHeading" TargetType="TextBlock">

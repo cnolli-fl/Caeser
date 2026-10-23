@@ -27,6 +27,11 @@ public sealed class BundledDownloadTests
             temporary.Path, tools.EnvironmentVariables()), logs.Enqueue, timeout.Token);
         Assert.True(generated.ExitCode == 0, string.Join('\n', logs));
         await using var server = new LocalAudioServer(await File.ReadAllBytesAsync(original));
+        // Exercise the exact packaged preview command and its Windows argument
+        // forwarding. Generic media intentionally has no thumbnail/uploader.
+        var preview = await new PreviewService(tools, runner).FetchAsync(server.Url, DownloadSource.Video, timeout.Token);
+        Assert.False(string.IsNullOrWhiteSpace(preview.Title));
+        Assert.Null(preview.Artwork);
         var request = new DownloadRequest(server.Url, destination, DownloadSource.Video, Format: VideoFormat.Mp3);
         var result = await new DownloadSession(tools, runner).RunAsync(request, logs.Enqueue, timeout.Token);
         Assert.True(result.Succeeded, result.Error + "\n" + string.Join('\n', logs));

@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Runtime.InteropServices;
 using System.Text.Json;
+using System.Net;
 using Caeser.App.Controls;
 using Caeser.App.ViewModels;
 using Caeser.Core;
@@ -56,6 +57,7 @@ internal static class UiSmokeTest
         model.Source = model.Source;
         model.PropertyChanged -= countChange;
         if (notifications != 0) throw new InvalidOperationException("O formulário notificou uma mudança de seleção inexistente.");
+        await CheckAsyncPreviewAsync(root, selector, url, model, directory);
         foreach (var theme in new[] { ElementTheme.Dark, ElementTheme.Light })
         {
             root.RequestedTheme = theme;
@@ -133,7 +135,7 @@ internal static class UiSmokeTest
             if (await updateShown != ContentDialogResult.None) throw new InvalidOperationException("Escape não cancelou a atualização.");
         }
         var files = Directory.GetFiles(directory, "*.png");
-        if (files.Length != 14 || files.Any(f => new FileInfo(f).Length < 2000))
+        if (files.Length != 18 || files.Any(f => new FileInfo(f).Length < 2000))
             throw new InvalidOperationException("A captura real da interface está incompleta.");
         await File.WriteAllTextAsync(Path.Combine(directory, "result.json"), JsonSerializer.Serialize(new
         {
@@ -142,8 +144,91 @@ internal static class UiSmokeTest
             animatedSourceSwitch = true, reducedMotionSourceSwitch = true,
             dragSourceSwitch = true, keyboardSourceSwitch = true,
             accessibleSourceSwitch = true, keyboardFocus = focusWorks,
+            asynchronousPreviewBindings = true, stalePreviewRejected = true, toolbarStates = true,
             note = "Capturas reais do XAML no runner. Não substitui teste manual no Windows 10/11."
         }, new JsonSerializerOptions { WriteIndented = true }));
+    }
+    private static async Task CheckAsyncPreviewAsync(FrameworkElement root, SourceSelector selector,
+        TextBox url, DownloadViewModel model, string directory)
+    {
+        using var http = new HttpClient(new PreviewHttp());
+        try
+        {
+            foreach (var theme in new[] { ElementTheme.Dark, ElementTheme.Light })
+            {
+                var completion = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+                model.PreviewServiceOverride = new PreviewService(new ToolLocator(AppContext.BaseDirectory), new PreviewRunner(completion.Task), http);
+                root.RequestedTheme = theme;
+                selector.SelectedSource = DownloadSource.Video;
+                url.Text = "https://youtube.com/watch?v=caeser-preview-first";
+                await WaitUntilAsync(() => model.Preview?.Title == "Prévia inicial · primeiro");
+                AssertPreviewBindings(root, model);
+                // Switch links while extraction is pending. The older request
+                // must never replace the current title, cover or match.
+                url.Text = "https://youtube.com/watch?v=caeser-preview-second";
+                await WaitUntilAsync(() => model.Preview?.Title == "Prévia inicial · segundo");
+                completion.TrySetResult();
+                await WaitUntilAsync(() => !model.PreviewBusy && model.Preview?.Title == "Prévia completa · segundo");
+                AssertPreviewBindings(root, model);
+                var action = (Button)root.FindName("PrimaryAction");
+                if (!action.IsEnabled) throw new InvalidOperationException("O botão Baixar não acompanhou o link válido.");
+                foreach (var state in new[] { "Normal", "PointerOver", "Pressed", "Normal" })
+                {
+                    VisualStateManager.GoToState(action, state, false);
+                    await Task.Delay(35);
+                    var label = FindVisual<TextBlock>(action, "ActionLabel");
+                    if (label?.Foreground is not SolidColorBrush foreground || foreground.Color.R != 255)
+                        throw new InvalidOperationException("O botão principal perdeu a legibilidade no estado " + state);
+                }
+                await CaptureAsync(root, directory, $"preview-video-{theme.ToString().ToLowerInvariant()}.png");
+                selector.SelectedSource = DownloadSource.Spotify;
+                url.Text = "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT";
+                await WaitUntilAsync(() => !model.PreviewBusy && model.Preview?.Creator == "Spotify");
+                AssertPreviewBindings(root, model);
+                await CaptureAsync(root, directory, $"preview-spotify-{theme.ToString().ToLowerInvariant()}.png");
+                url.Text = "";
+                await Task.Delay(60);
+                if (action.IsEnabled || ((Border)root.FindName("PreviewCard")).Visibility != Visibility.Collapsed)
+                    throw new InvalidOperationException("A prévia ou o botão ficaram presos após limpar o link.");
+            }
+        }
+        finally { model.UrlText = ""; model.PreviewServiceOverride = null; }
+    }
+    private static async Task WaitUntilAsync(Func<bool> condition)
+    {
+        for (var attempt = 0; attempt < 100; attempt++)
+        { if (condition()) { await Task.Delay(50); return; } await Task.Delay(40); }
+        throw new InvalidOperationException("A prévia assíncrona não atualizou a interface.");
+    }
+    private static void AssertPreviewBindings(FrameworkElement root, DownloadViewModel model)
+    {
+        if (((Border)root.FindName("PreviewCard")).Visibility != Visibility.Visible ||
+            ((TextBlock)root.FindName("PreviewTitleText")).Text != model.PreviewTitle ||
+            ((TextBlock)root.FindName("PreviewCreatorText")).Text != model.PreviewCreator ||
+            model.PreviewCreator.EndsWith(" · "))
+            throw new InvalidOperationException("Os dados da prévia não chegaram aos controles visíveis.");
+    }
+    private sealed class PreviewHttp : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken token)
+        {
+            var spotify = request.RequestUri!.Host == "open.spotify.com";
+            var second = request.RequestUri.Query.Contains("second");
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(
+                JsonSerializer.Serialize(new { title = "Prévia inicial · " + (second ? "segundo" : "primeiro"),
+                    author_name = spotify ? "Spotify" : "Artista", thumbnail_url = (string?)null })) });
+        }
+    }
+    private sealed class PreviewRunner(Task completion) : IProcessRunner
+    {
+        public async Task<ProcessResult> RunAsync(ProcessCommand command, Action<string> output, CancellationToken token)
+        {
+            if (Path.GetFileName(command.Executable) == "spotdl.exe") return new(1, false);
+            await completion.WaitAsync(token);
+            output(JsonSerializer.Serialize(new { title = "Prévia completa · " + (command.Arguments.Last().Contains("second") ? "segundo" : "primeiro"),
+                creator = "Artista", thumbnail = (string?)null, duration = 183 }));
+            return new(0, false);
+        }
     }
     private static async Task ClickSourceAsync(Window window, FrameworkElement root, SourceSelector selector,
         DownloadViewModel model, string name, DownloadSource expected)
@@ -255,7 +340,7 @@ internal static class UiSmokeTest
     private static async Task CheckLayoutAsync(FrameworkElement root, string directory)
     {
         var bounds = new Dictionary<string, Rect>();
-        foreach (var name in new[] { "ContentFrame", "SourceBar", "UrlBox", "PasteButton", "FolderButton" })
+        foreach (var name in new[] { "ContentFrame", "SourceBar", "UrlBox", "PasteButton", "FolderButton", "HistoryButton", "UpdatesButton", "PrimaryAction" })
         {
             var element = root.FindName(name) as FrameworkElement ??
                 throw new InvalidOperationException($"Controle ausente: {name}");
@@ -268,6 +353,8 @@ internal static class UiSmokeTest
         }, new JsonSerializerOptions { WriteIndented = true }));
         if (bounds.Any(p => p.Value.Width < 1 || p.Value.Left < -1 || p.Value.Right > root.ActualWidth + 1))
             throw new InvalidOperationException("A interface ultrapassou a largura da janela. Consulte layout.json.");
+        if (new[] { "HistoryButton", "UpdatesButton", "PrimaryAction" }.Any(n => bounds[n].Height < 32 || Math.Abs(bounds[n].Height - bounds["PrimaryAction"].Height) > 1))
+            throw new InvalidOperationException("Os botões da barra têm alturas inconsistentes ou alvos pequenos.");
         var selector = (SourceSelector)root.FindName("SourceBar");
         var thumb = (FrameworkElement)selector.FindName("Thumb");
         var translation = thumb.RenderTransform as TranslateTransform ??

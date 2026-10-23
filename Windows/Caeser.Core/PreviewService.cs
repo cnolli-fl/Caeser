@@ -2,14 +2,51 @@ using System.Text.Json;
 
 namespace Caeser.Core;
 
-public sealed class PreviewService(ToolLocator tools, IProcessRunner runner)
+public sealed class PreviewService(ToolLocator tools, IProcessRunner runner, HttpClient? http = null)
 {
+    private static readonly HttpClient PublicMetadata = new(new HttpClientHandler { AllowAutoRedirect = false });
     public static bool IsYouTube(Uri? url) => url is { Scheme: "https", UserInfo: "" } &&
         new[] { "youtube.com", "www.youtube.com", "music.youtube.com", "m.youtube.com", "youtu.be" }.Contains(url.Host);
     private static string? String(JsonElement item, string key) => item.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.String ? value.GetString() : null;
     private static double? Number(JsonElement item, string key) => item.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.Number && value.TryGetDouble(out var number) ? number : null;
     private static string? Image(string? value) => Uri.TryCreate(value, UriKind.Absolute, out var uri) && uri.Scheme == "https" && uri.UserInfo == "" ? value : null;
-    public async Task<MediaPreview> FetchAsync(Uri url, DownloadSource source, CancellationToken cancellationToken)
+    public async Task<MediaPreview> FetchAsync(Uri url, DownloadSource source, CancellationToken cancellationToken,
+        IProgress<MediaPreview>? progress = null)
+    {
+        var basic = await PublicPreviewAsync(url, source, cancellationToken).ConfigureAwait(false);
+        if (basic != null) progress?.Report(basic);
+        try { return await FullPreviewAsync(url, source, cancellationToken).ConfigureAwait(false); }
+        catch (Exception e) when (basic != null && !cancellationToken.IsCancellationRequested &&
+            e is IOException or JsonException or OperationCanceledException or System.ComponentModel.Win32Exception)
+        { return basic; }
+    }
+    private async Task<MediaPreview?> PublicPreviewAsync(Uri url, DownloadSource source, CancellationToken cancellationToken)
+    {
+        var spotify = source == DownloadSource.Spotify && url is { Scheme: "https", Host: "open.spotify.com", UserInfo: "" };
+        if (!spotify && !IsYouTube(url)) return null;
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(TimeSpan.FromSeconds(7));
+        try
+        {
+            var endpoint = (spotify ? "https://open.spotify.com/oembed?url=" : "https://www.youtube.com/oembed?format=json&url=") + Uri.EscapeDataString(url.AbsoluteUri);
+            using var response = await (http ?? PublicMetadata).GetAsync(endpoint, HttpCompletionOption.ResponseHeadersRead, timeout.Token).ConfigureAwait(false);
+            response.EnsureSuccessStatusCode();
+            await using var stream = await response.Content.ReadAsStreamAsync(timeout.Token).ConfigureAwait(false);
+            var bytes = new byte[128001];
+            var count = await stream.ReadAtLeastAsync(bytes, bytes.Length, false, timeout.Token).ConfigureAwait(false);
+            if (count > 128000) throw new IOException("Resposta de prévia muito grande.");
+            using var document = JsonDocument.Parse(bytes.AsMemory(0, count));
+            var item = document.RootElement;
+            if (item.ValueKind != JsonValueKind.Object) return null;
+            var title = String(item, "title");
+            if (string.IsNullOrWhiteSpace(title)) return null;
+            return new(url, title, String(item, "author_name") ?? (spotify ? "Spotify" : "YouTube"),
+                Image(String(item, "thumbnail_url")), null);
+        }
+        catch (Exception e) when (e is HttpRequestException or IOException or JsonException or OperationCanceledException)
+        { cancellationToken.ThrowIfCancellationRequested(); return null; }
+    }
+    private async Task<MediaPreview> FullPreviewAsync(Uri url, DownloadSource source, CancellationToken cancellationToken)
     {
         if (source == DownloadSource.Video) return await VideoAsync(url, cancellationToken).ConfigureAwait(false);
         var temporary = Path.Combine(Path.GetTempPath(), "Caeser-preview-" + Guid.NewGuid().ToString("N"));
@@ -55,6 +92,7 @@ public sealed class PreviewService(ToolLocator tools, IProcessRunner runner)
         string? json = null; var gate = new object();
         var result = await runner.RunAsync(new(tools.Tool("yt-dlp.exe"),
             ["--ignore-config", "--no-playlist", "--skip-download", "--no-warnings", "--socket-timeout", "15", "--retries", "1",
+             "--ignore-no-formats-error", "--output-na-placeholder", "null",
              "--js-runtimes", $"deno:{tools.Tool("deno.exe")}", "--print",
              "{\"title\":%(title)j,\"creator\":%(uploader)j,\"thumbnail\":%(thumbnail)j,\"duration\":%(duration)j}", "--", url.AbsoluteUri],
             Path.GetTempPath(), tools.EnvironmentVariables()), line => { if (line.StartsWith('{')) lock (gate) json = line; }, timeout.Token).ConfigureAwait(false);

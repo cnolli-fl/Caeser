@@ -9,6 +9,18 @@
                 <ResourceDictionary Source="Themes/Caeser.xaml" />
             </ResourceDictionary.MergedDictionaries>
             <!-- Resolve the native base style in the application dictionary, not a sibling merged dictionary. -->
+            <Style x:Key="CaeserToolbarButton" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+                <Setter Property="Width" Value="34" />
+                <Setter Property="Height" Value="34" />
+                <Setter Property="MinWidth" Value="34" />
+                <Setter Property="MinHeight" Value="34" />
+                <Setter Property="Padding" Value="8" />
+                <Setter Property="CornerRadius" Value="10" />
+                <Setter Property="VerticalAlignment" Value="Center" />
+                <Setter Property="HorizontalContentAlignment" Value="Center" />
+                <Setter Property="VerticalContentAlignment" Value="Center" />
+                <Setter Property="Background" Value="Transparent" />
+            </Style>
             <Style x:Key="CaeserLink" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
                 <Setter Property="Background" Value="Transparent" />
                 <Setter Property="BorderThickness" Value="0" />

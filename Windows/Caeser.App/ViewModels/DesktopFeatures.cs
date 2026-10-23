@@ -13,14 +13,18 @@ public sealed partial class DownloadViewModel
     private LibraryItem? activeItem;
     private CancellationTokenSource? previewCancellation;
     private bool restoring;
+    internal PreviewService? PreviewServiceOverride { get; set; }
+    public void RetryPreview() => SchedulePreview();
     public MediaPreview? Preview { get; private set; }
     public string? PreviewMessage { get; private set; }
     public bool PreviewBusy { get; private set; }
     public string PreviewTitle => Preview?.Title ?? "";
-    public string PreviewCreator => Preview == null ? "" : $"{Preview.Creator} · {Preview.DurationText}";
+    public string PreviewCreator => Preview == null ? "" : string.Join(" · ", new[] { Preview.Creator, Preview.DurationText }.Where(x => !string.IsNullOrWhiteSpace(x)));
     public string? PreviewArtwork => Preview?.Artwork;
     public string PreviewMatch => Preview?.MatchedUrl != null ? "Encontrado no YouTube: " + (Preview.MatchTitle ?? Preview.MatchedUrl.AbsoluteUri) :
-        Preview?.Count > 1 ? "As versões no YouTube serão buscadas durante o download." : "";
+        Preview?.Count > 1 ? "As versões no YouTube serão buscadas durante o download." :
+        Preview != null && Source == DownloadSource.Spotify ? "A correspondência no YouTube será buscada antes do download." : "";
+    public string PreviewLoadingText => Preview == null ? "Buscando prévia…" : "Buscando detalhes e correspondência…";
     public Visibility PreviewVisibility => Show(Preview != null);
     public Visibility PreviewBusyVisibility => Show(PreviewBusy);
     public Visibility PreviewMessageVisibility => Show(!string.IsNullOrEmpty(PreviewMessage));
@@ -85,11 +89,18 @@ public sealed partial class DownloadViewModel
             try { url = DownloadInput.Validate(text, source); } catch (ArgumentException) { Changed(); return; }
             PreviewBusy = true; Changed();
             await Task.Delay(800, cancellation.Token);
-            var value = await new PreviewService(tools, new ProcessRunner()).FetchAsync(url, source, cancellation.Token);
-            if (!cancellation.IsCancellationRequested) Preview = value;
+            var updates = new Progress<MediaPreview>(value => {
+                if (previewCancellation != cancellation || cancellation.IsCancellationRequested) return;
+                Preview = value; Changed();
+            });
+            var value = await (PreviewServiceOverride ?? new PreviewService(tools, new ProcessRunner())).FetchAsync(url, source, cancellation.Token, updates);
+            if (previewCancellation == cancellation && !cancellation.IsCancellationRequested) Preview = value;
         }
         catch (OperationCanceledException) { if (previewCancellation == cancellation) PreviewMessage = "A prévia demorou. Tente colar o link novamente ou adicione à fila."; }
-        catch (Exception) { if (!cancellation.IsCancellationRequested) PreviewMessage = "Não consegui carregar a prévia. Você ainda pode adicionar o link à fila."; }
+        catch (Exception error) { if (!cancellation.IsCancellationRequested) {
+            PreviewMessage = "Não consegui carregar a prévia. Você ainda pode adicionar o link à fila.";
+            Append("Prévia indisponível: " + error.GetType().Name + ". Tente novamente; o link pode ser adicionado à fila.");
+        } }
         finally { if (previewCancellation == cancellation) { previewCancellation = null; PreviewBusy = false; Changed(); } cancellation.Dispose(); }
     }
     private void RefreshLibrary()
