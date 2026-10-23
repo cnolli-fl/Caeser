@@ -15,7 +15,13 @@ public sealed class PreviewService(ToolLocator tools, IProcessRunner runner, Htt
     {
         var basic = await PublicPreviewAsync(url, source, cancellationToken).ConfigureAwait(false);
         if (basic != null) progress?.Report(basic);
-        try { return await FullPreviewAsync(url, source, cancellationToken).ConfigureAwait(false); }
+        try
+        {
+            var detailed = await FullPreviewAsync(url, source, cancellationToken).ConfigureAwait(false);
+            // Keep the public poster already shown instead of swapping to a
+            // different extractor thumbnail/codec while details are enriched.
+            return basic?.Artwork is { } poster ? detailed with { Artwork = poster } : detailed;
+        }
         catch (Exception e) when (basic != null && !cancellationToken.IsCancellationRequested &&
             e is IOException or JsonException or OperationCanceledException or System.ComponentModel.Win32Exception)
         { return basic; }

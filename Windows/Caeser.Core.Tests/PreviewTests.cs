@@ -73,6 +73,18 @@ public sealed class PreviewTests
         Assert.Null(value.Artwork);
     }
 
+    [Fact] public async Task EnrichmentKeepsPublicCoverAndAddsDuration()
+    {
+        using var http = new HttpClient(new Handler(PublicJson));
+        var runner = new Runner((command, output, token) => {
+            output("{\"title\":\"Canção\",\"creator\":\"Artista\",\"thumbnail\":\"https://example.invalid/alternate.webp\",\"duration\":183}");
+            return Task.FromResult(new ProcessResult(0, false));
+        });
+        var value = await new PreviewService(Tools, runner, http).FetchAsync(Video, DownloadSource.Video, CancellationToken.None);
+        Assert.Equal("https://example.invalid/capa.jpg", value.Artwork);
+        Assert.Equal("3:03", value.DurationText);
+    }
+
     private sealed class PreviewProgress(Action<MediaPreview> action) : IProgress<MediaPreview>
     { public void Report(MediaPreview value) => action(value); }
     private sealed class Runner(Func<ProcessCommand, Action<string>, CancellationToken, Task<ProcessResult>> action) : IProcessRunner
