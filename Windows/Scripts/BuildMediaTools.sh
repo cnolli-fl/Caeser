@@ -24,14 +24,15 @@ export PKG_CONFIG_PATH="$task_prefix/lib/pkgconfig"
     cd "$task_build/ffmpeg-9.0.2"
     ./configure --prefix="$task_prefix" --arch=x86_64 --target-os=mingw32 \
         --enable-cross-compile --cc=gcc --ar=ar --ranlib=ranlib --pkg-config=pkgconf \
-        --disable-autodetect --disable-shared --enable-static --disable-doc --disable-debug --disable-ffplay \
+        --disable-autodetect --enable-shared --disable-static --disable-doc --disable-debug --disable-ffplay \
         --enable-schannel --enable-w32threads --disable-pthreads \
         --disable-encoders --enable-encoder=libmp3lame,aac,mjpeg,png --enable-libmp3lame \
-        --extra-cflags="-I$task_prefix/include" --extra-ldflags="-L$task_prefix/lib -static -static-libgcc"
+        --extra-cflags="-I$task_prefix/include" --extra-ldflags="-L$task_prefix/lib -static-libgcc"
     make -j4
     make install
 )
 cp "$task_prefix/bin/ffmpeg.exe" "$task_prefix/bin/ffprobe.exe" "$task_output/"
+cp "$task_prefix/bin/"*.dll "$task_output/"
 cp "$task_build/ffmpeg-9.0.2/COPYING.LGPLv2.1" "$task_output/Licenses/FFmpeg-LGPL-2.1.txt"
 cp "$task_build/lame-3.100/COPYING" "$task_output/Licenses/LAME-LGPL.txt"
 mkdir -p "$task_output/Licenses/MinGW-runtime"

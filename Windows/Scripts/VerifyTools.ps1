@@ -43,6 +43,7 @@ function Invoke-Tool([string]$Name, [string[]]$Arguments) {
     } finally { $process.Dispose() }
 }
 $versions = @{}
+[void](Invoke-Tool 'spotdl.exe' @('--caeser-runtime-check'))
 foreach ($name in @('yt-dlp.exe', 'ffmpeg.exe', 'ffprobe.exe', 'deno.exe', 'spotdl.exe')) {
     if (-not (Test-Path (Join-Path $directory $name))) { throw "Pacote incompleto: $name" }
     $versionArgs = if ($name -in @('ffmpeg.exe', 'ffprobe.exe')) { @('-version') } else { @('--version') }

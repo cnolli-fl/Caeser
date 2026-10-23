@@ -5,7 +5,7 @@
   #error OutputDirectory must point to the artifact directory
 #endif
 #ifndef AppVersion
-  #define AppVersion "2.1.0"
+  #define AppVersion "2.2.0"
 #endif
 
 [Setup]
@@ -25,7 +25,7 @@ OutputDir={#OutputDirectory}
 OutputBaseFilename=Caeser-{#AppVersion}-Windows-x64-Setup
 SetupIconFile=..\Caeser.App\Assets\Caeser.ico
 UninstallDisplayIcon={app}\Caeser.exe
-Compression=lzma2
+Compression=lzma2/ultra64
 SolidCompression=yes
 WizardStyle=modern
 CloseApplications=yes

@@ -16,14 +16,8 @@ if (-not (Test-Path $python)) {
 }
 & $python -m pip install --no-input --disable-pip-version-check -r (Join-Path $windowsRoot 'Packaging\spotdl-windows-requirements.txt')
 if ($LASTEXITCODE -ne 0) { throw 'Falha nas dependências fixadas do spotDL.' }
-$buildArguments = @(
-    '--noconfirm', '--clean', '--onefile', '--console', '--name', 'spotdl',
-    '--distpath', $tools, '--workpath', (Join-Path $cache 'build'), '--specpath', $cache,
-    '--collect-all', 'spotdl', '--collect-all', 'yt_dlp', '--collect-all', 'yt_dlp_ejs',
-    '--collect-all', 'ytmusicapi', '--collect-all', 'pykakasi', '--collect-all', 'curl_cffi',
-    '--collect-all', 'spotapi', '--collect-all', 'certifi', '--recursive-copy-metadata', 'spotdl',
-    (Join-Path $repoRoot 'Scripts\SpotDLEntry.py')
-)
+$buildArguments = @('--noconfirm', '--clean', '--distpath', $tools, '--workpath', (Join-Path $cache 'build'),
+    (Join-Path $windowsRoot 'Packaging\MediaTools.spec'))
 & $python -m PyInstaller @buildArguments
 if ($LASTEXITCODE -ne 0) { throw 'Falha na criação do spotdl.exe.' }
 & $python (Join-Path $PSScriptRoot 'CollectPythonLicenses.py') (Join-Path $tools 'Licenses\Python-packages')
@@ -33,7 +27,13 @@ if ($LASTEXITCODE -ne 0) { throw 'Falha na coleta dos fontes correspondentes das
 Copy-Item (Join-Path $windowsRoot 'Packaging\spotdl-windows-requirements.txt') (Join-Path $tools 'Sources') -Force
 Copy-Item (Join-Path $repoRoot 'Packaging\spotdl-requirements.txt') (Join-Path $tools 'Sources') -Force
 Copy-Item (Join-Path $repoRoot 'Scripts\SpotDLEntry.py') (Join-Path $tools 'Sources') -Force
+Copy-Item (Join-Path $PSScriptRoot 'MediaEntry.py') (Join-Path $tools 'Sources') -Force
+Copy-Item (Join-Path $windowsRoot 'Packaging\MediaTools.spec') (Join-Path $tools 'Sources') -Force
+& (Join-Path $PSScriptRoot 'BuildLauncher.ps1') -OutputDirectory (Join-Path $cache 'native')
+Copy-Item (Join-Path $cache 'native\yt-dlp.exe') (Join-Path $tools 'yt-dlp.exe') -Force
 Copy-Item (Join-Path $PSScriptRoot 'CollectSourceNotices.py') (Join-Path $tools 'Sources') -Force
 & $python -m pip freeze | Set-Content -Encoding utf8 (Join-Path $tools 'Sources\spotdl-freeze.txt')
 & (Join-Path $tools 'spotdl.exe') --version
 if ($LASTEXITCODE -ne 0) { throw 'spotdl.exe não abriu depois da construção.' }
+& (Join-Path $tools 'spotdl.exe') --caeser-runtime-check
+if ($LASTEXITCODE -ne 0) { throw 'Os catálogos internos exigidos pelo provedor estão ausentes.' }

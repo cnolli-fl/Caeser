@@ -88,7 +88,7 @@ jobs:
         uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
         with:
           path: Windows/.tools/win-x64
-          key: windows-media-x64-py3.14.7-v1-${{ hashFiles('Windows/Packaging/tools.lock.json', 'Windows/Packaging/spotdl-windows-requirements.txt', 'Packaging/spotdl-requirements.txt', 'Windows/Scripts/BuildMediaTools.sh', 'Windows/Scripts/BuildSpotDL.ps1', 'Scripts/SpotDLEntry.py', 'Windows/Scripts/DownloadTools.ps1', 'Windows/Scripts/CollectPythonLicenses.py', 'Windows/Scripts/CollectSourceNotices.py') }}
+          key: windows-media-x64-py3.14.7-v2-${{ hashFiles('Windows/Packaging/tools.lock.json', 'Windows/Packaging/spotdl-windows-requirements.txt', 'Packaging/spotdl-requirements.txt', 'Windows/Packaging/MediaTools.spec', 'Windows/Scripts/MediaEntry.py', 'Windows/Caeser.Launcher/ytdlp.c', 'Windows/Scripts/BuildLauncher.ps1', 'Windows/Scripts/BuildMediaTools.sh', 'Windows/Scripts/BuildSpotDL.ps1', 'Windows/Scripts/DownloadTools.ps1', 'Windows/Scripts/CollectPythonLicenses.py', 'Windows/Scripts/CollectSourceNotices.py') }}
       - uses: msys2/setup-msys2@ec48f7c5447b3140e2b088413ae3a55687bccb6e # v2
         if: steps.media-cache.outputs.cache-hit != 'true'
         with:

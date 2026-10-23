@@ -26,3 +26,5 @@ $executable = Join-Path $OutputDirectory 'Caeser.exe'
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao compilar os recursos do launcher.' }
 & cl.exe /nologo /O1 /MT /W4 /WX /DUNICODE /D_UNICODE $source $res "/Fe:$executable" "/Fo:$obj" /link user32.lib /SUBSYSTEM:WINDOWS /MACHINE:X64 /DYNAMICBASE /NXCOMPAT /HIGHENTROPYVA
 if ($LASTEXITCODE -ne 0) { throw 'Falha ao compilar o launcher nativo.' }
+& cl.exe /nologo /O1 /MT /W4 /WX /DUNICODE /D_UNICODE (Join-Path $windowsRoot 'Caeser.Launcher\ytdlp.c') "/Fe:$(Join-Path $OutputDirectory 'yt-dlp.exe')" "/Fo:$(Join-Path $build 'ytdlp.obj')" /link /SUBSYSTEM:CONSOLE /MACHINE:X64 /DYNAMICBASE /NXCOMPAT /HIGHENTROPYVA
+if ($LASTEXITCODE -ne 0) { throw 'Falha ao compilar o encaminhador yt-dlp.' }
