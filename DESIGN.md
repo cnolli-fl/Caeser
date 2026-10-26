@@ -1,3 +1,9 @@
+# Marca ativa — azul da interface
+
+`CaeserIconRoyalBlue.png` mantém a nota branca e troca o fundo claro da marca pelo azul profundo da interface. Aplicado ao cabeçalho e a todos os tamanhos do ícone do aplicativo.
+
+---
+
 # Ajuste ativo — azul da referência
 
 O usuário forneceu a amostra azul #0D2666. Fundo e formulário usam esse tom sólido, sem painel branco nem iluminação ciano. Campos e trilho em #244580, bordas #6086BB, texto auxiliar #CFDFF5 e ações #94D2FF. Aparência escura dos controles nativos permite texto claro. Mantém a nota branca sobre azul e o download em uma ação.
