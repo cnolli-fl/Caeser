@@ -1,5 +1,12 @@
 # Mudanças
 
+## macOS 3.1.0 — 2026-10-26
+
+- Nova identidade azul com texto claro e campos em tons próximos, sem painel branco.
+- Nota musical branca e ícone no formato nativo do macOS Tahoe, corrigindo a moldura cinza do ícone legado.
+- Adicionar novos links válidos inicia ou retoma a fila em uma ação; entradas inválidas ou repetidas não retomam a fila pausada.
+- Preservados fila, histórico, preferências, formatos e ferramentas incluídas. Windows permanece na 2.2.1.
+
 ## Windows 2.2.1 — 2026-10-23
 
 - Corrigida a notificação de propriedades para o formato exigido pelo WinUI, atualizando prévia, textos e estado dos controles após operações assíncronas.

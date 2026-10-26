@@ -1,6 +1,6 @@
 # Caeser
 
-Windows **2.2.1** · macOS **3.0.1**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
+Windows **2.2.1** · macOS **3.1.0**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
 
 ## Baixar para Windows
 
@@ -14,19 +14,21 @@ O instalador pequeno baixa o pacote completo de aproximadamente **136 MB** duran
 
 ## Baixar para Mac
 
-**Caeser 3.0.1 · macOS 26 ou mais recente · Apple Silicon (M1 ou posterior)**
+**Caeser 3.1.0 · macOS 26 ou mais recente · Apple Silicon (M1 ou posterior)**
 
-[**Baixar instalador para Mac (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v3.0.1/Caeser-3.0.1-macOS-AppleSilicon.dmg)
+[**Baixar instalador para Mac (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v3.1.0/Caeser-3.1.0-macOS-AppleSilicon.dmg)
 
 Abra o arquivo e arraste o Caeser para Aplicativos. As ferramentas já estão incluídas; não é preciso instalar Homebrew ou Python.
 
-[Notas da versão](https://github.com/cnolli-fl/Caeser/releases/tag/v3.0.1) · [Todas as versões Mac](https://github.com/cnolli-fl/Caeser/releases?q=tag%3Av)
+[Notas da versão](https://github.com/cnolli-fl/Caeser/releases/tag/v3.1.0) · [Todas as versões Mac](https://github.com/cnolli-fl/Caeser/releases?q=tag%3Av)
 
 Escolha **somente um instalador do seu sistema**. Os arquivos automáticos **Source code (.zip / .tar.gz)** são para desenvolvimento, não para instalar o app. O README é esta página e não precisa ser baixado.
 
 O Mac usa assinatura local, sem notarização da Apple; o Windows não tem assinatura Authenticode. Podem aparecer avisos de segurança na primeira abertura. Consulte as instruções de instalação para [Mac](docs/INSTALACAO.md) ou [Windows](Windows/README.md), sem desativar as proteções do sistema.
 
 ## Novidades
+
+**Mac 3.1.0:** interface azul com texto claro, nota musical branca e ícone nativo para macOS Tahoe, sem a moldura cinza de compatibilidade. Adicionar um link válido à fila já inicia os downloads, inclusive ao retomar uma fila pausada. Histórico e preferências são preservados.
 
 **Correções da 2.2.1:** prévia de vídeo/música com título e capa progressivos, atualização correta dos controles e botões alinhados, com estados de interação consistentes. O design e as logos continuam os mesmos.
 
@@ -48,7 +50,7 @@ O Caeser foi criado para facilitar o caminho entre o link e o arquivo salvo: col
 
 A edição Mac não é notarizada pela Apple; veja [como instalar e conferir a segurança](docs/INSTALACAO.md). A edição Windows não tem assinatura Authenticode e pode exibir um aviso de fornecedor desconhecido. Veja [as instruções e os testes do Windows](Windows/README.md). Mac Intel, Windows de 32 bits e Windows ARM64 não são alvos validados.
 
-![Caeser 2.1.0 com seletor YouTube e Spotify, opções de download e download concluído](docs/images/caeser-interface.png)
+![Caeser 3.1.0 para Mac com tema azul, nota branca, seletor YouTube e Spotify e opções de download](docs/images/caeser-interface.png)
 
 *Interface da versão 2.1.0, com seletor YouTube/Spotify, ícones Retina e indicação de download concluído.*
 
@@ -88,7 +90,7 @@ Baixe o instalador `.dmg`, abra e arraste Caeser.app para Aplicativos. Requer **
 
 Esta edição tem assinatura local gratuita (ad-hoc), **sem Developer ID e sem notarização da Apple**. O macOS pode impedir a primeira abertura e exigir autorização manual. Isso não deve ser confundido com um app verificado pela Apple. Consulte [as instruções de instalação e segurança](docs/INSTALACAO.md); não desative as proteções globais do sistema.
 
-O instalador está na [release 3.0.1](https://github.com/cnolli-fl/Caeser/releases/tag/v3.0.1), com instruções e hash SHA-256 nas próprias notas. Os [fontes correspondentes das ferramentas](https://github.com/cnolli-fl/Caeser/releases/tag/fontes-terceiros) ficam na área para desenvolvedores, sem misturar com os instaladores.
+O instalador está na [release 3.0.1](https://github.com/cnolli-fl/Caeser/releases/tag/v3.1.0), com instruções e hash SHA-256 nas próprias notas. Os [fontes correspondentes das ferramentas](https://github.com/cnolli-fl/Caeser/releases/tag/fontes-terceiros) ficam na área para desenvolvedores, sem misturar com os instaladores.
 
 A 3.0.0 acrescenta prévia, fila, histórico e aviso de atualização ao pacote otimizado: yt-dlp e spotDL compartilham uma única cópia do Python para Apple Silicon, FFmpeg e FFprobe compartilham suas próprias bibliotecas e os fontes de compilação ficam em um ZIP separado. A interface é declarada como português brasileiro; ficam os recursos neutros, os pequenos catálogos internos obrigatórios dos parsers e as licenças originais. Nenhum codec, extrator ou opção de qualidade é removido.
 
