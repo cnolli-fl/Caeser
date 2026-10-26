@@ -1,3 +1,9 @@
+# Marca ativa — nota branca e cantos discretos
+
+O usuário escolheu a nota branca e pediu um ícone menos arredondado. `CaeserIconWhiteSquare.png` usa cantos pequenos, aproximadamente 6% da largura, e substitui a marca interna e os tamanhos do AppIcon. O recorte do cabeçalho acompanha os cantos menores.
+
+---
+
 # Marca ativa — azul da interface
 
 `CaeserIconRoyalBlue.png` mantém a nota branca e troca o fundo claro da marca pelo azul profundo da interface. Aplicado ao cabeçalho e a todos os tamanhos do ícone do aplicativo.
