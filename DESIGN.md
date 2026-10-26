@@ -1,3 +1,9 @@
+# Ajuste ativo — azul da referência
+
+O usuário forneceu a amostra azul #0D2666. Fundo e formulário usam esse tom sólido, sem painel branco nem iluminação ciano. Campos e trilho em #244580, bordas #6086BB, texto auxiliar #CFDFF5 e ações #94D2FF. Aparência escura dos controles nativos permite texto claro. Mantém a nota branca sobre azul e o download em uma ação.
+
+---
+
 # Ajuste ativo — superfícies azuis contínuas
 
 Pedido: remover o grande painel branco e ajustar novamente o tom de azul. Fundo e formulário compartilham #53ADE2; agrupamento por espaçamento e borda #287DB4, sem cartão branco. O campo de link e o trilho usam azul mais claro #85C9EF. Texto auxiliar #173D59 e ações #004775 preservam leitura sobre o azul. A nota musical azul e branca permanece.

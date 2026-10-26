@@ -38,10 +38,10 @@ struct CaeserApp: App {
         Window("Caeser", id: "main") {
             ContentView(viewModel: viewModel, updates: updates)
                 .frame(minWidth: 640, minHeight: 620)
-                .preferredColorScheme(.light)
+                .preferredColorScheme(.dark)
                 .onAppear {
                     appDelegate.viewModel = viewModel
-                    NSApp.appearance = NSAppearance(named: .aqua)
+                    NSApp.appearance = NSAppearance(named: .darkAqua)
                 }
         }
         .defaultSize(width: 820, height: 760)

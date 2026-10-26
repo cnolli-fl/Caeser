@@ -90,17 +90,7 @@ struct ContentView: View {
     }
 
     private var background: some View {
-        ZStack(alignment: .topTrailing) {
-            OceanPalette.canvas
-            if !reduceTransparency {
-                RadialGradient(
-                    colors: [OceanPalette.aqua.opacity(colorScheme == .dark ? 0.16 : 0.22), .clear],
-                    center: .topTrailing, startRadius: 0, endRadius: 520
-                )
-                .allowsHitTesting(false)
-            }
-        }
-        .ignoresSafeArea()
+        OceanPalette.canvas.ignoresSafeArea()
     }
 
     private var header: some View {
@@ -602,14 +592,14 @@ struct CaeserLogo: View {
 }
 
 
-/// Bright ocean roles for the intentionally light Aero experiment.
+/// Reference-blue canvas with light foregrounds and tonal blue controls.
 enum OceanPalette {
-    static let accent = rgb(0x004775)
-    static let canvas = rgb(0x53ADE2)
-    static let secondaryText = rgb(0x173D59)
+    static let accent = rgb(0x94D2FF)
+    static let canvas = rgb(0x0D2666)
+    static let secondaryText = rgb(0xCFDFF5)
     static let surface = canvas
-    static let selectionTrack = rgb(0x85C9EF)
-    static let border = rgb(0x287DB4)
+    static let selectionTrack = rgb(0x244580)
+    static let border = rgb(0x6086BB)
     static let aqua = rgb(0x63D5E9)
 
     private static func rgb(_ hex: UInt32) -> Color {
