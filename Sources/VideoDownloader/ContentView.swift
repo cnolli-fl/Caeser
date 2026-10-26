@@ -97,7 +97,7 @@ struct ContentView: View {
         HStack(spacing: 16) {
             CaeserLogo()
                 .frame(width: 68, height: 68)
-                .clipShape(RoundedRectangle(cornerRadius: 6))
+                .clipShape(RoundedRectangle(cornerRadius: 17))
                 .allowsHitTesting(false)
                 .accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 5) {
