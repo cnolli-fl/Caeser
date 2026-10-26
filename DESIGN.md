@@ -1,3 +1,11 @@
+# Ajuste ativo — azul-céu médio e nota musical
+
+O usuário escolheu retornar ao símbolo musical original, em azul e branco e sem neon. `CaeserIconBlueWhite.png` substitui o mascote tanto no cabeçalho quanto nos tamanhos do AppIcon. Nota branca com profundidade suave, bloco azul arredondado e margem transparente.
+
+O fundo passa a #86C6EA: azul-céu com presença, mantendo os formulários brancos e as ações azuis. Texto auxiliar #34495E para leitura sobre o céu azul e sobre branco. Aparência clara permanece restrita ao aplicativo.
+
+---
+
 # Revisão Aero claro — 26/10/2026
 
 O usuário pediu um aplicativo claro, leve e alegre, com uma marca minimalista Frutiger Aero. A versão de teste usa aparência clara explícita somente dentro do Caeser, inclusive nos controles nativos e no histórico; não altera a preferência do macOS.

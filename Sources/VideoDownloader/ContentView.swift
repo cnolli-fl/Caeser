@@ -30,7 +30,7 @@ struct ContentView: View {
                     }
                     if let message = viewModel.persistenceMessage {
                         Label(message, systemImage: "exclamationmark.circle")
-                            .font(.callout).foregroundStyle(.secondary)
+                            .font(.callout).foregroundStyle(OceanPalette.secondaryText)
                     }
                     details
                 }
@@ -116,7 +116,7 @@ struct ContentView: View {
                     .accessibilityAddTraits(.isHeader)
                 Text("Vídeos e músicas. Do link à sua pasta.")
                     .font(.body)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(OceanPalette.secondaryText)
             }
             Spacer(minLength: 0)
         }
@@ -157,23 +157,23 @@ struct ContentView: View {
                      ? "Música, álbum ou playlist pública. Sem entrar na sua conta."
                      : "Cole um link ou vários, um por linha.")
                     .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(OceanPalette.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
                 if let message = viewModel.inputMessage {
-                    Label(message, systemImage: "info.circle").font(.callout).foregroundStyle(.secondary)
+                    Label(message, systemImage: "info.circle").font(.callout).foregroundStyle(OceanPalette.secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 if viewModel.isLoadingPreview {
                     HStack(spacing: 10) {
                         ProgressView().controlSize(.small)
-                        Text("Buscando prévia…").font(.callout).foregroundStyle(.secondary)
+                        Text("Buscando prévia…").font(.callout).foregroundStyle(OceanPalette.secondaryText)
                     }
                     .frame(minHeight: 32).accessibilityElement(children: .combine)
                 } else if let preview = viewModel.preview {
                     MediaPreviewView(preview: preview, source: viewModel.source)
                 } else if let error = viewModel.previewError {
                     HStack(alignment: .top, spacing: 12) {
-                        Text(error).font(.callout).foregroundStyle(.secondary)
+                        Text(error).font(.callout).foregroundStyle(OceanPalette.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)
                         Spacer(minLength: 0)
                         Button("Tentar prévia") { viewModel.schedulePreview(immediate: true) }
@@ -213,7 +213,7 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
                 Label { Text("Spotify") } icon: { SourceBrandIcon(source: .spotify) }
-                Image(systemName: "arrow.right").foregroundStyle(.secondary).accessibilityHidden(true)
+                Image(systemName: "arrow.right").foregroundStyle(OceanPalette.secondaryText).accessibilityHidden(true)
                 Label { Text("YouTube") } icon: { SourceBrandIcon(source: .video) }
                 Spacer(minLength: 6)
                 Text("MP3").font(.callout.weight(.semibold))
@@ -222,13 +222,13 @@ struct ContentView: View {
             }
             .font(.body.weight(.medium))
             Text("O áudio vem do YouTube. O MP3 inclui capa, artista e álbum.")
-                .font(.callout).foregroundStyle(.secondary)
+                .font(.callout).foregroundStyle(OceanPalette.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
             Label("Melhor áudio disponível",
                   systemImage: "waveform")
                 .font(.callout)
             Text("A busca é automática e pode encontrar outra versão da música.")
-                .font(.callout).foregroundStyle(.secondary)
+                .font(.callout).foregroundStyle(OceanPalette.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -240,7 +240,7 @@ struct ContentView: View {
                     Text("Qualidade").font(.headline)
                     if viewModel.format == .mp3 {
                         Text("Melhor áudio disponível")
-                            .font(.body).foregroundStyle(.secondary)
+                            .font(.body).foregroundStyle(OceanPalette.secondaryText)
                             .frame(minHeight: 28, alignment: .leading)
                     } else {
                         Picker("Qualidade", selection: $viewModel.quality) {
@@ -261,16 +261,16 @@ struct ContentView: View {
             }
             if viewModel.format == .mp3 {
                 Text("Converte a melhor faixa de áudio disponível para MP3 em qualidade máxima.")
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(.callout).foregroundStyle(OceanPalette.secondaryText)
             }
         }
     }
 
     private var destination: some View {
         HStack(spacing: 12) {
-            Image(systemName: "folder").font(.title3).foregroundStyle(.secondary).accessibilityHidden(true)
+            Image(systemName: "folder").font(.title3).foregroundStyle(OceanPalette.secondaryText).accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 4) {
-                Text("Salvar em").font(.callout).foregroundStyle(.secondary)
+                Text("Salvar em").font(.callout).foregroundStyle(OceanPalette.secondaryText)
                 Text((viewModel.destinationURL.path as NSString).abbreviatingWithTildeInPath)
                     .font(.body.weight(.medium)).lineLimit(1).truncationMode(.middle)
                     .help(viewModel.destinationURL.path)
@@ -296,7 +296,7 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(viewModel.statusMessage).font(.headline)
                     if let error = viewModel.errorMessage {
-                        Text(error).font(.callout).foregroundStyle(.secondary)
+                        Text(error).font(.callout).foregroundStyle(OceanPalette.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)
                             .textSelection(.enabled)
                     }
@@ -316,7 +316,7 @@ struct ContentView: View {
                     Spacer()
                     Text(viewModel.etaText)
                 }
-                .font(.callout).foregroundStyle(.secondary).monospacedDigit()
+                .font(.callout).foregroundStyle(OceanPalette.secondaryText).monospacedDigit()
             }
         }
         .padding(.horizontal, 4)
@@ -326,12 +326,12 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: viewModel.dependenciesReady ? "checkmark.circle" : "shippingbox")
-                    .foregroundStyle(.secondary).accessibilityHidden(true)
+                    .foregroundStyle(OceanPalette.secondaryText).accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(viewModel.dependencyMessage).font(.callout).foregroundStyle(.secondary)
+                    Text(viewModel.dependencyMessage).font(.callout).foregroundStyle(OceanPalette.secondaryText)
                     if viewModel.source == .spotify && viewModel.dependencyInfo.spotDL == nil {
                         Text("Instale o suporte uma vez. O spotDL fica separado do aplicativo.")
-                            .font(.callout).foregroundStyle(.secondary)
+                            .font(.callout).foregroundStyle(OceanPalette.secondaryText)
                         Button("Instalar suporte ao Spotify", systemImage: "arrow.down.circle") {
                             showDetails = true
                             viewModel.installSpotifySupport()
@@ -394,7 +394,7 @@ struct ContentView: View {
 
     private func toolLabel(_ name: String, url: URL?) -> some View {
         Label(name, systemImage: url == nil ? "minus.circle" : "checkmark.circle")
-            .foregroundStyle(.secondary)
+            .foregroundStyle(OceanPalette.secondaryText)
             .help(url?.path ?? "\(name) não está instalado")
             .accessibilityLabel("\(name): \(url == nil ? "não instalado" : "disponível")")
     }
@@ -586,7 +586,7 @@ struct CaeserLogo: View {
                     .resizable()
                     .scaledToFit()
                     .padding(16)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(OceanPalette.secondaryText)
             }
         }
         .aspectRatio(1, contentMode: .fit)
@@ -597,7 +597,8 @@ struct CaeserLogo: View {
 /// Bright ocean roles for the intentionally light Aero experiment.
 enum OceanPalette {
     static let accent = rgb(0x0064B5)
-    static let canvas = rgb(0xE6F5FF)
+    static let canvas = rgb(0x86C6EA)
+    static let secondaryText = rgb(0x34495E)
     static let surface = rgb(0xFFFFFF)
     static let selectionTrack = rgb(0xE1EFF9)
     static let border = rgb(0x8EB6D0)
