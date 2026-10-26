@@ -1,3 +1,9 @@
+# Marca ativa — nota maior e bases arredondadas
+
+`CaeserIconLargeNote.png` aumenta a nota branca e arredonda as duas bases conforme a referência do usuário. Mantém hastes retas e o contorno macOS. Aplicado à marca interna e ao AppIcon.
+
+---
+
 # Marca ativa — formato macOS e nota mais reta
 
 Correção do pedido: o usuário queria a nota musical mais quadradinha, não os cantos do fundo. `CaeserIconStraightNote.png` restaura o formato arredondado de ícone macOS e usa hastes finas e retas, junções mais definidas e nota branca sobre azul. Aplicado ao cabeçalho e ao AppIcon.
