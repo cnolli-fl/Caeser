@@ -25,6 +25,7 @@
 			A10000010000000000000018 /* MediaPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000018 /* MediaPreview.swift */; };
 			A10000010000000000000019 /* ReleaseUpdates.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000019 /* ReleaseUpdates.swift */; };
 			A10000010000000000000020 /* DownloadLibraryViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000020 /* DownloadLibraryViews.swift */; };
+		A10000010000000000000021 /* CaeserApp.icon in Resources */ = {isa = PBXBuildFile; fileRef = A20000010000000000000021 /* CaeserApp.icon */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -48,6 +49,7 @@
 			A20000010000000000000018 /* MediaPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MediaPreview.swift; sourceTree = "<group>"; };
 			A20000010000000000000019 /* ReleaseUpdates.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReleaseUpdates.swift; sourceTree = "<group>"; };
 			A20000010000000000000020 /* DownloadLibraryViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DownloadLibraryViews.swift; sourceTree = "<group>"; };
+		A20000010000000000000021 /* CaeserApp.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.icon; path = CaeserApp.icon; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -66,6 +68,7 @@
 				children = (
 					A40000010000000000000002 /* Sources */,
 					A20000010000000000000009 /* Assets.xcassets */,
+					A20000010000000000000021 /* CaeserApp.icon */,
 					A20000010000000000000008 /* README.md */,
 					A40000010000000000000003 /* Products */,
 				);
@@ -169,6 +172,7 @@
 				buildActionMask = 2147483647;
 				files = (
 					A10000010000000000000007 /* Assets.xcassets in Resources */,
+					A10000010000000000000021 /* CaeserApp.icon in Resources */,
 					A10000010000000000000008 /* CaeserLogo.png in Resources */,
 					A10000010000000000000009 /* YouTubeMark.png in Resources */,
 					A10000010000000000000010 /* SpotifyMark.png in Resources */,
@@ -206,7 +210,7 @@
 				isa = XCBuildConfiguration;
 				buildSettings = {
 					CLANG_ENABLE_MODULES = YES;
-					ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+					ASSETCATALOG_COMPILER_APPICON_NAME = CaeserApp;
 					CODE_SIGN_STYLE = Automatic;
 					CURRENT_PROJECT_VERSION = 6;
 					MARKETING_VERSION = 3.0.1;
@@ -226,7 +230,7 @@
 				isa = XCBuildConfiguration;
 				buildSettings = {
 					CLANG_ENABLE_MODULES = YES;
-					ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+					ASSETCATALOG_COMPILER_APPICON_NAME = CaeserApp;
 					CODE_SIGN_STYLE = Automatic;
 					CURRENT_PROJECT_VERSION = 6;
 					MARKETING_VERSION = 3.0.1;

@@ -1,3 +1,9 @@
+# Ícone macOS ativo — formato Icon Composer
+
+A moldura cinza relatada pelo usuário era a apresentação do ícone legado no macOS Tahoe. `CaeserApp.icon` define um fundo azul sólido opaco e inclui a arte anterior `CaeserIconLargeNote.png`, sem alterar a marca interna. O projeto passa a compilar esse pacote como ícone principal (`CFBundleIconName = CaeserApp`). Sombras e translucidez do grupo desativadas. O recorte final fica a cargo do macOS. Validado por compilação Xcode e prévia nativa no Finder: sem a moldura cinza grossa.
+
+---
+
 # Marca ativa — restaura nota anterior e limpa bordas do AppIcon
 
 O usuário rejeitou as hastes grossas. Marca interna restaurada exatamente de `CaeserIconLargeNote.png`. O AppIcon usa `CaeserIconCleanEdges.png`, derivado da mesma nota anterior com limpeza do contorno e exterior transparente para remover franjas.
