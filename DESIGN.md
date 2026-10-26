@@ -1,3 +1,9 @@
+# Marca ativa — hastes mais grossas e bases redondas
+
+`CaeserIconBoldNote.png` engrossa as duas hastes e arredonda mais as bases da nota branca. Mantém tamanho amplo, fundo azul e contorno macOS. Aplicado à marca interna e ao AppIcon.
+
+---
+
 # Marca ativa — nota maior e bases arredondadas
 
 `CaeserIconLargeNote.png` aumenta a nota branca e arredonda as duas bases conforme a referência do usuário. Mantém hastes retas e o contorno macOS. Aplicado à marca interna e ao AppIcon.
