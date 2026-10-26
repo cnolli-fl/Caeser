@@ -561,7 +561,7 @@ struct SourceBrandIcon: View {
     }
 }
 
-/// Uses the exact original artwork at full resolution, including on Retina displays.
+/// Loads the active branch artwork at full resolution, including on Retina displays.
 struct CaeserLogo: View {
     private static let originalImage: NSImage? = {
         #if SWIFT_PACKAGE
@@ -594,21 +594,18 @@ struct CaeserLogo: View {
 }
 
 
-/// Ocean roles shared by the main window and its sheets; native text stays semantic.
+/// Bright ocean roles for the intentionally light Aero experiment.
 enum OceanPalette {
-    static let accent = adaptive(light: 0x0064B5, dark: 0x42AEFF)
-    static let canvas = adaptive(light: 0xEDF6FC, dark: 0x101E2B)
-    static let surface = adaptive(light: 0xFFFFFF, dark: 0x172B3C)
-    static let selectionTrack = adaptive(light: 0xE1EDF6, dark: 0x102332)
-    static let border = adaptive(light: 0x9BBACF, dark: 0x52778F)
-    static let aqua = Color(red: 0.16, green: 0.72, blue: 0.91)
+    static let accent = rgb(0x0064B5)
+    static let canvas = rgb(0xE6F5FF)
+    static let surface = rgb(0xFFFFFF)
+    static let selectionTrack = rgb(0xE1EFF9)
+    static let border = rgb(0x8EB6D0)
+    static let aqua = rgb(0x63D5E9)
 
-    private static func adaptive(light: UInt32, dark: UInt32) -> Color {
-        Color(nsColor: NSColor(name: nil) { appearance in
-            let hex = appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua ? dark : light
-            return NSColor(srgbRed: Double((hex >> 16) & 255) / 255,
-                           green: Double((hex >> 8) & 255) / 255,
-                           blue: Double(hex & 255) / 255, alpha: 1)
-        })
+    private static func rgb(_ hex: UInt32) -> Color {
+        Color(red: Double((hex >> 16) & 255) / 255,
+              green: Double((hex >> 8) & 255) / 255,
+              blue: Double(hex & 255) / 255)
     }
 }

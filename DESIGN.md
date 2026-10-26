@@ -1,3 +1,17 @@
+# Revisão Aero claro — 26/10/2026
+
+O usuário pediu um aplicativo claro, leve e alegre, com uma marca minimalista Frutiger Aero. A versão de teste usa aparência clara explícita somente dentro do Caeser, inclusive nos controles nativos e no histórico; não altera a preferência do macOS.
+
+- Fundo azul-céu muito claro #E6F5FF; conteúdo branco #FFFFFF.
+- Ações azul #0064B5; trilho #E1EFF9; borda #8EB6D0; iluminação aqua #63D5E9.
+- Texto e controles preservam estilos semânticos do macOS. Ações sobre branco têm contraste de 6,02:1.
+- Marca `CaeserIconAeroMinimal.png`: busto geométrico de cabeça circular e ombros, ciano claro sobre quadrado azul, sombreado suave. Substitui os bonecos de vidro excessivamente refletivos. Fonte usada pela logo interna e pelos dez tamanhos do AppIcon.
+- Mantém o download em uma ação e os demais fluxos existentes.
+
+As versões anteriores abaixo são registro histórico, não a especificação ativa.
+
+---
+
 # Experimento Ocean Blue — branch codex/ocean-blue
 
 Direção solicitada: azul oceano vivo, limpo, com uma lembrança discreta de Frutiger Aero. Mantém a composição e os controles nativos. A seleção recebe um gradiente vertical azul com um reflexo fino; o fundo tem iluminação ciano discreta. A identidade experimental usa um bonequinho azul translúcido, inspirado na referência Frutiger Aero fornecida pelo usuário: cabeça esférica sem rosto, corpo arredondado e dois braços simples. Após testar a versão solta, o usuário pediu um quadrado como o ícone antigo. `CaeserMascotTileOcean.png` agora coloca o bonequinho claro sobre um bloco arredondado azul/turquesa, com reflexos simplificados e margem transparente externa; alimenta a logo interna e os tamanhos do AppIcon. As notas musicais anteriores permanecem guardadas como fontes históricas.
