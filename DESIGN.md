@@ -1,3 +1,9 @@
+# Ajuste ativo — superfícies azuis contínuas
+
+Pedido: remover o grande painel branco e ajustar novamente o tom de azul. Fundo e formulário compartilham #53ADE2; agrupamento por espaçamento e borda #287DB4, sem cartão branco. O campo de link e o trilho usam azul mais claro #85C9EF. Texto auxiliar #173D59 e ações #004775 preservam leitura sobre o azul. A nota musical azul e branca permanece.
+
+---
+
 # Ajuste ativo — azul-céu médio e nota musical
 
 O usuário escolheu retornar ao símbolo musical original, em azul e branco e sem neon. `CaeserIconBlueWhite.png` substitui o mascote tanto no cabeçalho quanto nos tamanhos do AppIcon. Nota branca com profundidade suave, bloco azul arredondado e margem transparente.

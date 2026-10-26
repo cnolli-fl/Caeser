@@ -147,7 +147,15 @@ struct ContentView: View {
                 TextField(viewModel.source == .spotify ? "https://open.spotify.com/track/…" : "https://www.youtube.com/watch?v=…",
                           text: $viewModel.urlText, axis: .vertical)
                     .lineLimit(1...4)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.plain)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(OceanPalette.selectionTrack, in: RoundedRectangle(cornerRadius: 8))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(OceanPalette.border.opacity(0.7), lineWidth: 1)
+                            .allowsHitTesting(false)
+                    }
                     .controlSize(.large)
                     .font(.body)
                     .focused($linkFocused)
@@ -596,12 +604,12 @@ struct CaeserLogo: View {
 
 /// Bright ocean roles for the intentionally light Aero experiment.
 enum OceanPalette {
-    static let accent = rgb(0x0064B5)
-    static let canvas = rgb(0x86C6EA)
-    static let secondaryText = rgb(0x34495E)
-    static let surface = rgb(0xFFFFFF)
-    static let selectionTrack = rgb(0xE1EFF9)
-    static let border = rgb(0x8EB6D0)
+    static let accent = rgb(0x004775)
+    static let canvas = rgb(0x53ADE2)
+    static let secondaryText = rgb(0x173D59)
+    static let surface = canvas
+    static let selectionTrack = rgb(0x85C9EF)
+    static let border = rgb(0x287DB4)
     static let aqua = rgb(0x63D5E9)
 
     private static func rgb(_ hex: UInt32) -> Color {
