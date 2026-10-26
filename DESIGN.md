@@ -1,3 +1,9 @@
+# Marca ativa — restaura nota anterior e limpa bordas do AppIcon
+
+O usuário rejeitou as hastes grossas. Marca interna restaurada exatamente de `CaeserIconLargeNote.png`. O AppIcon usa `CaeserIconCleanEdges.png`, derivado da mesma nota anterior com limpeza do contorno e exterior transparente para remover franjas.
+
+---
+
 # Marca ativa — hastes mais grossas e bases redondas
 
 `CaeserIconBoldNote.png` engrossa as duas hastes e arredonda mais as bases da nota branca. Mantém tamanho amplo, fundo azul e contorno macOS. Aplicado à marca interna e ao AppIcon.
