@@ -134,14 +134,18 @@ public sealed class DownloadTests
         Assert.Throws<ArgumentException>(() => store.SaveDestination("relative"));
     }
     [Fact]
-    public void OriginalLogoIsLinkedWithoutRedrawing()
+    public void WindowsKeepsOriginalLogoIndependentFromMacArtwork()
     {
         var root = RepositoryRoot();
-        var logo = File.ReadAllBytes(Path.Combine(root, "Sources/VideoDownloader/Resources/CaeserLogo.png"));
+        var logo = File.ReadAllBytes(Path.Combine(root, "Windows/BrandSources/CaeserLogo.png"));
         Assert.Equal("679968EF B6F9F41A34C140D2AE47A8DDAA969025C6DBCD3F23B945C6CEFF7858".Replace(" ", ""),
             Convert.ToHexString(SHA256.HashData(logo)));
         var project = File.ReadAllText(Path.Combine(root, "Windows/Caeser.App/Caeser.App.csproj"));
-        Assert.Contains(@"Resources\CaeserLogo.png", project);
+        Assert.Contains(@"..\BrandSources\CaeserLogo.png", project);
+        Assert.DoesNotContain(@"Sources\VideoDownloader\Resources\CaeserLogo.png", project);
+        var iconScript = File.ReadAllText(Path.Combine(root, "Windows/Scripts/PrepareAssets.mjs"));
+        Assert.Contains("Windows/BrandSources/AppIcon.iconset", iconScript);
+        Assert.DoesNotContain("Assets.xcassets/AppIcon.appiconset", iconScript);
         Assert.Contains("YouTubeMark.scale-300.png", project);
         Assert.Contains("SpotifyMark.scale-300.png", project);
     }
