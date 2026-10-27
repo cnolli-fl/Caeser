@@ -255,6 +255,6 @@ struct ReleaseUpdateView: View {
                 }
             }
         }
-        .padding(24).frame(width: 400).tint(.purple)
+        .padding(24).frame(width: 400).tint(OceanPalette.accent)
     }
 }

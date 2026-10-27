@@ -30,7 +30,7 @@ struct ContentView: View {
                     }
                     if let message = viewModel.persistenceMessage {
                         Label(message, systemImage: "exclamationmark.circle")
-                            .font(.callout).foregroundStyle(.secondary)
+                            .font(.callout).foregroundStyle(OceanPalette.secondaryText)
                     }
                     details
                 }
@@ -39,7 +39,7 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity)
             }
         }
-        .tint(.purple)
+        .tint(OceanPalette.accent)
         .sheet(isPresented: $viewModel.showsHistory) { DownloadHistoryView(model: viewModel) }
         .sheet(isPresented: $updates.showsDetails) { ReleaseUpdateView(model: updates) }
         .toolbar {
@@ -83,22 +83,14 @@ struct ContentView: View {
     }
 
     private var downloadActionTitle: String {
-        if viewModel.isDownloading || viewModel.isQueuePaused || viewModel.inputLinkCount > 1 { return "Adicionar à fila" }
+        if viewModel.isQueuePaused { return "Baixar e continuar fila" }
+        if viewModel.isDownloading { return "Adicionar e baixar" }
+        if viewModel.inputLinkCount > 1 { return "Baixar todos" }
         return viewModel.effectiveFormat == .mp3 ? "Baixar MP3" : "Baixar"
     }
 
     private var background: some View {
-        ZStack(alignment: .topTrailing) {
-            Color(nsColor: .windowBackgroundColor)
-            if !reduceTransparency {
-                RadialGradient(
-                    colors: [.purple.opacity(colorScheme == .dark ? 0.13 : 0.06), .clear],
-                    center: .topTrailing, startRadius: 0, endRadius: 520
-                )
-                .allowsHitTesting(false)
-            }
-        }
-        .ignoresSafeArea()
+        OceanPalette.canvas.ignoresSafeArea()
     }
 
     private var header: some View {
@@ -114,7 +106,7 @@ struct ContentView: View {
                     .accessibilityAddTraits(.isHeader)
                 Text("Vídeos e músicas. Do link à sua pasta.")
                     .font(.body)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(OceanPalette.secondaryText)
             }
             Spacer(minLength: 0)
         }
@@ -145,7 +137,15 @@ struct ContentView: View {
                 TextField(viewModel.source == .spotify ? "https://open.spotify.com/track/…" : "https://www.youtube.com/watch?v=…",
                           text: $viewModel.urlText, axis: .vertical)
                     .lineLimit(1...4)
-                    .textFieldStyle(.roundedBorder)
+                    .textFieldStyle(.plain)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 8)
+                    .background(OceanPalette.selectionTrack, in: RoundedRectangle(cornerRadius: 8))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8)
+                            .strokeBorder(OceanPalette.border.opacity(0.7), lineWidth: 1)
+                            .allowsHitTesting(false)
+                    }
                     .controlSize(.large)
                     .font(.body)
                     .focused($linkFocused)
@@ -155,23 +155,23 @@ struct ContentView: View {
                      ? "Música, álbum ou playlist pública. Sem entrar na sua conta."
                      : "Cole um link ou vários, um por linha.")
                     .font(.callout)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(OceanPalette.secondaryText)
                     .fixedSize(horizontal: false, vertical: true)
                 if let message = viewModel.inputMessage {
-                    Label(message, systemImage: "info.circle").font(.callout).foregroundStyle(.secondary)
+                    Label(message, systemImage: "info.circle").font(.callout).foregroundStyle(OceanPalette.secondaryText)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 if viewModel.isLoadingPreview {
                     HStack(spacing: 10) {
                         ProgressView().controlSize(.small)
-                        Text("Buscando prévia…").font(.callout).foregroundStyle(.secondary)
+                        Text("Buscando prévia…").font(.callout).foregroundStyle(OceanPalette.secondaryText)
                     }
                     .frame(minHeight: 32).accessibilityElement(children: .combine)
                 } else if let preview = viewModel.preview {
                     MediaPreviewView(preview: preview, source: viewModel.source)
                 } else if let error = viewModel.previewError {
                     HStack(alignment: .top, spacing: 12) {
-                        Text(error).font(.callout).foregroundStyle(.secondary)
+                        Text(error).font(.callout).foregroundStyle(OceanPalette.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)
                         Spacer(minLength: 0)
                         Button("Tentar prévia") { viewModel.schedulePreview(immediate: true) }
@@ -197,11 +197,11 @@ struct ContentView: View {
         .padding(24)
         .background {
             RoundedRectangle(cornerRadius: 20)
-                .fill(Color(nsColor: .controlBackgroundColor).opacity(reduceTransparency ? 1 : 0.88))
+                .fill(OceanPalette.surface.opacity(reduceTransparency ? 1 : 0.96))
         }
         .overlay {
             RoundedRectangle(cornerRadius: 20)
-                .strokeBorder(Color(nsColor: .separatorColor).opacity(contrast == .increased ? 1 : 0.45),
+                .strokeBorder(OceanPalette.border.opacity(contrast == .increased ? 1 : 0.55),
                               lineWidth: contrast == .increased ? 1.5 : 0.5)
         }
         .disabled(viewModel.isInstalling)
@@ -211,7 +211,7 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
                 Label { Text("Spotify") } icon: { SourceBrandIcon(source: .spotify) }
-                Image(systemName: "arrow.right").foregroundStyle(.secondary).accessibilityHidden(true)
+                Image(systemName: "arrow.right").foregroundStyle(OceanPalette.secondaryText).accessibilityHidden(true)
                 Label { Text("YouTube") } icon: { SourceBrandIcon(source: .video) }
                 Spacer(minLength: 6)
                 Text("MP3").font(.callout.weight(.semibold))
@@ -220,13 +220,13 @@ struct ContentView: View {
             }
             .font(.body.weight(.medium))
             Text("O áudio vem do YouTube. O MP3 inclui capa, artista e álbum.")
-                .font(.callout).foregroundStyle(.secondary)
+                .font(.callout).foregroundStyle(OceanPalette.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
             Label("Melhor áudio disponível",
                   systemImage: "waveform")
                 .font(.callout)
             Text("A busca é automática e pode encontrar outra versão da música.")
-                .font(.callout).foregroundStyle(.secondary)
+                .font(.callout).foregroundStyle(OceanPalette.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }
@@ -238,7 +238,7 @@ struct ContentView: View {
                     Text("Qualidade").font(.headline)
                     if viewModel.format == .mp3 {
                         Text("Melhor áudio disponível")
-                            .font(.body).foregroundStyle(.secondary)
+                            .font(.body).foregroundStyle(OceanPalette.secondaryText)
                             .frame(minHeight: 28, alignment: .leading)
                     } else {
                         Picker("Qualidade", selection: $viewModel.quality) {
@@ -259,16 +259,16 @@ struct ContentView: View {
             }
             if viewModel.format == .mp3 {
                 Text("Converte a melhor faixa de áudio disponível para MP3 em qualidade máxima.")
-                    .font(.callout).foregroundStyle(.secondary)
+                    .font(.callout).foregroundStyle(OceanPalette.secondaryText)
             }
         }
     }
 
     private var destination: some View {
         HStack(spacing: 12) {
-            Image(systemName: "folder").font(.title3).foregroundStyle(.secondary).accessibilityHidden(true)
+            Image(systemName: "folder").font(.title3).foregroundStyle(OceanPalette.secondaryText).accessibilityHidden(true)
             VStack(alignment: .leading, spacing: 4) {
-                Text("Salvar em").font(.callout).foregroundStyle(.secondary)
+                Text("Salvar em").font(.callout).foregroundStyle(OceanPalette.secondaryText)
                 Text((viewModel.destinationURL.path as NSString).abbreviatingWithTildeInPath)
                     .font(.body.weight(.medium)).lineLimit(1).truncationMode(.middle)
                     .help(viewModel.destinationURL.path)
@@ -294,7 +294,7 @@ struct ContentView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(viewModel.statusMessage).font(.headline)
                     if let error = viewModel.errorMessage {
-                        Text(error).font(.callout).foregroundStyle(.secondary)
+                        Text(error).font(.callout).foregroundStyle(OceanPalette.secondaryText)
                             .fixedSize(horizontal: false, vertical: true)
                             .textSelection(.enabled)
                     }
@@ -314,7 +314,7 @@ struct ContentView: View {
                     Spacer()
                     Text(viewModel.etaText)
                 }
-                .font(.callout).foregroundStyle(.secondary).monospacedDigit()
+                .font(.callout).foregroundStyle(OceanPalette.secondaryText).monospacedDigit()
             }
         }
         .padding(.horizontal, 4)
@@ -324,12 +324,12 @@ struct ContentView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(alignment: .top, spacing: 10) {
                 Image(systemName: viewModel.dependenciesReady ? "checkmark.circle" : "shippingbox")
-                    .foregroundStyle(.secondary).accessibilityHidden(true)
+                    .foregroundStyle(OceanPalette.secondaryText).accessibilityHidden(true)
                 VStack(alignment: .leading, spacing: 6) {
-                    Text(viewModel.dependencyMessage).font(.callout).foregroundStyle(.secondary)
+                    Text(viewModel.dependencyMessage).font(.callout).foregroundStyle(OceanPalette.secondaryText)
                     if viewModel.source == .spotify && viewModel.dependencyInfo.spotDL == nil {
                         Text("Instale o suporte uma vez. O spotDL fica separado do aplicativo.")
-                            .font(.callout).foregroundStyle(.secondary)
+                            .font(.callout).foregroundStyle(OceanPalette.secondaryText)
                         Button("Instalar suporte ao Spotify", systemImage: "arrow.down.circle") {
                             showDetails = true
                             viewModel.installSpotifySupport()
@@ -392,7 +392,7 @@ struct ContentView: View {
 
     private func toolLabel(_ name: String, url: URL?) -> some View {
         Label(name, systemImage: url == nil ? "minus.circle" : "checkmark.circle")
-            .foregroundStyle(.secondary)
+            .foregroundStyle(OceanPalette.secondaryText)
             .help(url?.path ?? "\(name) não está instalado")
             .accessibilityLabel("\(name): \(url == nil ? "não instalado" : "disponível")")
     }
@@ -408,8 +408,9 @@ private struct SourceSelector: View {
     @GestureState(resetTransaction: Transaction(animation: .spring(response: 0.28, dampingFraction: 0.9)))
     private var dragCenter: CGFloat? = nil
 
-    // White text on #7445C4 has a contrast ratio above 6:1 in both appearances.
-    private let selectedColor = Color(red: 116 / 255, green: 69 / 255, blue: 196 / 255)
+    // Both endpoints keep white labels above 4.5:1.
+    private let selectedColors = [Color(red: 0.02, green: 0.43, blue: 0.74),
+                                  Color(red: 0.0, green: 0.31, blue: 0.60)]
 
     var body: some View {
         GeometryReader { geometry in
@@ -419,9 +420,13 @@ private struct SourceSelector: View {
 
             ZStack {
                 RoundedRectangle(cornerRadius: 11, style: .continuous)
-                    .fill(Color(nsColor: .quaternaryLabelColor).opacity(0.35))
+                    .fill(OceanPalette.selectionTrack)
                 RoundedRectangle(cornerRadius: 8, style: .continuous)
-                    .fill(selectedColor)
+                    .fill(LinearGradient(colors: selectedColors, startPoint: .top, endPoint: .bottom))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                            .strokeBorder(.white.opacity(contrast == .increased ? 0.65 : 0.25), lineWidth: 1)
+                    }
                     .frame(width: max(0, segmentWidth - 6), height: 34)
                     .position(x: center, y: 20)
                     .animation(reduceMotion || dragCenter != nil ? nil :
@@ -554,7 +559,7 @@ struct SourceBrandIcon: View {
     }
 }
 
-/// Uses the exact original artwork at full resolution, including on Retina displays.
+/// Loads the active branch artwork at full resolution, including on Retina displays.
 struct CaeserLogo: View {
     private static let originalImage: NSImage? = {
         #if SWIFT_PACKAGE
@@ -579,9 +584,27 @@ struct CaeserLogo: View {
                     .resizable()
                     .scaledToFit()
                     .padding(16)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(OceanPalette.secondaryText)
             }
         }
         .aspectRatio(1, contentMode: .fit)
+    }
+}
+
+
+/// Reference-blue canvas with light foregrounds and tonal blue controls.
+enum OceanPalette {
+    static let accent = rgb(0x94D2FF)
+    static let canvas = rgb(0x0D2666)
+    static let secondaryText = rgb(0xCFDFF5)
+    static let surface = canvas
+    static let selectionTrack = rgb(0x244580)
+    static let border = rgb(0x6086BB)
+    static let aqua = rgb(0x63D5E9)
+
+    private static func rgb(_ hex: UInt32) -> Color {
+        Color(red: Double((hex >> 16) & 255) / 255,
+              green: Double((hex >> 8) & 255) / 255,
+              blue: Double(hex & 255) / 255)
     }
 }

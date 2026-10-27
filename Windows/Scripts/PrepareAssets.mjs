@@ -1,4 +1,4 @@
-// Container conversion only: original PNG bytes from the approved macOS app icon.
+// Preserve Windows branding independently of macOS artwork. Container conversion only.
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join, resolve } from 'node:path';
@@ -10,7 +10,7 @@ const files = [
   'icon_128x128.png', 'icon_256x256.png',
 ];
 const images = await Promise.all(files.map(file =>
-  readFile(join(root, 'Assets.xcassets/AppIcon.appiconset', file))));
+  readFile(join(root, 'Windows/BrandSources/AppIcon.iconset', file))));
 const header = Buffer.alloc(6 + 16 * images.length);
 header.writeUInt16LE(1, 2);
 header.writeUInt16LE(images.length, 4);

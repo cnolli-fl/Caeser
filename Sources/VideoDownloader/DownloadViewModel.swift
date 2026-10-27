@@ -210,6 +210,9 @@ final class DownloadViewModel: ObservableObject {
             }
             guard queuedItems.count + additions.count <= 100 else { throw LibraryError.queueFull }
             library.items += additions
+            // A new explicit download also resumes a restored or manually paused queue.
+            // Invalid input and duplicate-only submissions leave its pause state intact.
+            if !additions.isEmpty { library.isPaused = false }
             savePreferences()
             persistLibrary()
             urlText = ""
