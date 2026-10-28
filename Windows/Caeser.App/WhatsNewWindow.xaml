@@ -1,0 +1,36 @@
+<Window x:Class="Caeser.App.WhatsNewWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" Title="Novidades do Caeser">
+    <Grid x:Name="NotesRoot" Language="pt-BR" RequestedTheme="Dark" Background="{ThemeResource CaeserBackground}" Loaded="Notes_Loaded">
+        <Grid.RowDefinitions><RowDefinition Height="Auto" /><RowDefinition /><RowDefinition Height="Auto" /></Grid.RowDefinitions>
+        <Grid Margin="28" ColumnSpacing="16">
+            <Grid.ColumnDefinitions><ColumnDefinition Width="56" /><ColumnDefinition /></Grid.ColumnDefinitions>
+            <Image Width="56" Height="56" Source="ms-appx:///Assets/CaeserLogo.png" AutomationProperties.AccessibilityView="Raw" />
+            <StackPanel Grid.Column="1" Spacing="5" VerticalAlignment="Center">
+                <TextBlock Text="O que mudou" FontSize="26" FontWeight="Bold" Foreground="{ThemeResource CaeserForeground}" AutomationProperties.HeadingLevel="Level1" />
+                <TextBlock x:Name="VersionLabel" Style="{StaticResource CaeserBody}" Foreground="{ThemeResource CaeserSecondary}" />
+            </StackPanel>
+        </Grid>
+        <ScrollViewer Grid.Row="1" HorizontalScrollMode="Disabled" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+            <ItemsControl x:Name="Highlights" Margin="28,4,28,24">
+                <ItemsControl.ItemTemplate><DataTemplate>
+                    <Grid ColumnSpacing="16" Margin="0,0,0,24">
+                        <Grid.ColumnDefinitions><ColumnDefinition Width="28" /><ColumnDefinition /></Grid.ColumnDefinitions>
+                        <FontIcon Glyph="{Binding Glyph}" FontSize="22" Foreground="{ThemeResource CaeserAccent}" VerticalAlignment="Top" AutomationProperties.AccessibilityView="Raw" />
+                        <StackPanel Grid.Column="1" Spacing="6">
+                            <TextBlock Text="{Binding Title}" Style="{StaticResource CaeserHeading}" FontSize="15" AutomationProperties.HeadingLevel="Level2" />
+                            <TextBlock Text="{Binding Detail}" Style="{StaticResource CaeserBody}" Foreground="{ThemeResource CaeserSecondary}" />
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate></ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+        <Border Grid.Row="2" BorderBrush="{ThemeResource CaeserBorder}" BorderThickness="0,0.5,0,0" Padding="28,20">
+            <Grid ColumnSpacing="16">
+                <Grid.ColumnDefinitions><ColumnDefinition /><ColumnDefinition Width="Auto" /></Grid.ColumnDefinitions>
+                <HyperlinkButton x:Name="NotesLink" Content="Notas completas ↗" Foreground="{ThemeResource CaeserAccent}" HorizontalAlignment="Left" />
+                <Button x:Name="ContinueButton" Grid.Column="1" Content="Continuar" Click="Continue_Click" Style="{StaticResource AccentButtonStyle}" CornerRadius="17" MinHeight="34" Padding="20,4" />
+            </Grid>
+        </Border>
+    </Grid>
+</Window>

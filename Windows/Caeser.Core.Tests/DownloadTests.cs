@@ -134,17 +134,17 @@ public sealed class DownloadTests
         Assert.Throws<ArgumentException>(() => store.SaveDestination("relative"));
     }
     [Fact]
-    public void WindowsKeepsOriginalLogoIndependentFromMacArtwork()
+    public void WindowsUsesApprovedOceanLogoWithIndependentSourceAssets()
     {
         var root = RepositoryRoot();
-        var logo = File.ReadAllBytes(Path.Combine(root, "Windows/BrandSources/CaeserLogo.png"));
-        Assert.Equal("679968EF B6F9F41A34C140D2AE47A8DDAA969025C6DBCD3F23B945C6CEFF7858".Replace(" ", ""),
+        var logo = File.ReadAllBytes(Path.Combine(root, "Windows/BrandSources/Ocean/CaeserLogo.png"));
+        Assert.Equal("A3A7FFADCEAE2F45C4507E885454328792FC48673C96280E1E38B96ED8F5E1CE",
             Convert.ToHexString(SHA256.HashData(logo)));
         var project = File.ReadAllText(Path.Combine(root, "Windows/Caeser.App/Caeser.App.csproj"));
-        Assert.Contains(@"..\BrandSources\CaeserLogo.png", project);
+        Assert.Contains(@"..\BrandSources\Ocean\CaeserLogo.png", project);
         Assert.DoesNotContain(@"Sources\VideoDownloader\Resources\CaeserLogo.png", project);
         var iconScript = File.ReadAllText(Path.Combine(root, "Windows/Scripts/PrepareAssets.mjs"));
-        Assert.Contains("Windows/BrandSources/AppIcon.iconset", iconScript);
+        Assert.Contains("Windows/BrandSources/Ocean/AppIcon.iconset", iconScript);
         Assert.DoesNotContain("Assets.xcassets/AppIcon.appiconset", iconScript);
         Assert.Contains("YouTubeMark.scale-300.png", project);
         Assert.Contains("SpotifyMark.scale-300.png", project);

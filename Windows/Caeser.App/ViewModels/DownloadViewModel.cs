@@ -86,7 +86,7 @@ public sealed partial class DownloadViewModel : INotifyPropertyChanged
     public string Logs => log.Count == 0 ? "O andamento e os detalhes do download aparecem aqui." : string.Join('\n', log);
     public bool HasLogs => log.Count > 0;
     public bool CanStart => !string.IsNullOrWhiteSpace(text);
-    public string ActionTitle => IsBusy || library.Paused || text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length > 1 ? "Adicionar à fila" :
+    public string ActionTitle => library.Paused ? "Baixar e continuar fila" : IsBusy ? "Adicionar e baixar" : text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries).Length > 1 ? "Baixar todos" :
         Source == DownloadSource.Spotify || Format.Value == VideoFormat.Mp3 ? "Baixar MP3" : "Baixar";
     public string ActionGlyph => "\uE896";
     public string LinkLabel => Source == DownloadSource.Spotify ? "Link do Spotify" : "Link do vídeo";

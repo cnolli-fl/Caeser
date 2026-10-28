@@ -113,17 +113,9 @@ public sealed partial class DownloadViewModel
         try
         {
             var requests = DesktopLibrary.Batch(text, source, Destination, quality.Value, format.Value, Preview);
-            var additions = new List<LibraryItem>();
-            foreach (var request in requests)
-            {
-                if (library.Items.Concat(additions).Any(i => DesktopLibrary.Key(i.Request) == DesktopLibrary.Key(request) &&
-                    (i.Pending || i.State == QueueState.Completed && i.Files.Count > 0 && i.Files.All(File.Exists)))) continue;
-                additions.Add(new() { Request = request, Title = Preview?.OriginalUrl == request.Url ? Preview.Title : request.Url.AbsoluteUri,
-                    Preview = Preview?.OriginalUrl == request.Url ? Preview : null });
-            }
-            if (QueueItems.Count + additions.Count > 100) throw new ArgumentException("A fila já tem 100 itens. Espere alguns terminarem.");
-            library.Items.AddRange(additions); SavePreferences(); Persist();
-            UrlText = ""; if (additions.Count < requests.Count) PreviewMessage = "Links repetidos foram ignorados. Use o Histórico para baixar novamente.";
+            var additions = library.AddToQueue(requests, Preview);
+            SavePreferences(); Persist();
+            UrlText = ""; if (additions < requests.Count) PreviewMessage = "Links repetidos foram ignorados. Use o Histórico para baixar novamente.";
             RefreshLibrary(); PumpQueue();
         }
         catch (ArgumentException e) { ReportError(e.Message); }
@@ -148,7 +140,7 @@ public sealed partial class DownloadViewModel
     public void Retry(LibraryItem item)
     {
         if (QueueItems.Count >= 100 || library.Items.Any(i => i.Pending && DesktopLibrary.Key(i.Request) == DesktopLibrary.Key(item.Request))) return;
-        library.Items.Add(new() { Request = item.Request, Title = item.Title, Preview = item.Preview }); Persist(); RefreshLibrary(); PumpQueue();
+        library.Items.Add(new() { Request = item.Request, Title = item.Title, Preview = item.Preview }); library.Paused = false; Persist(); RefreshLibrary(); PumpQueue();
     }
     public void ClearHistory() { library.Items.RemoveAll(i => !i.Pending); Persist(); Changed(); }
     public void PauseForUpdate()

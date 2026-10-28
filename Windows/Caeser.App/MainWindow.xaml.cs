@@ -14,6 +14,8 @@ public sealed partial class MainWindow : Window
 {
     public DownloadViewModel ViewModel { get; }
     private bool allowClose, closingPrompt, loaded;
+    private readonly WhatsNewStore whatsNew = new();
+    private WhatsNewWindow? notesWindow;
 
     public MainWindow()
     {
@@ -26,6 +28,7 @@ public sealed partial class MainWindow : Window
         AppWindow.Resize(new SizeInt32(860, 850));
         AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "Caeser.ico"));
         AppWindow.Closing += Window_Closing;
+        Closed += (_, _) => notesWindow?.Close();
         Activated += async (_, e) => { if (e.WindowActivationState != WindowActivationState.Deactivated && !Environment.GetCommandLineArgs().Contains("--smoke-test")) await ViewModel.CheckUpdatesAsync(); };
     }
     private async void Root_Loaded(object sender, RoutedEventArgs e)
@@ -44,7 +47,21 @@ public sealed partial class MainWindow : Window
             allowClose = true;
             Close();
         }
-        else await ViewModel.CheckUpdatesAsync();
+        else
+        {
+            if (whatsNew.RequestAutomaticPresentation()) ShowWhatsNew();
+            await ViewModel.CheckUpdatesAsync();
+        }
+    }
+    private void WhatsNew_Click(object sender, RoutedEventArgs e) => ShowWhatsNew();
+    private void ShowWhatsNew()
+    {
+        if (notesWindow == null)
+        {
+            notesWindow = new WhatsNewWindow(whatsNew);
+            notesWindow.Closed += (_, _) => notesWindow = null;
+        }
+        notesWindow.Activate();
     }
     private void Root_SizeChanged(object sender, SizeChangedEventArgs e)
     {

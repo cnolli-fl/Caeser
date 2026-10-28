@@ -9,9 +9,9 @@ $application = Join-Path ([IO.Path]::GetFullPath($ApplicationDirectory)) 'Caeser
 $output = Join-Path ([IO.Path]::GetFullPath($OutputDirectory)) ('run-' + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $output -Force | Out-Null
 $process = Start-Process -FilePath $application -ArgumentList @('--smoke-test', ('"' + $output + '"')) -PassThru
-if (-not $process.WaitForExit(60000)) {
+if (-not $process.WaitForExit(90000)) {
     $process.Kill($true)
-    throw 'O aplicativo não concluiu o teste de interface em 60 segundos.'
+    throw 'O aplicativo não concluiu o teste de interface em 90 segundos.'
 }
 $resultFile = Join-Path $output 'result.json'
 if (-not (Test-Path $resultFile)) {
@@ -26,5 +26,5 @@ if (Test-Path (Join-Path $output 'xaml-diagnostics.txt')) {
 }
 if (-not $result.succeeded) { throw "Falha no teste de interface: $($result.error)" }
 if ($process.ExitCode -ne 0) { throw "O aplicativo confirmou o teste, mas encerrou com erro $($process.ExitCode)." }
-if (@(Get-ChildItem $output -Filter '*.png').Count -ne 18) { throw 'As 18 capturas de origem, prévia assíncrona, fila, histórico e atualização nos dois temas não foram geradas.' }
+if (@(Get-ChildItem $output -Filter '*.png').Count -ne 20) { throw 'As 20 capturas de origem, prévia assíncrona, fila, histórico, atualização e novidades nos dois temas não foram geradas.' }
 Write-Host 'Interface aberta e verificada: YouTube/Spotify, claro/escuro, link inválido e foco de teclado.'

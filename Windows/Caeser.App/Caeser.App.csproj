@@ -31,7 +31,7 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools.MSIX" Version="1.7.261008100" PrivateAssets="all" />
     <ProjectReference Include="..\Caeser.Core\Caeser.Core.csproj" />
     <Content Include="Assets\**" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\BrandSources\CaeserLogo.png" Link="Assets\CaeserLogo.png" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\BrandSources\Ocean\CaeserLogo.png" Link="Assets\CaeserLogo.png" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\Sources\VideoDownloader\Resources\YouTubeMark.png" Link="Assets\YouTubeMark.scale-100.png" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\Sources\VideoDownloader\Resources\YouTubeMark@2x.png" Link="Assets\YouTubeMark.scale-200.png" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="..\..\Sources\VideoDownloader\Resources\YouTubeMark@3x.png" Link="Assets\YouTubeMark.scale-300.png" CopyToOutputDirectory="PreserveNewest" />

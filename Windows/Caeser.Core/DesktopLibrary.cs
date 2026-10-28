@@ -30,6 +30,23 @@ public sealed class DesktopLibrary
     public List<LibraryItem> Items { get; set; } = [];
     public bool Paused { get; set; }
     public Dictionary<DownloadSource, DownloadRequest> Preferences { get; set; } = [];
+    public int AddToQueue(IReadOnlyList<DownloadRequest> requests, MediaPreview? preview = null)
+    {
+        var additions = new List<LibraryItem>();
+        foreach (var request in requests)
+        {
+            if (Items.Concat(additions).Any(i => Key(i.Request) == Key(request) &&
+                (i.Pending || i.State == QueueState.Completed && i.Files.Count > 0 && i.Files.All(File.Exists)))) continue;
+            additions.Add(new() { Request = request, Title = preview?.OriginalUrl == request.Url ? preview.Title : request.Url.AbsoluteUri,
+                Preview = preview?.OriginalUrl == request.Url ? preview : null });
+        }
+        if (Items.Count(i => i.Pending) + additions.Count > 100)
+            throw new ArgumentException("A fila já tem 100 itens. Espere alguns terminarem.");
+        Items.AddRange(additions);
+        // A valid new request is an explicit start/resume action, unlike restoring the app.
+        if (additions.Count > 0) Paused = false;
+        return additions.Count;
+    }
     public void Recover()
     {
         foreach (var item in Items.Where(i => i.State == QueueState.Downloading))

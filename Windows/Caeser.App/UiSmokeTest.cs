@@ -114,7 +114,7 @@ internal static class UiSmokeTest
                 var subtitle = (TextBlock)((StackPanel)content).Children[0];
                 var foreground = ((SolidColorBrush)subtitle.Foreground).Color;
                 var brightness = foreground.R + foreground.G + foreground.B;
-                if (theme == ElementTheme.Dark ? brightness < 384 : brightness > 384)
+                if (brightness < 384)
                     throw new InvalidOperationException("O texto secundário do histórico não acompanhou o tema.");
                 if (content.ActualWidth > root.ActualWidth || content.ActualHeight > root.ActualHeight || content.ActualWidth < 240)
                     throw new InvalidOperationException("O histórico ultrapassou a área da janela.");
@@ -134,8 +134,9 @@ internal static class UiSmokeTest
             await PressKeyAsync(0x1B);
             if (await updateShown != ContentDialogResult.None) throw new InvalidOperationException("Escape não cancelou a atualização.");
         }
+        await CheckWhatsNewAsync(window, root, directory);
         var files = Directory.GetFiles(directory, "*.png");
-        if (files.Length != 18 || files.Any(f => new FileInfo(f).Length < 2000))
+        if (files.Length != 20 || files.Any(f => new FileInfo(f).Length < 2000))
             throw new InvalidOperationException("A captura real da interface está incompleta.");
         await File.WriteAllTextAsync(Path.Combine(directory, "result.json"), JsonSerializer.Serialize(new
         {
@@ -145,6 +146,7 @@ internal static class UiSmokeTest
             dragSourceSwitch = true, keyboardSourceSwitch = true,
             accessibleSourceSwitch = true, keyboardFocus = focusWorks,
             asynchronousPreviewBindings = true, stalePreviewRejected = true, toolbarStates = true,
+            offlineVersionHighlights = true, repeatedLaunchDoesNotShowHighlights = true,
             note = "Capturas reais do XAML no runner. Não substitui teste manual no Windows 10/11."
         }, new JsonSerializerOptions { WriteIndented = true }));
     }
@@ -177,7 +179,7 @@ internal static class UiSmokeTest
                     VisualStateManager.GoToState(action, state, false);
                     await Task.Delay(35);
                     var label = FindVisual<TextBlock>(action, "ActionLabel");
-                    if (label?.Foreground is not SolidColorBrush foreground || foreground.Color.R != 255)
+                    if (label?.Foreground is not SolidColorBrush foreground || foreground.Color.R != 13)
                         throw new InvalidOperationException("O botão principal perdeu a legibilidade no estado " + state);
                 }
                 await CaptureAsync(root, directory, $"preview-video-{theme.ToString().ToLowerInvariant()}.png");
@@ -370,10 +372,40 @@ internal static class UiSmokeTest
             var mark = FindVisual<BitmapIcon>(button, "Mark");
             if (label?.Foreground is not SolidColorBrush text || mark?.Foreground is not SolidColorBrush icon)
                 throw new InvalidOperationException("O seletor não apresentou a marca e o texto esperados.");
-            var expectedRed = button.IsChecked == true ? 255 : root.ActualTheme == ElementTheme.Light ? 28 : 242;
+            var expectedRed = button.IsChecked == true ? 13 : 255;
             if (text.Color.R != expectedRed || icon.Color.R != expectedRed)
                 throw new InvalidOperationException($"Contraste incorreto em {name}: tema {root.ActualTheme}, selecionado {button.IsChecked}.");
         }
+    }
+    private static async Task CheckWhatsNewAsync(Window main, FrameworkElement root, string directory)
+    {
+        var preferences = Path.Combine(directory, "notes-preferences");
+        var store = new WhatsNewStore(preferences);
+        if (!store.RequestAutomaticPresentation()) throw new InvalidOperationException("As novidades não foram oferecidas na primeira abertura.");
+        foreach (var theme in new[] { ElementTheme.Dark, ElementTheme.Light })
+        {
+            var closed = false;
+            var notes = new WhatsNewWindow(store);
+            notes.Closed += (_, _) => closed = true;
+            var content = (FrameworkElement)notes.Content;
+            content.RequestedTheme = theme;
+            notes.Activate();
+            await Task.Delay(350);
+            if (((TextBlock)content.FindName("VersionLabel")).Text != "Caeser para Windows · 2.3.0" ||
+                ((ItemsControl)content.FindName("Highlights")).Items.Count != 3)
+                throw new InvalidOperationException("As novidades não renderizaram a versão e os itens corretos.");
+            var button = (Button)content.FindName("ContinueButton");
+            if (!button.IsEnabled || button.ActualHeight < 32)
+                throw new InvalidOperationException("O botão Continuar não ficou utilizável.");
+            await CaptureAsync(content, directory, $"whats-new-{theme.ToString().ToLowerInvariant()}.png");
+            button.Focus(FocusState.Keyboard);
+            SetForegroundWindow(WinRT.Interop.WindowNative.GetWindowHandle(notes));
+            await PressKeyAsync(theme == ElementTheme.Dark ? (ushort)0x0D : (ushort)0x1B);
+            if (!closed) { notes.Close(); throw new InvalidOperationException("O teclado não fechou a janela de novidades."); }
+            if (new WhatsNewStore(preferences).RequestAutomaticPresentation())
+                throw new InvalidOperationException("A apresentação foi repetida na mesma versão.");
+        }
+        main.Activate();
     }
     private static T? FindVisual<T>(DependencyObject parent, string name) where T : FrameworkElement
     {

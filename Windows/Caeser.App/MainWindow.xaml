@@ -18,6 +18,9 @@
                     VerticalAlignment="Center" Foreground="{ThemeResource CaeserForeground}" />
             </Grid>
             <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+            <Button x:Name="WhatsNewButton" Style="{StaticResource CaeserToolbarButton}" Click="WhatsNew_Click" AutomationProperties.Name="Novidades desta versão" ToolTipService.ToolTip="Novidades desta versão">
+                <FontIcon Glyph="&#xE8A5;" FontSize="16" />
+            </Button>
             <Button Content="Atualizar" Visibility="{Binding UpdateVisibility}" Click="Updates_Click" VerticalAlignment="Center" />
             <Button x:Name="HistoryButton" Style="{StaticResource CaeserToolbarButton}" Click="History_Click" AutomationProperties.Name="Histórico" ToolTipService.ToolTip="Histórico">
                 <FontIcon Glyph="&#xE81C;" FontSize="16" />
