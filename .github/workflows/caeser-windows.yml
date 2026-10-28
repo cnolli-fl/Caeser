@@ -39,7 +39,9 @@ jobs:
           $dist = Join-Path (Get-Location) 'Windows\artifacts\dist'
           New-Item -ItemType Directory -Path $dist -Force | Out-Null
           $payload = Join-Path $dist "Caeser-$version-Windows-x64-Setup.exe"
-          [IO.File]::WriteAllBytes($payload, [Text.Encoding]::ASCII.GetBytes('MZ-not-an-installer-local-compile-fixture'))
+          $fixture = [byte[]]::new(1024 * 1024)
+          $fixture[0] = 77; $fixture[1] = 90
+          [IO.File]::WriteAllBytes($payload, $fixture)
           ./Windows/Scripts/BuildBootstrap.ps1 -Installer $payload -OutputDirectory $dist
       - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
         with:
