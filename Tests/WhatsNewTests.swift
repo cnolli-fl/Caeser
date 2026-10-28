@@ -72,6 +72,16 @@ struct WhatsNewTests {
         }
     }
 
+    @Test func historyThemeReleaseShowsItsOwnNotes() throws {
+        try withDefaults { defaults in
+            WhatsNewModel(defaults: defaults, version: "3.1.1").markPresented()
+            let update = WhatsNewModel(defaults: defaults, version: "3.1.2")
+            #expect(update.requestAutomaticPresentation())
+            #expect(update.highlights.items.contains { $0.title.contains("Histórico") })
+            #expect(update.highlights.pageURL.absoluteString.hasSuffix("/v3.1.2"))
+        }
+    }
+
     @Test func notesFitTheDefaultWindow() throws {
         try withDefaults { defaults in
             let view = NSHostingView(rootView: WhatsNewView(model: WhatsNewModel(defaults: defaults, version: "3.1.1")))

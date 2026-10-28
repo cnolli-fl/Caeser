@@ -7,6 +7,11 @@
 - Adicionar novos links válidos inicia ou retoma a fila. Entradas inválidas, repetidas ou acima do limite não retomam uma fila pausada.
 - Instalador online, pacote completo, atualizações no app, prévia, histórico, formatos e qualidade preservados. Sem alterações no aplicativo Mac publicado.
 
+## macOS 3.1.2 — 2026-10-28
+
+- O histórico acompanha o tema azul do Caeser, com textos e ações legíveis.
+- Fila, histórico salvo e arquivos baixados permanecem intactos.
+
 ## macOS 3.1.1 — 2026-10-28
 
 - Janela não modal **O que mudou**, exibida uma vez por versão, com conteúdo local disponível sem internet.

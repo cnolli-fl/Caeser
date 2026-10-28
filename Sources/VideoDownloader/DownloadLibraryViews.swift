@@ -155,29 +155,38 @@ struct DownloadHistoryView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 VStack(alignment: .leading, spacing: 5) {
-                    Text("Histórico").font(.title2.weight(.semibold))
-                    Text("Seus últimos downloads, salvos neste Mac.").font(.callout).foregroundStyle(.secondary)
+                    Text("Histórico").font(.title2.weight(.semibold)).accessibilityAddTraits(.isHeader)
+                    Text("Seus últimos downloads, salvos neste Mac.").font(.callout).foregroundStyle(OceanPalette.secondaryText)
                 }
                 Spacer()
-                Text("\(model.history.count) de 100").font(.callout).foregroundStyle(.secondary).monospacedDigit()
+                Text("\(model.history.count) de 100").font(.callout).foregroundStyle(OceanPalette.secondaryText).monospacedDigit()
             }
             .padding(24)
-            Divider()
+            Divider().overlay(OceanPalette.border.opacity(0.4))
             if model.history.isEmpty {
-                ContentUnavailableView("Nenhum download ainda", systemImage: "clock.arrow.circlepath",
-                                       description: Text("Os downloads concluídos, cancelados ou com erro aparecem aqui."))
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+                VStack(spacing: 10) {
+                    Image(systemName: "clock.arrow.circlepath")
+                        .font(.title).foregroundStyle(OceanPalette.accent).accessibilityHidden(true)
+                    Text("Nenhum download ainda").font(.headline)
+                    Text("Os downloads concluídos, cancelados ou com erro aparecem aqui.")
+                        .font(.callout).foregroundStyle(OceanPalette.secondaryText)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.horizontal, 24)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 0) {
                         ForEach(model.history) { item in
                             historyRow(item)
-                            if item.id != model.history.last?.id { Divider().padding(.leading, 80) }
+                            if item.id != model.history.last?.id {
+                                Divider().overlay(OceanPalette.border.opacity(0.4)).padding(.leading, 80)
+                            }
                         }
                     }
                 }
             }
-            Divider()
+            Divider().overlay(OceanPalette.border.opacity(0.4))
             HStack {
                 Button("Limpar histórico…") { confirmClear = true }
                     .buttonStyle(.borderless).disabled(model.history.isEmpty)
@@ -186,6 +195,9 @@ struct DownloadHistoryView: View {
             }
             .padding(.horizontal, 24).padding(.vertical, 16)
         }
+        .foregroundStyle(.white)
+        .background(OceanPalette.canvas)
+        .tint(OceanPalette.accent)
         .frame(width: 600, height: model.history.isEmpty ? 320 : min(520, 144 + CGFloat(model.history.count) * 100))
         .alert("Limpar o histórico?", isPresented: $confirmClear) {
             Button("Cancelar", role: .cancel) { }
@@ -204,9 +216,9 @@ struct DownloadHistoryView: View {
                     Text(item.finishedAt ?? item.createdAt, format: .dateTime.day().month().hour().minute())
                         .monospacedDigit()
                 }
-                .font(.callout).foregroundStyle(.secondary).lineLimit(1)
+                .font(.callout).foregroundStyle(OceanPalette.secondaryText).lineLimit(1)
                 if item.status == .failed || item.status == .interrupted {
-                    Text(item.detail).font(.callout).foregroundStyle(.secondary)
+                    Text(item.detail).font(.callout).foregroundStyle(OceanPalette.secondaryText)
                         .lineLimit(1).help(item.detail)
                 }
             }

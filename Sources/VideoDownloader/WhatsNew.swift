@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum AppRelease {
-    static let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "3.1.1"
+    static let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "3.1.2"
 }
 
 /// Local, versioned notes: opening the app never needs a network request for this screen.
@@ -17,6 +17,11 @@ struct ReleaseHighlights {
     var pageURL: URL { URL(string: "https://github.com/cnolli-fl/Caeser/releases/tag/v\(version)")! }
     var items: [Item] {
         switch version {
+        case "3.1.2":
+            return [
+                Item(symbol: "clock.arrow.circlepath", title: "Histórico com visual renovado",
+                     detail: "O histórico agora acompanha o tema azul do Caeser, mantendo seus downloads e ações no mesmo lugar.")
+            ]
         case "3.1.1":
             return [
                 Item(symbol: "sparkles", title: "As novidades, aqui no app",
