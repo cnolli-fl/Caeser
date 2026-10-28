@@ -1,6 +1,6 @@
 # Caeser
 
-Windows **2.3.0** · macOS **3.1.1**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
+Windows **2.3.0** · macOS **3.1.2**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
 
 ## Baixar para Windows
 
@@ -14,13 +14,13 @@ O instalador pequeno baixa o pacote completo durante a instalação. Prefere ins
 
 ## Baixar para Mac
 
-**Caeser 3.1.1 · macOS 26 ou mais recente · Apple Silicon (M1 ou posterior)**
+**Caeser 3.1.2 · macOS 26 ou mais recente · Apple Silicon (M1 ou posterior)**
 
-[**Baixar instalador para Mac (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v3.1.1/Caeser-3.1.1-macOS-AppleSilicon.dmg)
+[**Baixar instalador para Mac (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v3.1.2/Caeser-3.1.2-macOS-AppleSilicon.dmg)
 
 Abra o arquivo e arraste o Caeser para Aplicativos. As ferramentas já estão incluídas; não é preciso instalar Homebrew ou Python.
 
-[Notas da versão](https://github.com/cnolli-fl/Caeser/releases/tag/v3.1.1) · [Todas as versões Mac](https://github.com/cnolli-fl/Caeser/releases?q=tag%3Av)
+[Notas da versão](https://github.com/cnolli-fl/Caeser/releases/tag/v3.1.2) · [Todas as versões Mac](https://github.com/cnolli-fl/Caeser/releases?q=tag%3Av)
 
 Escolha **somente um instalador do seu sistema**. Os arquivos automáticos **Source code (.zip / .tar.gz)** são para desenvolvimento, não para instalar o app. O README é esta página e não precisa ser baixado.
 
@@ -28,7 +28,7 @@ O Mac usa assinatura local, sem notarização da Apple; o Windows não tem assin
 
 ## Novidades
 
-**Windows 2.3.0 e Mac 3.1.1:** mesma identidade Ocean azul, com nota branca e texto claro. As novidades aparecem dentro do aplicativo uma vez por versão e podem ser consultadas novamente. Novos links válidos iniciam ou retomam a fila em uma ação, preservando histórico e preferências. No Windows, controles nativos e alto contraste do sistema são mantidos.
+**Windows 2.3.0 e Mac 3.1.2:** mesma identidade Ocean azul, com nota branca e texto claro. No Mac, o histórico também acompanha o tema azul. As novidades aparecem dentro do aplicativo uma vez por versão e podem ser consultadas novamente. Novos links válidos iniciam ou retomam a fila em uma ação, preservando histórico e preferências. No Windows, controles nativos e alto contraste do sistema são mantidos.
 
 **Mac 3.1.0:** interface azul com texto claro, nota musical branca e ícone nativo para macOS Tahoe, sem a moldura cinza de compatibilidade. Adicionar um link válido à fila já inicia os downloads, inclusive ao retomar uma fila pausada. Histórico e preferências são preservados.
 
@@ -92,7 +92,7 @@ Baixe o instalador `.dmg`, abra e arraste Caeser.app para Aplicativos. Requer **
 
 Esta edição tem assinatura local gratuita (ad-hoc), **sem Developer ID e sem notarização da Apple**. O macOS pode impedir a primeira abertura e exigir autorização manual. Isso não deve ser confundido com um app verificado pela Apple. Consulte [as instruções de instalação e segurança](docs/INSTALACAO.md); não desative as proteções globais do sistema.
 
-O instalador está na [release 3.0.1](https://github.com/cnolli-fl/Caeser/releases/tag/v3.1.0), com instruções e hash SHA-256 nas próprias notas. Os [fontes correspondentes das ferramentas](https://github.com/cnolli-fl/Caeser/releases/tag/fontes-terceiros) ficam na área para desenvolvedores, sem misturar com os instaladores.
+O instalador está na [release 3.1.2](https://github.com/cnolli-fl/Caeser/releases/tag/v3.1.2), com instruções e hash SHA-256 nas próprias notas. Os [fontes correspondentes das ferramentas](https://github.com/cnolli-fl/Caeser/releases/tag/fontes-terceiros) ficam na área para desenvolvedores, sem misturar com os instaladores.
 
 A 3.0.0 acrescenta prévia, fila, histórico e aviso de atualização ao pacote otimizado: yt-dlp e spotDL compartilham uma única cópia do Python para Apple Silicon, FFmpeg e FFprobe compartilham suas próprias bibliotecas e os fontes de compilação ficam em um ZIP separado. A interface é declarada como português brasileiro; ficam os recursos neutros, os pequenos catálogos internos obrigatórios dos parsers e as licenças originais. Nenhum codec, extrator ou opção de qualidade é removido.
 
