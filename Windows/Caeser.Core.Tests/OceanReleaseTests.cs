@@ -79,6 +79,7 @@ public class OceanReleaseTests
             var colors = dictionaries[theme];
             Assert.Equal("#0D2666", colors["CaeserBackground"]);
             Assert.Equal("#15FFFFFF", colors["SubtleFillColorSecondaryBrush"]);
+            Assert.Equal("{ThemeResource SystemColorWindowTextColor}", dictionaries["HighContrast"]["ControlStrokeColorDefaultBrush"]);
             Assert.True(Contrast(colors["CaeserForeground"], colors["CaeserBackground"]) >= 7);
             Assert.True(Contrast(colors["CaeserSecondary"], colors["CaeserSelector"]) >= 4.5);
             foreach (var suffix in new[] { "", "PointerOver", "Pressed" })

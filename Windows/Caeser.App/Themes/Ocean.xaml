@@ -132,8 +132,8 @@
             <SolidColorBrush x:Key="ControlFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="ControlFillColorTertiaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="ControlFillColorDisabledBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="{ThemeResource SystemColorWindowColor}" />
-            <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
+            <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
+            <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="{ThemeResource SystemColorWindowTextColor}" />
             <SolidColorBrush x:Key="SubtleFillColorSecondaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="SubtleFillColorTertiaryBrush" Color="{ThemeResource SystemColorWindowColor}" />
             <SolidColorBrush x:Key="TextControlBackground" Color="{ThemeResource SystemColorWindowColor}" />
