@@ -1,5 +1,12 @@
 # Mudanças
 
+## Windows 2.3.0 — 2026-10-28
+
+- Tema Ocean azul, texto claro e nota musical branca aprovados no Mac, com ativos independentes, controles nativos e alto contraste do Windows preservado.
+- Janela de novidades local, não modal, exibida uma vez por versão. Botão na barra para consultar novamente; estado separado da fila e das preferências.
+- Adicionar novos links válidos inicia ou retoma a fila. Entradas inválidas, repetidas ou acima do limite não retomam uma fila pausada.
+- Instalador online, pacote completo, atualizações no app, prévia, histórico, formatos e qualidade preservados. Sem alterações no aplicativo Mac publicado.
+
 ## macOS 3.1.1 — 2026-10-28
 
 - Janela não modal **O que mudou**, exibida uma vez por versão, com conteúdo local disponível sem internet.

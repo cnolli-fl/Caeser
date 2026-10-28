@@ -1,4 +1,8 @@
-# Caeser 2.2.1 para Windows
+# Notas de versão do Caeser para Windows
+
+A versão atual é a **2.3.0**: [novidades e instruções](RELEASE-NOTES-2.3.0.md) · [download oficial](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.3.0).
+
+## Histórico: Caeser 2.2.1 para Windows
 
 Correções da prévia de vídeos/músicas e dos botões, mantendo o design, as logos e o pacote enxuto da 2.2.0.
 

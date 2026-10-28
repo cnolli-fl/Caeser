@@ -1,32 +1,34 @@
 # Caeser
 
-Windows **2.2.1** · macOS **3.1.0**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
+Windows **2.3.0** · macOS **3.1.1**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
 
 ## Baixar para Windows
 
-**Caeser 2.2.1 · Windows 10 22H2 ou Windows 11 · x64 (Intel/AMD)**
+**Caeser 2.3.0 · Windows 10 22H2 ou Windows 11 · x64 (Intel/AMD)**
 
-[**Baixar instalador online — 249 KB**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.1/Caeser-2.2.1-Windows-x64-Online.exe)
+[**Baixar instalador online**](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.3.0/Caeser-2.3.0-Windows-x64-Online.exe)
 
-O instalador pequeno baixa o pacote completo de aproximadamente **136 MB** durante a instalação. Prefere instalar sem internet? [Baixe o instalador completo](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.1/Caeser-2.2.1-Windows-x64-Setup.exe).
+O instalador pequeno baixa o pacote completo durante a instalação. Prefere instalar sem internet? [Baixe o instalador completo](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.3.0/Caeser-2.3.0-Windows-x64-Setup.exe).
 
-[Notas da versão](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.2.1) · [Todas as versões Windows](https://github.com/cnolli-fl/Caeser/releases?q=tag%3Awindows-v)
+[Notas da versão](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.3.0) · [Todas as versões Windows](https://github.com/cnolli-fl/Caeser/releases?q=tag%3Awindows-v)
 
 ## Baixar para Mac
 
-**Caeser 3.1.0 · macOS 26 ou mais recente · Apple Silicon (M1 ou posterior)**
+**Caeser 3.1.1 · macOS 26 ou mais recente · Apple Silicon (M1 ou posterior)**
 
-[**Baixar instalador para Mac (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v3.1.0/Caeser-3.1.0-macOS-AppleSilicon.dmg)
+[**Baixar instalador para Mac (.dmg)**](https://github.com/cnolli-fl/Caeser/releases/download/v3.1.1/Caeser-3.1.1-macOS-AppleSilicon.dmg)
 
 Abra o arquivo e arraste o Caeser para Aplicativos. As ferramentas já estão incluídas; não é preciso instalar Homebrew ou Python.
 
-[Notas da versão](https://github.com/cnolli-fl/Caeser/releases/tag/v3.1.0) · [Todas as versões Mac](https://github.com/cnolli-fl/Caeser/releases?q=tag%3Av)
+[Notas da versão](https://github.com/cnolli-fl/Caeser/releases/tag/v3.1.1) · [Todas as versões Mac](https://github.com/cnolli-fl/Caeser/releases?q=tag%3Av)
 
 Escolha **somente um instalador do seu sistema**. Os arquivos automáticos **Source code (.zip / .tar.gz)** são para desenvolvimento, não para instalar o app. O README é esta página e não precisa ser baixado.
 
 O Mac usa assinatura local, sem notarização da Apple; o Windows não tem assinatura Authenticode. Podem aparecer avisos de segurança na primeira abertura. Consulte as instruções de instalação para [Mac](docs/INSTALACAO.md) ou [Windows](Windows/README.md), sem desativar as proteções do sistema.
 
 ## Novidades
+
+**Windows 2.3.0 e Mac 3.1.1:** mesma identidade Ocean azul, com nota branca e texto claro. As novidades aparecem dentro do aplicativo uma vez por versão e podem ser consultadas novamente. Novos links válidos iniciam ou retomam a fila em uma ação, preservando histórico e preferências. No Windows, controles nativos e alto contraste do sistema são mantidos.
 
 **Mac 3.1.0:** interface azul com texto claro, nota musical branca e ícone nativo para macOS Tahoe, sem a moldura cinza de compatibilidade. Adicionar um link válido à fila já inicia os downloads, inclusive ao retomar uma fila pausada. Histórico e preferências são preservados.
 

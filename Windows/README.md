@@ -2,9 +2,15 @@
 
 Versão Windows do Caeser, separada do aplicativo SwiftUI. A versão macOS continua nos diretórios existentes, sem migração nem alteração do aplicativo publicado.
 
-**Versão Windows: 2.2.1.** Implementação nativa em C#/.NET 10 e WinUI 3. A numeração é independente da edição Mac 3.0.1.
+**Versão Windows: 2.3.0.** Implementação nativa em C#/.NET 10 e WinUI 3. A numeração é independente da edição Mac 3.1.1.
 
-[Baixar instalador online](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.1/Caeser-2.2.1-Windows-x64-Online.exe) · [Instalador completo](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.2.1/Caeser-2.2.1-Windows-x64-Setup.exe) · [Novidades e instruções](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.2.1)
+[Baixar instalador online](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.3.0/Caeser-2.3.0-Windows-x64-Online.exe) · [Instalador completo](https://github.com/cnolli-fl/Caeser/releases/download/windows-v2.3.0/Caeser-2.3.0-Windows-x64-Setup.exe) · [Novidades e instruções](https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.3.0)
+
+### Novidades na 2.3.0
+
+Tema Ocean azul com texto claro e nota musical branca, seguindo a identidade aprovada no Mac. Os controles são nativos do Windows; o alto contraste do sistema continua disponível. A janela **O que mudou** aparece uma vez por versão e pode ser reaberta pelo botão **Novidades desta versão** na barra superior. Seu conteúdo é local, sem precisar de internet, e não bloqueia a janela de downloads.
+
+Adicionar links válidos inicia ou retoma a fila em uma ação. Entradas inválidas e repetidas não retomam uma fila pausada. Prévia, histórico, preferências, instalador online pequeno e atualizações no aplicativo são preservados.
 
 ### Correções na 2.2.1
 
