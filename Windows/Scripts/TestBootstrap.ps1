@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param()
+param([switch]$DownloadChecksOnly)
 $ErrorActionPreference = 'Stop'
 if (-not $IsWindows -or $env:GITHUB_ACTIONS -ne 'true') { throw 'Teste permitido somente na VM Windows descartável do GitHub.' }
 $windowsRoot = Split-Path $PSScriptRoot -Parent
@@ -17,7 +17,10 @@ $server = Start-Process -FilePath (Get-Command python).Source -ArgumentList @('-
 function Run-Bootstrap([string]$Executable, [string[]]$Arguments, [int]$Timeout = 120000) {
     $process = Start-Process -FilePath $Executable -ArgumentList $Arguments -PassThru
     if (-not $process.WaitForExit($Timeout)) { $process.Kill($true); throw 'O instalador online não terminou dentro do limite.' }
-    return $process.ExitCode
+    $code = $process.ExitCode
+    Write-Host "Bootstrap $($Arguments[0]): exit=$code"
+    if ($null -eq $code) { throw 'O Windows não informou o código de saída do instalador de teste.' }
+    return $code
 }
 $destination = Join-Path $work 'Caeser ação'
 try {
@@ -29,7 +32,13 @@ try {
     foreach ($route in @('corrupt', 'truncated', 'redirect')) {
         if ((Run-Bootstrap $testBinary @('--test-download', "$base/$route")) -eq 0) { throw "O instalador aceitou a resposta inválida: $route" }
     }
-    if ((Run-Bootstrap $testBinary @('--test-cancel', "$base/slow")) -ne 1223) { throw 'O cancelamento pelo diálogo não interrompeu o download.' }
+    $cancelCode = Run-Bootstrap $testBinary @('--test-cancel', "$base/slow")
+    if ($cancelCode -ne 1223) { throw "O cancelamento pelo diálogo não interrompeu o download. Código recebido: $cancelCode; esperado: 1223." }
+    if ($DownloadChecksOnly) {
+        if ((Run-Bootstrap $testBinary @('--test-download', "$base/ok")) -ne 0) { throw 'O download local válido não passou na conferência.' }
+        Write-Host 'Verificações isoladas: configuração, integridade, redirecionamento e cancelamento aprovados.'
+        return
+    }
     $download = Start-Process -FilePath $testBinary -ArgumentList @('--test-download', "$base/ok") -PassThru
     Start-Sleep -Milliseconds 800
     Add-Type -AssemblyName System.Drawing

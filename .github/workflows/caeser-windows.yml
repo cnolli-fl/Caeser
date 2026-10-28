@@ -36,9 +36,18 @@ jobs:
           $version = $props.Project.PropertyGroup.Version
           $work = Join-Path $env:RUNNER_TEMP ('Caeser-bootstrap-compile-' + [Guid]::NewGuid().ToString('N'))
           New-Item -ItemType Directory -Path $work | Out-Null
-          $payload = Join-Path $work "Caeser-$version-Windows-x64-Setup.exe"
+          $dist = Join-Path (Get-Location) 'Windows\artifacts\dist'
+          New-Item -ItemType Directory -Path $dist -Force | Out-Null
+          $payload = Join-Path $dist "Caeser-$version-Windows-x64-Setup.exe"
           [IO.File]::WriteAllBytes($payload, [Text.Encoding]::ASCII.GetBytes('MZ-not-an-installer-local-compile-fixture'))
-          ./Windows/Scripts/BuildBootstrap.ps1 -Installer $payload -OutputDirectory $work
+          ./Windows/Scripts/BuildBootstrap.ps1 -Installer $payload -OutputDirectory $dist
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.14.7'
+          architecture: x64
+      - name: Verificar download e cancelamento nativos com fixture pequeno
+        shell: pwsh
+        run: ./Windows/Scripts/TestBootstrap.ps1 -DownloadChecksOnly
   build-and-test:
     if: inputs.bootstrap_only != true
     runs-on: windows-2025

@@ -33,7 +33,9 @@ class Handler(BaseHTTPRequestHandler):
                     self.wfile.write(data)
                     self.wfile.flush()
                     first = False
-                    time.sleep(0.08 if self.path == '/slow' else 0.02)
+                    # Keep the cancellation fixture active past the native
+                    # dialog's timer even with a tiny compile-only payload.
+                    time.sleep(1.5 if self.path == '/slow' else 0.02)
         except (BrokenPipeError, ConnectionResetError, ConnectionAbortedError):
             pass
 
