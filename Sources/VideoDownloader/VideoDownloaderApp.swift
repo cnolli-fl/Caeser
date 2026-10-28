@@ -4,6 +4,8 @@ import SwiftUI
 struct CaeserApp: App {
     @StateObject private var viewModel: DownloadViewModel
     @StateObject private var updates = ReleaseUpdateModel()
+    @StateObject private var whatsNew: WhatsNewModel
+    @Environment(\.openWindow) private var openWindow
     @NSApplicationDelegateAdaptor(CaeserAppDelegate.self) private var appDelegate
 
     init() {
@@ -29,8 +31,10 @@ struct CaeserApp: App {
         let model = DownloadViewModel(defaults: defaults)
         model.showsHistory = ProcessInfo.processInfo.environment["CAESER_TEST_HISTORY"] != nil && suite?.hasPrefix("Caeser-UITests-") == true
         _viewModel = StateObject(wrappedValue: model)
+        _whatsNew = StateObject(wrappedValue: WhatsNewModel(defaults: defaults))
         #else
         _viewModel = StateObject(wrappedValue: DownloadViewModel())
+        _whatsNew = StateObject(wrappedValue: WhatsNewModel())
         #endif
     }
 
@@ -39,6 +43,7 @@ struct CaeserApp: App {
             ContentView(viewModel: viewModel, updates: updates)
                 .frame(minWidth: 640, minHeight: 620)
                 .preferredColorScheme(.dark)
+                .modifier(WhatsNewLaunchModifier(model: whatsNew))
                 .onAppear {
                     appDelegate.viewModel = viewModel
                     NSApp.appearance = NSAppearance(named: .darkAqua)
@@ -47,6 +52,7 @@ struct CaeserApp: App {
         .defaultSize(width: 820, height: 760)
         .commands {
             CommandGroup(after: .appInfo) {
+                Button("Novidades desta versão…") { openWindow(id: "whats-new") }
                 Button("Verificar atualizações…") { Task { await updates.check(manual: true) } }
                     .disabled(updates.isChecking)
             }
@@ -80,6 +86,13 @@ struct CaeserApp: App {
                     .disabled(viewModel.isBusy)
             }
         }
+        Window("Novidades do Caeser", id: "whats-new") {
+            WhatsNewView(model: whatsNew).preferredColorScheme(.dark)
+        }
+        .defaultSize(width: 520, height: 520)
+        .windowResizability(.contentMinSize)
+        .defaultLaunchBehavior(.suppressed)
+        .restorationBehavior(.disabled)
     }
 }
 

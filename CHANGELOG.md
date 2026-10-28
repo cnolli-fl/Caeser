@@ -1,5 +1,13 @@
 # Mudanças
 
+## macOS 3.1.1 — em preparação (2026-10-28)
+
+- Janela não modal **O que mudou**, exibida uma vez por versão, com conteúdo local disponível sem internet.
+- Menu **Caeser > Novidades desta versão…** para consultar novamente; reabrir a mesma versão ou voltar a uma anterior não repete a apresentação automática.
+- Guia HTML de primeira abertura dentro do instalador, explicando a autorização individual do aplicativo sem desativar as proteções do macOS.
+- Esclarecimento: a distribuição continua com assinatura local, sem Developer ID nem notarização. Este update não elimina o aviso de verificação da Apple.
+- Visual azul, fila, histórico, preferências, ferramentas e edição Windows preservados.
+
 ## macOS 3.1.0 — 2026-10-26
 
 - Nova identidade azul com texto claro e campos em tons próximos, sem painel branco.

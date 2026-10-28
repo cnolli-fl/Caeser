@@ -34,6 +34,7 @@ COPYFILE_DISABLE=1 ditto -c -k --norsrc --noextattr --noqtn --keepParent \
 cp "$task_root/THIRD-PARTY.md" "$task_runtime/THIRD-PARTY.md"
 cp "$task_root/LICENSE" "$task_app/Contents/Resources/Caeser-MIT.txt"
 cp "$task_root/docs/INSTALACAO.md" "$task_stage/LEIA-ME.md"
+cp "$task_root/docs/INSTALACAO.html" "$task_stage/Como abrir o Caeser.html"
 cp "$task_root/docs/INSTALACAO.md" "$task_app/Contents/Resources/INSTALACAO.md"
 ln -s /Applications "$task_stage/Aplicativos"
 
