@@ -116,6 +116,10 @@ internal static class UiSmokeTest
                 var brightness = foreground.R + foreground.G + foreground.B;
                 if (brightness < 384)
                     throw new InvalidOperationException("O texto secundário do histórico não acompanhou o tema.");
+                if (!empty && FindVisual<StackPanel>(content, "HistoryActions") is { } actions)
+                    foreach (var button in actions.Children.OfType<Button>())
+                        if (((SymbolIcon)button.Content).Foreground is not SolidColorBrush mark || mark.Color.R < 240)
+                            throw new InvalidOperationException("As ações do histórico perderam contraste sobre o azul.");
                 if (content.ActualWidth > root.ActualWidth || content.ActualHeight > root.ActualHeight || content.ActualWidth < 240)
                     throw new InvalidOperationException("O histórico ultrapassou a área da janela.");
                 await CaptureAsync(dialog, directory, $"history-{(empty ? "empty" : "items")}-{theme.ToString().ToLowerInvariant()}.png");

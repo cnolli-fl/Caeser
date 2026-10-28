@@ -175,10 +175,12 @@ public sealed partial class MainWindow
                 ToolTipService.SetToolTip(detail, item.Detail); text.Children.Add(detail);
             }
             Grid.SetColumn(text, 1); row.Children.Add(text);
-            var actions = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center };
+            var actions = new StackPanel { Name = "HistoryActions", Orientation = Orientation.Horizontal, Spacing = 4, VerticalAlignment = VerticalAlignment.Center };
             Button ActionButton(Symbol glyph, string label)
             {
-                var button = new Button { Content = new SymbolIcon(glyph), Width = 36, Height = 36, Padding = new Thickness(6),
+                var mark = (SymbolIcon)Microsoft.UI.Xaml.Markup.XamlReader.Load("<SymbolIcon xmlns='http://schemas.microsoft.com/winfx/2006/xaml/presentation' Foreground='{ThemeResource CaeserForeground}' />");
+                mark.Symbol = glyph;
+                var button = new Button { Content = mark, Width = 36, Height = 36, Padding = new Thickness(6),
                     Style = (Style)Application.Current.Resources["SubtleButtonStyle"] };
                 AutomationProperties.SetName(button, label); ToolTipService.SetToolTip(button, label); return button;
             }

@@ -32,6 +32,7 @@
                                     <VisualState x:Name="Unchecked" />
                                     <VisualState x:Name="Checked">
                                         <VisualState.Setters>
+                                            <Setter Target="HitArea.Background" Value="Transparent" />
                                             <Setter Target="Label.Foreground" Value="{ThemeResource CaeserOnAccent}" />
                                             <Setter Target="Mark.Foreground" Value="{ThemeResource CaeserOnAccent}" />
                                         </VisualState.Setters>

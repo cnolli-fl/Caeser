@@ -22,8 +22,8 @@
             <SolidColorBrush x:Key="ControlFillColorDisabledBrush" Color="#1A356B" />
             <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="#6086BB" />
             <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="#789BCB" />
-            <SolidColorBrush x:Key="SubtleFillColorSecondaryBrush" Color="#254885" />
-            <SolidColorBrush x:Key="SubtleFillColorTertiaryBrush" Color="#1E3C73" />
+            <SolidColorBrush x:Key="SubtleFillColorSecondaryBrush" Color="#15FFFFFF" />
+            <SolidColorBrush x:Key="SubtleFillColorTertiaryBrush" Color="#0FFFFFFF" />
             <SolidColorBrush x:Key="TextControlBackground" Color="#244580" />
             <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#2F5391" />
             <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#1E3C73" />
@@ -78,8 +78,8 @@
             <SolidColorBrush x:Key="ControlFillColorDisabledBrush" Color="#1A356B" />
             <SolidColorBrush x:Key="ControlStrokeColorDefaultBrush" Color="#6086BB" />
             <SolidColorBrush x:Key="ControlStrokeColorSecondaryBrush" Color="#789BCB" />
-            <SolidColorBrush x:Key="SubtleFillColorSecondaryBrush" Color="#254885" />
-            <SolidColorBrush x:Key="SubtleFillColorTertiaryBrush" Color="#1E3C73" />
+            <SolidColorBrush x:Key="SubtleFillColorSecondaryBrush" Color="#15FFFFFF" />
+            <SolidColorBrush x:Key="SubtleFillColorTertiaryBrush" Color="#0FFFFFFF" />
             <SolidColorBrush x:Key="TextControlBackground" Color="#244580" />
             <SolidColorBrush x:Key="TextControlBackgroundPointerOver" Color="#2F5391" />
             <SolidColorBrush x:Key="TextControlBackgroundFocused" Color="#1E3C73" />
