@@ -1,6 +1,6 @@
 # Mudanças
 
-## macOS 3.1.1 — em preparação (2026-10-28)
+## macOS 3.1.1 — 2026-10-28
 
 - Janela não modal **O que mudou**, exibida uma vez por versão, com conteúdo local disponível sem internet.
 - Menu **Caeser > Novidades desta versão…** para consultar novamente; reabrir a mesma versão ou voltar a uma anterior não repete a apresentação automática.

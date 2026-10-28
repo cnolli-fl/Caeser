@@ -1,6 +1,6 @@
 # Validação local do Mac 3.1.1 — 28/10/2026
 
-Status: pacote de teste gerado; sem publicação no GitHub nesta rodada. Base: `origin/main` em `193c45a` (Mac 3.1.0).
+Validação realizada antes da publicação autorizada pelo usuário. Código validado: `7d73421`; base: `origin/main` em `193c45a` (Mac 3.1.0). Os ajustes posteriores para publicação são apenas de documentação.
 
 ## Segurança e primeira abertura
 
@@ -24,6 +24,6 @@ Status: pacote de teste gerado; sem publicação no GitHub nesta rodada. Base: `
 - Download de áudio original servido em loopback e conversão MP3: sucesso, 10.751 bytes, caminho com espaços e acentos. Não é um teste de disponibilidade dos serviços externos.
 - DMG final montado somente para leitura; assinatura profunda válida, versão/build e conteúdo dos dois guias conferidos contra os fontes.
 - Instalador: **105.702.461 bytes**. SHA-256: `ee1c74a0152dcff785900f7a3a1fc37ca8be25fd6f50ab3193cab652d06730f1`.
-- Windows sem alterações. Sem instalação por cima da cópia do usuário, sem push, merge ou release pública.
+- Windows sem alterações. Sem instalação por cima da cópia do usuário. A publicação posterior não altera o binário validado.
 
 Limite: a 3.1.1 continua com assinatura local, sem Developer ID e sem notarização; o alerta de verificação da Apple pode continuar. Não foi testada a autorização manual em outra máquina nem executado um antivírus de terceiros.
