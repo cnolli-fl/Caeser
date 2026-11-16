@@ -1,0 +1,5 @@
+#!/bin/sh
+HERE="$(dirname "$(readlink -f "$0")")"
+export PATH="$HERE/usr/bin/tools:$PATH"
+export QT_QPA_PLATFORM_PLUGIN_PATH="$HERE/usr/bin/_internal/PySide6/Qt/plugins/platforms"
+exec "$HERE/usr/bin/caeser" "$@"

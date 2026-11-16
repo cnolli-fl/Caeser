@@ -1,5 +1,9 @@
 # Caeser
 
+## Linux (Fedora 44 KDE)
+
+A edição Linux usa a mesma identidade Ocean e é empacotada em AppImage para x86_64 e ARM64. Consulte [Linux/README.md](Linux/README.md) para saber como executar, compilar e acompanhar a validação dessa edição.
+
 Windows **2.2.1** · macOS **3.1.0**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
 
 ## Baixar para Windows

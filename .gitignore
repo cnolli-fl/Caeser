@@ -13,3 +13,9 @@ cookies.txt
 
 # Local release preparation
 work/
+
+# Linux packaging
+Linux/.build/
+Linux/.venv/
+Linux/dist/
+**/__pycache__/
