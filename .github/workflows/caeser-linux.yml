@@ -48,6 +48,7 @@ jobs:
           package="Linux/dist/Caeser-0.1.0-Linux-${{ matrix.arch }}.AppImage"
           APPIMAGE_EXTRACT_AND_RUN=1 "$package" --tool yt-dlp --version
           APPIMAGE_EXTRACT_AND_RUN=1 "$package" --tool spotdl --version
+          python3 Linux/tests/test_packaged_audio.py "$package"
           CAESER_SMOKE_SCREENSHOT="$RUNNER_TEMP/caeser-linux.png" QT_QPA_PLATFORM=offscreen APPIMAGE_EXTRACT_AND_RUN=1 "$package" --smoke
           test -s "$RUNNER_TEMP/caeser-linux.png"
           sha256sum -c "$package.sha256"

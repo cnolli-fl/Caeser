@@ -26,17 +26,18 @@ BG, SURFACE, FIELD, BORDER = "#0D2666", "#102D6C", "#244580", "#6086BB"
 TEXT, MUTED, ACCENT, STRONG = "#FFFFFF", "#CFDFF5", "#94D2FF", "#0099FF"
 
 STYLE = f"""
-QWidget {{ background: {BG}; color: {TEXT}; font-family: 'Noto Sans', 'Inter', sans-serif; font-size: 13px; }}
-QMainWindow, QDialog, QScrollArea, QScrollArea > QWidget > QWidget {{ background: {BG}; }}
+QWidget {{ color: {TEXT}; font-family: 'Noto Sans', 'Inter', sans-serif; }}
+QMainWindow, QDialog, QScrollArea, QWidget#body, QWidget#page {{ background: {BG}; }}
+QLabel, QWidget#options {{ background: transparent; }}
 QFrame#card {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 20px; }}
 QFrame#preview, QFrame#status {{ background: {FIELD}; border: 0; border-radius: 14px; }}
 QLabel#muted {{ color: {MUTED}; }}
-QTextEdit, QComboBox, QListWidget {{ background: {FIELD}; border: 1px solid {BORDER}; border-radius: 9px; padding: 8px; selection-background-color: {STRONG}; }}
+QTextEdit, QComboBox, QListWidget {{ background: {FIELD}; border: 1px solid {BORDER}; border-radius: 9px; padding: 8px; selection-background-color: {STRONG}; font-size: 13px; }}
 QTextEdit:focus, QComboBox:focus, QPushButton:focus {{ border: 2px solid {ACCENT}; }}
 QComboBox {{ min-height: 22px; padding-left: 12px; }}
 QComboBox::drop-down {{ border: none; width: 28px; }}
 QComboBox QAbstractItemView {{ background: {FIELD}; color: {TEXT}; selection-background-color: {STRONG}; }}
-QPushButton {{ background: {FIELD}; border: 1px solid transparent; border-radius: 10px; padding: 8px 14px; min-height: 22px; }}
+QPushButton {{ background: {FIELD}; border: 1px solid transparent; border-radius: 10px; padding: 8px 14px; min-height: 22px; font-size: 13px; }}
 QPushButton:hover {{ background: #345795; }}
 QPushButton:pressed {{ background: #1A3A78; }}
 QPushButton:disabled {{ color: #91A4CA; background: #173671; }}
@@ -44,6 +45,8 @@ QPushButton#primary {{ background: {STRONG}; color: {TEXT}; border: 1px solid #4
 QPushButton#primary:hover {{ background: #1EAAFF; }}
 QPushButton#segment {{ border-radius: 10px; font-weight: 600; }}
 QPushButton#segment:checked {{ background: #006CB6; border: 1px solid #58BDF9; }}
+QPushButton#details {{ background: transparent; border: none; color: {MUTED}; padding-left: 0; }}
+QPushButton#details:hover {{ color: {TEXT}; }}
 QProgressBar {{ background: {FIELD}; border: none; border-radius: 5px; height: 9px; text-align: center; }}
 QProgressBar::chunk {{ background: {ACCENT}; border-radius: 5px; }}
 QScrollBar:vertical {{ background: transparent; width: 9px; }}
@@ -192,6 +195,7 @@ class Window(QMainWindow):
 
     def build_ui(self):
         body = QWidget()
+        body.setObjectName("body")
         self.setCentralWidget(body)
         outer = QVBoxLayout(body)
         outer.setContentsMargins(24, 14, 24, 18)
@@ -217,6 +221,7 @@ class Window(QMainWindow):
         scroll.setFrameShape(QFrame.Shape.NoFrame)
         outer.addWidget(scroll, 1)
         page = QWidget()
+        page.setObjectName("page")
         scroll.setWidget(page)
         layout = QVBoxLayout(page)
         layout.setContentsMargins(12, 26, 12, 22)
@@ -229,6 +234,7 @@ class Window(QMainWindow):
         hero.addWidget(logo)
         title = QVBoxLayout()
         title.setSpacing(2)
+        title.setMinimumSize(350, 68)
         title.addWidget(label("Caeser", 28, True))
         title.addWidget(label("Vídeos e músicas. Do link à sua pasta.", 13, muted=True))
         hero.addLayout(title)
@@ -293,6 +299,7 @@ class Window(QMainWindow):
         self.preview_hint.hide()
         form.addWidget(self.preview_hint)
         self.options = QWidget()
+        self.options.setObjectName("options")
         opts = QHBoxLayout(self.options)
         opts.setContentsMargins(0, 9, 0, 9)
         opts.setSpacing(20)
@@ -370,6 +377,7 @@ class Window(QMainWindow):
         self.details.setFixedHeight(130)
         self.details.hide()
         self.detail_toggle = QPushButton("›  Detalhes e ferramentas")
+        self.detail_toggle.setObjectName("details")
         self.detail_toggle.clicked.connect(self.toggle_details)
         layout.addWidget(self.detail_toggle, 0, Qt.AlignmentFlag.AlignLeft)
         layout.addWidget(self.details)
