@@ -24,7 +24,7 @@ mkdir -p "$build_dir" "$dist_dir"
 "$build_dir/venv/bin/python" -m PyInstaller --noconfirm --clean --onedir --windowed \
   --name caeser --distpath "$build_dir/pyinstaller-dist" --workpath "$build_dir/pyinstaller-work" \
   --specpath "$build_dir" --paths Linux \
-  --collect-all yt_dlp --collect-all spotdl \
+  --collect-all yt_dlp --collect-all spotdl --collect-all pykakasi \
   --add-data "$root_dir/Sources/VideoDownloader/Resources:assets/Sources/VideoDownloader/Resources" \
   Linux/launcher.py
 
