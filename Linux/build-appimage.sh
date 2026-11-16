@@ -25,7 +25,7 @@ mkdir -p "$build_dir" "$dist_dir"
   --name caeser --distpath "$build_dir/pyinstaller-dist" --workpath "$build_dir/pyinstaller-work" \
   --specpath "$build_dir" --paths Linux \
   --collect-all yt_dlp --collect-all spotdl \
-  --add-data "Sources/VideoDownloader/Resources:assets/Sources/VideoDownloader/Resources" \
+  --add-data "$root_dir/Sources/VideoDownloader/Resources:assets/Sources/VideoDownloader/Resources" \
   Linux/launcher.py
 
 mkdir -p "$app_dir/usr/bin/tools" "$app_dir/usr/share/icons/hicolor/512x512/apps" \
