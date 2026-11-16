@@ -37,7 +37,7 @@ jobs:
       - name: Install AppImage desktop validator
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y desktop-file-utils squashfs-tools
+          sudo apt-get install -y desktop-file-utils squashfs-tools libegl1 libopengl0 libxkbcommon-x11-0 libxcb-cursor0
       - name: Verify core behavior
         run: PYTHONPATH=Linux python3 -m unittest discover -s Linux/tests -v
       - name: Build AppImage
@@ -54,7 +54,7 @@ jobs:
       - name: Smoke test Fedora 44 runtime
         run: |
           docker run --rm -v "$PWD:/project:ro" -w /project fedora:44 bash -lc '
-            dnf install -y fuse-libs fontconfig libxkbcommon mesa-libGL >/dev/null
+            dnf install -y fuse-libs fontconfig libxkbcommon mesa-libGL mesa-libEGL >/dev/null
             APPIMAGE_EXTRACT_AND_RUN=1 Linux/dist/Caeser-0.1.0-Linux-${{ matrix.arch }}.AppImage --tool yt-dlp --version
             APPIMAGE_EXTRACT_AND_RUN=1 QT_QPA_PLATFORM=offscreen Linux/dist/Caeser-0.1.0-Linux-${{ matrix.arch }}.AppImage --smoke
           '
