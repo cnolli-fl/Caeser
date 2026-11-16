@@ -17,7 +17,7 @@ Os downloads e o histórico ficam no computador. A biblioteca é salva em `${XDG
 
 ## Desenvolvimento
 
-No Fedora 44, instale Python 3.12 ou 3.13 e as dependências do sistema para PySide6. Crie um ambiente virtual e instale `Linux/requirements.txt` para desenvolver. A edição de desenvolvimento procura FFmpeg e Deno no `PATH`.
+No Fedora 44, instale Python 3.12 ou 3.13 e as dependências do sistema para PySide6. Para gerar o AppImage, instale também `desktop-file-utils`. Crie um ambiente virtual e instale `Linux/requirements.txt` para desenvolver. A edição de desenvolvimento procura FFmpeg e Deno no `PATH`.
 
 ```bash
 python3 -m venv Linux/.venv

@@ -34,6 +34,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install AppImage desktop validator
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y desktop-file-utils squashfs-tools
       - name: Verify core behavior
         run: PYTHONPATH=Linux python3 -m unittest discover -s Linux/tests -v
       - name: Build AppImage
