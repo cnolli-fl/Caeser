@@ -2,7 +2,7 @@
 
 ## Linux (Fedora 44 KDE)
 
-A edição Linux usa a mesma identidade Ocean e é empacotada em AppImage para x86_64 e ARM64. Consulte [Linux/README.md](Linux/README.md) para saber como executar, compilar e acompanhar a validação dessa edição.
+A edição Linux usa a mesma identidade Ocean e é empacotada em AppImage para x86_64 e ARM64. **Escolha o arquivo da arquitetura do seu computador:** [Intel/AMD (x86_64)](https://github.com/cnolli-fl/Caeser/releases/download/linux-v0.1.0/Caeser-0.1.0-Linux-x86_64.AppImage) · [ARM64 (aarch64)](https://github.com/cnolli-fl/Caeser/releases/download/linux-v0.1.0/Caeser-0.1.0-Linux-aarch64.AppImage). Esta é a primeira versão Linux, publicada como prévia. Consulte [Linux/README.md](Linux/README.md) para instalar, executar e ver os limites dos testes.
 
 Windows **2.2.1** · macOS **3.1.0**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
 
@@ -44,7 +44,7 @@ Download inicial de **249 KB**. Pacote completo de **136,0 MB** (antes 166,3 MB)
 
 Novidades no Mac **3.0.0** e no Windows **2.0.0**: prévia, fila de downloads, histórico, preferências por origem e aviso de atualização. O design continua clean, com a mesma identidade visual. Veja a validação do [Mac](docs/VALIDACAO-2.2.0.md) e do [Windows](Windows/VALIDACAO-2.0.0.md).
 
-**Baixe vídeos e músicas no Mac ou Windows de um jeito simples e muito rápido.**
+**Baixe vídeos e músicas no Mac, Windows ou Linux de um jeito simples e muito rápido.**
 
 O Caeser foi criado para facilitar o caminho entre o link e o arquivo salvo: cole o endereço, escolha o formato e a pasta e clique em **Baixar**. Com interface nativa para cada sistema, sem precisar montar comandos a cada download.
 
@@ -121,6 +121,7 @@ A qualidade de vídeo escolhida é um limite de resolução: o resultado depende
 | --- | --- |
 | SwiftUI | Interface, opções, animações e estados visuais. |
 | C#/.NET 10 e WinUI 3 | Aplicativo nativo Windows, mantido separadamente em Windows/. |
+| Python e PySide6/Qt | Interface Linux para Fedora KDE, distribuída como AppImage em Linux/. |
 | AppKit | Seleção da pasta com NSOpenPanel e integração com o Finder. |
 | Foundation | URLs, arquivos, processos externos e leitura da saída. |
 | yt-dlp | Extração e download de vídeos e áudio. |

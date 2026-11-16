@@ -4,7 +4,7 @@ Edição para Fedora 44 KDE Plasma em **x86_64 (Intel/AMD) ou aarch64 (ARM64)**,
 
 ## Usar o AppImage
 
-Baixe o arquivo `.AppImage` na release Linux, clique com o botão direito no Dolphin, abra **Propriedades → Permissões**, marque **É executável** e abra o arquivo. Pelo terminal:
+Baixe o arquivo `.AppImage` na [release Linux 0.1.0](https://github.com/cnolli-fl/Caeser/releases/tag/linux-v0.1.0), clique com o botão direito no Dolphin, abra **Propriedades → Permissões**, marque **É executável** e abra o arquivo. Pelo terminal:
 
 ```bash
 chmod +x Caeser-*-Linux-*.AppImage
@@ -12,6 +12,8 @@ chmod +x Caeser-*-Linux-*.AppImage
 ```
 
 O AppImage não instala o Caeser no menu de aplicativos por conta própria. Para isso, use a integração de AppImages do seu sistema. Algumas instalações podem precisar do pacote `fuse-libs` (`sudo dnf install fuse-libs`).
+
+Os testes automáticos verificam a inicialização e as ferramentas empacotadas no Fedora 44, além de uma conversão MP3 local nas duas arquiteturas. Ainda vale conferir manualmente a janela no KDE e downloads reais de serviços externos.
 
 Os downloads e o histórico ficam no computador. A biblioteca é salva em `${XDG_DATA_HOME:-~/.local/share}/Caeser/library.json`. O Caeser não pede login do Spotify.
 
