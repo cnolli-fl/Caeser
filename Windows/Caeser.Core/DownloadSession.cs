@@ -38,7 +38,7 @@ public sealed class DownloadSession(ToolLocator tools, IProcessRunner runner)
                 {
                     temporary = Path.Combine(Path.GetTempPath(), $"Caeser-{Guid.NewGuid():N}");
                     Directory.CreateDirectory(temporary);
-                    arguments.InsertRange(0, new[] { "--paths", temporary, "--paths", "temp:" + temporary });
+                    arguments.InsertRange(arguments.Count - 2, new[] { "--paths", temporary, "--paths", "temp:" + temporary });
                 }
                 command = new(tools.Tool("yt-dlp.exe"), arguments, request.Destination, tools.EnvironmentVariables());
             }
