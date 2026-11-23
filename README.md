@@ -2,7 +2,7 @@
 
 ## Linux (Fedora 44 KDE)
 
-A edição Linux usa a mesma identidade Ocean e é empacotada em AppImage para x86_64 e ARM64. **Escolha o arquivo da arquitetura do seu computador:** [Intel/AMD (x86_64)](https://github.com/cnolli-fl/Caeser/releases/download/linux-v0.1.0/Caeser-0.1.0-Linux-x86_64.AppImage) · [ARM64 (aarch64)](https://github.com/cnolli-fl/Caeser/releases/download/linux-v0.1.0/Caeser-0.1.0-Linux-aarch64.AppImage). Esta é a primeira versão Linux, publicada como prévia. Consulte [Linux/README.md](Linux/README.md) para instalar, executar e ver os limites dos testes.
+A edição Linux **0.2.0** adiciona corte de vídeo e áudio, com o painel animado no tema Ocean. Baixe o AppImage para [Intel/AMD (x86_64)](https://github.com/cnolli-fl/Caeser/releases/download/linux-v0.2.0/Caeser-0.2.0-Linux-x86_64.AppImage) ou [ARM64 (aarch64)](https://github.com/cnolli-fl/Caeser/releases/download/linux-v0.2.0/Caeser-0.2.0-Linux-aarch64.AppImage). Consulte [Linux/README.md](Linux/README.md) para instalar e usar.
 
 Windows **2.2.1** · macOS **3.1.0**. Cada plataforma tem sua própria numeração. Veja as mudanças em [CHANGELOG.md](CHANGELOG.md).
 

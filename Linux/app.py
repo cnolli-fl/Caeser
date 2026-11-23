@@ -3,23 +3,29 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
+import signal
 import subprocess
 import sys
+import tempfile
 import urllib.parse
 import urllib.request
 from pathlib import Path
 
-from PySide6.QtCore import QProcess, QProcessEnvironment, QRunnable, QThreadPool, QTimer, Qt, Signal, QObject, QUrl, QSize
-from PySide6.QtGui import QAction, QDesktopServices, QIcon, QKeySequence, QPixmap
+from PySide6.QtCore import (QEasingCurve, QObject, QProcess, QProcessEnvironment, QPropertyAnimation,
+                            QRectF, QRunnable, QSettings, QSize, QThreadPool, QTimer, Qt, QUrl,
+                            QVariantAnimation, Signal)
+from PySide6.QtGui import QAction, QColor, QDesktopServices, QIcon, QKeySequence, QPainter, QPixmap
 from PySide6.QtWidgets import (QApplication, QComboBox, QDialog, QFileDialog, QFrame,
-                               QHBoxLayout, QLabel, QListWidget, QListWidgetItem, QMainWindow,
-                               QPushButton, QProgressBar, QScrollArea,
+                               QGraphicsOpacityEffect, QHBoxLayout, QLabel, QLineEdit, QListWidget,
+                               QListWidgetItem, QMainWindow, QPushButton, QProgressBar, QScrollArea, QStyle,
                                QTextEdit, QVBoxLayout, QWidget)
 
-from core import (Download, FORMATS, Library, QUALITY_HEIGHT, batch_urls, is_spotify,
-                  tool_command, tool_environment, tool_path, validate_url)
+from core import (Clip, Download, FORMATS, Library, QUALITY_HEIGHT, batch_urls, clip_source,
+                  parse_clip, spotify_match, spotify_match_command, timestamp, tool_command,
+                  tool_environment, tool_path, validate_url)
 
 
 BG, SURFACE, FIELD, BORDER = "#0D2666", "#102D6C", "#244580", "#6086BB"
@@ -31,9 +37,12 @@ QMainWindow, QDialog, QScrollArea, QWidget#body, QWidget#page {{ background: {BG
 QLabel, QWidget#options {{ background: transparent; }}
 QFrame#card {{ background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 20px; }}
 QFrame#preview, QFrame#status {{ background: {FIELD}; border: 0; border-radius: 14px; }}
+QFrame#clipPanel {{ background: #173574; border: 1px solid #5576AC; border-radius: 16px; }}
+QLabel#clipFormat {{ background: {FIELD}; color: {MUTED}; border-radius: 11px; padding: 4px 10px; }}
+QLabel#clipIcon {{ background: {FIELD}; color: {ACCENT}; border-radius: 8px; }}
 QLabel#muted {{ color: {MUTED}; }}
-QTextEdit, QComboBox, QListWidget {{ background: {FIELD}; border: 1px solid {BORDER}; border-radius: 9px; padding: 8px; selection-background-color: {STRONG}; font-size: 13px; }}
-QTextEdit:focus, QComboBox:focus, QPushButton:focus {{ border: 2px solid {ACCENT}; }}
+QTextEdit, QLineEdit, QComboBox, QListWidget {{ background: {FIELD}; border: 1px solid {BORDER}; border-radius: 9px; padding: 8px; selection-background-color: {STRONG}; font-size: 13px; }}
+QTextEdit:focus, QLineEdit:focus, QComboBox:focus, QPushButton:focus {{ border: 2px solid {ACCENT}; }}
 QComboBox {{ min-height: 22px; padding-left: 12px; }}
 QComboBox::drop-down {{ border: none; width: 28px; }}
 QComboBox QAbstractItemView {{ background: {FIELD}; color: {TEXT}; selection-background-color: {STRONG}; }}
@@ -44,7 +53,11 @@ QPushButton:disabled {{ color: #91A4CA; background: #173671; }}
 QPushButton#primary {{ background: {STRONG}; color: {TEXT}; border: 1px solid #48B9FF; border-radius: 18px; font-weight: 600; padding: 8px 18px; }}
 QPushButton#primary:hover {{ background: #1EAAFF; }}
 QPushButton#segment {{ border-radius: 10px; font-weight: 600; }}
-QPushButton#segment:checked {{ background: #006CB6; border: 1px solid #58BDF9; }}
+QPushButton#segment:checked, QPushButton#clipToggle:checked {{
+    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #096DAE, stop:1 #084D82);
+    border: 1px solid #58BDF9;
+}}
+QPushButton#segment:focus, QPushButton#clipToggle:focus {{ border: 2px solid {ACCENT}; }}
 QPushButton#details {{ background: transparent; border: none; color: {MUTED}; padding-left: 0; }}
 QPushButton#details:hover {{ color: {TEXT}; }}
 QProgressBar {{ background: {FIELD}; border: none; border-radius: 5px; height: 9px; text-align: center; }}
@@ -72,15 +85,69 @@ def label(text: str, size: int = 13, bold: bool = False, muted: bool = False) ->
     return widget
 
 
+def motion_duration(widget: QWidget) -> int:
+    config = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "kdeglobals"
+    settings = QSettings(str(config), QSettings.Format.IniFormat)
+    if os.environ.get("CAESER_REDUCE_MOTION") == "1":
+        return 0
+    try:
+        factor = float(settings.value("KDE/AnimationDurationFactor", "1"))
+    except (TypeError, ValueError):
+        factor = 1
+    base = widget.style().styleHint(QStyle.StyleHint.SH_Widget_Animation_Duration)
+    return min(420, round(base * min(max(factor, 0), 2))) if math.isfinite(factor) else base
+
+
+class ClipTimeline(QWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setFixedHeight(8)
+        self.setAccessibleName("Posição do trecho na duração total")
+        self.selection = QRectF()
+        self.animation = QVariantAnimation(self)
+        self.animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+        self.animation.valueChanged.connect(self.animate_selection)
+
+    def animate_selection(self, value):
+        self.selection = value
+        self.update()
+
+    def set_selection(self, clip: Clip, duration: float):
+        start, end = min(1, clip.start / duration), min(1, clip.end / duration)
+        target = QRectF(start, 0, end - start, 1)
+        self.animation.stop()
+        duration_ms = motion_duration(self)
+        if not duration_ms or self.isHidden():
+            self.animate_selection(target)
+        else:
+            self.animation.setDuration(duration_ms)
+            self.animation.setStartValue(self.selection)
+            self.animation.setEndValue(target)
+            self.animation.start()
+        self.setAccessibleDescription(clip.title)
+        self.show()
+
+    def paintEvent(self, _event):
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QColor(FIELD))
+        painter.drawRoundedRect(QRectF(self.rect()), 4, 4)
+        painter.setBrush(QColor(ACCENT))
+        width = self.width()
+        painter.drawRoundedRect(QRectF(self.selection.x() * width, 0, self.selection.width() * width, 8), 4, 4)
+
+
 class PreviewSignals(QObject):
     ready = Signal(int, dict)
     failed = Signal(int, str)
 
 
 class PreviewTask(QRunnable):
-    def __init__(self, serial: int, url: str, source: str):
+    def __init__(self, serial: int, url: str, source: str, need_duration: bool = False):
         super().__init__()
         self.serial, self.url, self.source = serial, url, source
+        self.need_duration = need_duration
         self.signals = PreviewSignals()
 
     def run(self):
@@ -98,7 +165,7 @@ class PreviewTask(QRunnable):
             endpoint = "https://www.youtube.com/oembed?format=json&url=" + urllib.parse.quote(self.url, safe="")
         else:
             endpoint = ""
-        if endpoint:
+        if endpoint and (not self.need_duration or self.source == "Spotify"):
             try:
                 with urllib.request.urlopen(urllib.request.Request(endpoint, headers={"User-Agent": "Caeser/1.0"}), timeout=7) as response:
                     raw = response.read(128001)
@@ -147,7 +214,8 @@ class HistoryDialog(QDialog):
         for entry in reversed(library.items):
             if entry.state in ("Na fila", "Baixando"):
                 continue
-            row = QListWidgetItem(f"{entry.title or entry.url}\n{entry.source} · {entry.fmt} · {entry.state}  {entry.detail}")
+            trim = f" · {entry.clip.title}" if entry.clip else ""
+            row = QListWidgetItem(f"{entry.title or entry.url}\n{entry.source} · {entry.fmt}{trim} · {entry.state}  {entry.detail}")
             row.setData(Qt.ItemDataRole.UserRole, entry.destination)
             row.setToolTip(entry.url)
             self.list.addItem(row)
@@ -176,6 +244,7 @@ class Window(QMainWindow):
         self.library = Library()
         self.current: Download | None = None
         self.process: QProcess | None = None
+        self.match_directory: tempfile.TemporaryDirectory | None = None
         self.output_buffer = ""
         self.preview_serial = 0
         self.preview: dict | None = None
@@ -185,6 +254,8 @@ class Window(QMainWindow):
         self.resize(860, 790)
         self.setMinimumSize(620, 580)
         self.setStyleSheet(STYLE)
+        self.animation_ms = motion_duration(self)
+        self.reveals = {}
         self.setWindowIcon(QIcon(str(asset("Sources/VideoDownloader/Resources/CaeserLogo.png"))))
         self.build_ui()
         self.refresh()
@@ -320,6 +391,8 @@ class Window(QMainWindow):
         self.spotify_hint = label("Spotify → busca no YouTube → MP3 com capa e metadados. A correspondência pode variar.", muted=True)
         self.spotify_hint.hide()
         form.addWidget(self.spotify_hint)
+        form.addWidget(self.build_clip_panel())
+        self.fmt.currentTextChanged.connect(self.update_clip)
         folder = QHBoxLayout()
         folder.addWidget(label("▱", 18, muted=True))
         folder_info = QVBoxLayout()
@@ -363,6 +436,9 @@ class Window(QMainWindow):
         self.progress.setRange(0, 100)
         self.progress.setValue(0)
         self.progress.setTextVisible(False)
+        self.progress_motion = QPropertyAnimation(self.progress, b"value", self)
+        self.progress_motion.setDuration(self.animation_ms)
+        self.progress_motion.setEasingCurve(QEasingCurve.Type.OutCubic)
         self.progress.hide()
         layout.addWidget(self.progress)
         status = QHBoxLayout()
@@ -385,6 +461,136 @@ class Window(QMainWindow):
         layout.addStretch()
         self.make_shortcuts()
 
+    def build_clip_panel(self) -> QFrame:
+        panel = QFrame()
+        panel.setObjectName("clipPanel")
+        layout = QVBoxLayout(panel)
+        layout.setContentsMargins(14, 12, 14, 12)
+        layout.setSpacing(11)
+        heading = QHBoxLayout()
+        icon = label("✂", 16, True)
+        icon.setObjectName("clipIcon")
+        icon.setFixedSize(32, 32)
+        icon.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        heading.addWidget(icon)
+        self.clip_title = label("Cortar vídeo", 13, True)
+        heading.addWidget(self.clip_title)
+        heading.addStretch()
+        self.clip_toggle = QPushButton("Ativar")
+        self.clip_toggle.setObjectName("clipToggle")
+        self.clip_toggle.setCheckable(True)
+        self.clip_toggle.setMinimumWidth(94)
+        heading.addWidget(self.clip_toggle)
+        layout.addLayout(heading)
+        self.clip_body = QWidget()
+        body = QVBoxLayout(self.clip_body)
+        body.setContentsMargins(0, 0, 0, 0)
+        body.setSpacing(10)
+        fields = QHBoxLayout()
+        fields.setSpacing(14)
+        self.clip_start, self.clip_end = QLineEdit(), QLineEdit()
+        for caption, example, field in (("Início", "1:20", self.clip_start), ("Fim", "1:50", self.clip_end)):
+            column = QVBoxLayout()
+            column.setSpacing(5)
+            title = label(caption, 11, True)
+            title.setBuddy(field)
+            field.setAccessibleName(caption)
+            field.setMinimumHeight(34)
+            field.setMaximumWidth(130)
+            field.setMaxLength(12)
+            field.setPlaceholderText(example)
+            field.textChanged.connect(self.update_clip)
+            field.returnPressed.connect(self.enqueue)
+            column.addWidget(title)
+            column.addWidget(field)
+            fields.addLayout(column)
+        fields.addStretch()
+        self.clip_format = label("MP4", 10, True)
+        self.clip_format.setObjectName("clipFormat")
+        fields.addWidget(self.clip_format, alignment=Qt.AlignmentFlag.AlignBottom)
+        body.addLayout(fields)
+        self.clip_timeline = ClipTimeline()
+        self.clip_timeline.hide()
+        body.addWidget(self.clip_timeline)
+        self.clip_feedback = label("", 11, muted=True)
+        body.addWidget(self.clip_feedback)
+        layout.addWidget(self.clip_body)
+        self.clip_body.hide()
+        self.clip_toggle.toggled.connect(self.toggle_clip)
+        return panel
+
+    def reveal(self, widget: QWidget, visible: bool = True):
+        if widget.isHidden() != visible:
+            return
+        if not visible or not self.animation_ms:
+            animation = self.reveals.get(widget)
+            if animation:
+                animation.stop()
+                widget.graphicsEffect().setOpacity(1)
+            widget.setVisible(visible)
+            return
+        if widget not in self.reveals:
+            effect = QGraphicsOpacityEffect(widget)
+            widget.setGraphicsEffect(effect)
+            animation = QPropertyAnimation(effect, b"opacity", widget)
+            animation.setDuration(self.animation_ms)
+            animation.setEasingCurve(QEasingCurve.Type.OutCubic)
+            animation.setStartValue(0.0)
+            animation.setEndValue(1.0)
+            self.reveals[widget] = animation
+        widget.show()
+        self.reveals[widget].start()
+
+    def toggle_clip(self, enabled: bool):
+        self.reveal(self.clip_body, enabled)
+        self.update_clip()
+        if enabled and self.source() == "YouTube" and self.url_input.toPlainText().strip():
+            self.preview_serial += 1
+            self.preview_timer.start()
+
+    def selected_clip(self) -> Clip:
+        text = self.url_input.toPlainText().strip()
+        if text:
+            clip_source(batch_urls(text, self.source()))
+        return parse_clip(self.clip_start.text(), self.clip_end.text(), self.media_duration())
+
+    def media_duration(self) -> float | None:
+        duration = self.preview.get("duration") if self.preview else None
+        return duration if isinstance(duration, (float, int)) and math.isfinite(duration) and duration > 0 else None
+
+    def update_clip(self):
+        audio = self.source() == "Spotify" or self.fmt.currentText() == "MP3"
+        self.clip_title.setText("Cortar áudio" if audio else "Cortar vídeo")
+        active = self.clip_toggle.isChecked()
+        self.clip_toggle.setText("Ativado" if active else "Ativar")
+        self.clip_toggle.setAccessibleName(self.clip_title.text())
+        self.clip_format.setText("MP3" if audio else "MP4")
+        self.clip_format.setAccessibleName("Formato do trecho: " + self.clip_format.text())
+        if self.source() == "Spotify":
+            self.spotify_hint.setText("O trecho usa a versão da faixa encontrada no YouTube." if active else
+                                      "Spotify → YouTube · MP3 com capa e metadados. A correspondência pode variar.")
+        valid = True
+        if active:
+            try:
+                clip = self.selected_clip()
+            except ValueError as error:
+                valid = False
+                self.clip_timeline.hide()
+                self.clip_feedback.setText("Use minutos e segundos, como 1:20."
+                                           if str(error).startswith("Use mm:ss") and
+                                           not (self.clip_start.text() and self.clip_end.text()) else str(error))
+            else:
+                self.clip_feedback.setText("Duração do trecho  ·  " + timestamp(clip.end - clip.start))
+                if duration := self.media_duration():
+                    self.clip_timeline.set_selection(clip, duration)
+                else:
+                    self.clip_timeline.hide()
+        text = self.url_input.toPlainText().strip()
+        has_pending = any(i.state == "Na fila" for i in self.library.items)
+        self.primary.setEnabled(valid if text else has_pending)
+        self.primary.setText("↓  Baixar trecho" if active and text else
+                             "↓  Baixar e continuar fila" if has_pending else "↓  Baixar")
+
     def make_shortcuts(self):
         for shortcut, callback in (("Ctrl+Return", self.enqueue), ("Ctrl+L", self.url_input.setFocus),
                                    ("Escape", self.cancel_current)):
@@ -397,8 +603,8 @@ class Window(QMainWindow):
         self.youtube.setChecked(source == "YouTube")
         self.spotify.setChecked(source == "Spotify")
         spotify = source == "Spotify"
-        self.options.setVisible(not spotify)
-        self.spotify_hint.setVisible(spotify)
+        self.reveal(self.options, not spotify)
+        self.reveal(self.spotify_hint, spotify)
         self.link_title.setText("Link da música, álbum ou playlist" if spotify else "Link do vídeo")
         self.url_input.setPlaceholderText("https://open.spotify.com/track/..." if spotify else "https://www.youtube.com/watch?v=...")
         self.on_link_changed()
@@ -426,7 +632,7 @@ class Window(QMainWindow):
         serial = self.preview_serial
         self.preview_hint.setText("Buscando prévia…")
         self.preview_hint.show()
-        task = PreviewTask(serial, url, self.source())
+        task = PreviewTask(serial, url, self.source(), self.clip_toggle.isChecked())
         task.signals.ready.connect(self.show_preview)
         task.signals.failed.connect(self.preview_failed)
         self.pool.start(task)
@@ -439,7 +645,8 @@ class Window(QMainWindow):
         self.preview_title.setText(preview["title"])
         self.preview_creator.setText(preview["creator"])
         self.artwork.clear()
-        self.preview_card.show()
+        self.reveal(self.preview_card)
+        self.update_clip()
         url = preview.get("artwork", "")
         parsed = urllib.parse.urlparse(url)
         if parsed.scheme == "https" and parsed.hostname:
@@ -457,8 +664,11 @@ class Window(QMainWindow):
 
     def preview_failed(self, serial: int, reason: str):
         if serial == self.preview_serial:
-            self.preview_hint.setText(reason + " Você ainda pode baixar.")
-            self.preview_hint.show()
+            if self.preview:
+                self.preview_hint.hide()
+            else:
+                self.preview_hint.setText(reason + " Você ainda pode baixar.")
+                self.reveal(self.preview_hint)
 
     def change_folder(self):
         selected = QFileDialog.getExistingDirectory(self, "Escolha a pasta de destino", self.library.destination)
@@ -473,9 +683,13 @@ class Window(QMainWindow):
         if text:
             try:
                 links = batch_urls(text, self.source())
+                clip = self.selected_clip() if self.clip_toggle.isChecked() else None
+                fmt = self.fmt.currentText()
+                if clip and fmt != "MP3":
+                    fmt = "MP4"
                 items = [Download(url=url, source=source, destination=self.library.destination,
                                   quality=self.quality.currentText(),
-                                  fmt="MP3" if source == "Spotify" else self.fmt.currentText(),
+                                  fmt="MP3" if source == "Spotify" else fmt, clip=clip,
                                   title=self.preview["title"] if len(links) == 1 and self.preview else url,
                                   creator=self.preview.get("creator", "") if len(links) == 1 and self.preview else "",
                                   artwork=self.preview.get("artwork", "") if len(links) == 1 and self.preview else "")
@@ -485,7 +699,10 @@ class Window(QMainWindow):
                 self.status_label.setText(str(error))
                 return
             if added:
+                self.clip_toggle.setChecked(False)
                 self.url_input.clear()
+                self.clip_start.clear()
+                self.clip_end.clear()
                 self.status_label.setText(f"{added} item(ns) adicionado(s) à fila.")
             else:
                 self.status_label.setText("Este link já está na fila ou foi baixado nesta pasta.")
@@ -496,13 +713,13 @@ class Window(QMainWindow):
         self.start_next()
 
     def start_next(self):
-        if self.process or self.library.paused:
+        if self.current or self.library.paused:
             return
         pending = next((i for i in self.library.items if i.state == "Na fila"), None)
         if not pending:
             self.refresh()
             return
-        missing = [name for name in (("ffmpeg", "deno") if pending.source == "YouTube" else ("ffmpeg",))
+        missing = [name for name in (("ffmpeg", "deno") if pending.source == "YouTube" or pending.clip else ("ffmpeg",))
                    if not Path(tool_path(name)).is_file()]
         if missing:
             pending.state, pending.detail = "Falhou", "Ferramenta ausente: " + ", ".join(missing)
@@ -515,28 +732,54 @@ class Window(QMainWindow):
         self.current.state = "Baixando"
         self.current.detail = "Iniciando…"
         self.library.save()
-        self.process = QProcess(self)
-        self.process.setWorkingDirectory(pending.destination)
+        self.cancel_requested = False
+        self.progress.setRange(0, 0)
+        self.reveal(self.progress)
+        self.cancel.show()
+        self.refresh()
+        if pending.source == "Spotify" and pending.clip:
+            try:
+                self.match_directory = tempfile.TemporaryDirectory(prefix="caeser-faixa-")
+            except OSError as error:
+                pending.detail = str(error)
+                self.process_finished(-1, QProcess.ExitStatus.CrashExit)
+                return
+            self.status_label.setText("Buscando a faixa no YouTube…")
+            self.launch_process(spotify_match_command(pending.url, self.match_file))
+            lookup = self.process
+            if lookup:
+                QTimer.singleShot(120_000, lambda: self.stop_lookup_if_current(lookup))
+        else:
+            self.launch_process(pending.command())
+
+    @property
+    def match_file(self) -> Path:
+        return Path(self.match_directory.name) / "faixa.spotdl"
+
+    def launch_process(self, command: list[str]):
+        process = QProcess(self)
+        self.process = process
+        process.setWorkingDirectory(self.match_directory.name if self.match_directory else self.current.destination)
+        process.setUnixProcessParameters(QProcess.UnixProcessFlag.CreateNewSession)
         env = QProcessEnvironment.systemEnvironment()
         for key, value in tool_environment().items():
             if key in ("PATH", "PYINSTALLER_RESET_ENVIRONMENT"):
                 env.insert(key, value)
-        self.process.setProcessEnvironment(env)
-        self.process.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
-        self.process.readyReadStandardOutput.connect(self.read_process)
-        self.process.finished.connect(self.process_finished)
-        command = pending.command()
-        self.details.append("Executando " + ("spotDL" if pending.source == "Spotify" else "yt-dlp") + " para " + pending.url)
+        process.setProcessEnvironment(env)
+        process.setProcessChannelMode(QProcess.ProcessChannelMode.MergedChannels)
+        process.readyReadStandardOutput.connect(self.read_process)
+        process.finished.connect(self.process_finished)
+        self.details.append("Executando " + ("spotDL" if self.match_directory or
+                            self.current.source == "Spotify" and not self.current.clip else "yt-dlp"))
         self.output_buffer = ""
-        self.cancel_requested = False
-        self.process.start(command[0], command[1:])
-        if not self.process.waitForStarted(5000):
+        process.start(command[0], command[1:])
+        if not process.waitForStarted(5000):
             self.process_finished(-1, QProcess.ExitStatus.CrashExit)
-            return
-        self.progress.setRange(0, 0)
-        self.progress.show()
-        self.cancel.show()
-        self.refresh()
+
+    def stop_lookup_if_current(self, process: QProcess):
+        if self.process is process and self.match_directory:
+            self.current.detail = "A busca da faixa demorou demais. Tente novamente."
+            self.stop_process(process)
 
     def read_process(self):
         if not self.process:
@@ -566,9 +809,20 @@ class Window(QMainWindow):
             values = line.split(":", 2)[2].split("|")
             percent = re.search(r"([0-9]+(?:\.[0-9]+)?)%", values[0])
             if percent:
-                self.progress.setRange(0, 100)
-                self.progress.setValue(min(100, int(float(percent.group(1)))))
+                value = min(100, int(float(percent.group(1))))
+                if self.progress.maximum() == 0:
+                    self.progress.setRange(0, 100)
+                    self.progress.setValue(0)
+                if self.animation_ms:
+                    self.progress_motion.stop()
+                    self.progress_motion.setStartValue(self.progress.value())
+                    self.progress_motion.setEndValue(value)
+                    self.progress_motion.start()
+                else:
+                    self.progress.setValue(value)
             self.current.detail = " · ".join(v.strip() for v in values if v.strip() and v.strip() != "NA")
+        elif line.startswith("[info]") and "time ranges" in line:
+            self.current.detail = "Preparando o trecho " + self.current.clip.title if self.current.clip else "Preparando…"
         elif "ERROR" in line or "Error" in line:
             self.current.detail = line[-240:]
         self.details.append(line[-1000:])
@@ -578,23 +832,43 @@ class Window(QMainWindow):
     def process_finished(self, code: int, _status):
         if not self.current:
             return
+        self.read_process()
         if self.output_buffer:
             self.handle_line(self.output_buffer.strip())
             self.output_buffer = ""
-        if self.cancel_requested:
-            self.current.state, self.current.detail = "Cancelado", "Download cancelado."
-        elif code == 0:
-            self.current.state, self.current.detail = "Concluído", "Salvo em " + self.current.destination
-        else:
-            self.current.state = "Falhou"
-            if not self.current.detail or self.current.detail == "Iniciando…":
-                self.current.detail = "Não foi possível concluir. Veja os detalhes e tente novamente."
-        self.status_label.setText(self.current.state + " · " + self.current.title)
-        self.library.save()
         if self.process:
             self.process.deleteLater()
         self.process = None
+        lookup = self.match_directory
+        if lookup:
+            match = None
+            if code == 0 and not self.cancel_requested:
+                try:
+                    match = spotify_match(self.match_file)
+                except (OSError, TypeError, ValueError):
+                    self.current.detail = "Não encontrei uma versão da faixa no YouTube."
+                    code = -1
+            self.match_directory = None
+            lookup.cleanup()
+            if match:
+                self.current.detail = "Preparando o trecho de áudio…"
+                self.status_label.setText(self.current.detail)
+                self.launch_process(self.current.command(match))
+                return
+        if self.cancel_requested:
+            self.current.state, self.current.detail = "Cancelado", "Download cancelado."
+        elif code == 0 and (not self.current.clip or self.current.files):
+            self.current.state, self.current.detail = "Concluído", "Salvo em " + self.current.destination
+        else:
+            self.current.state = "Falhou"
+            if code == 0 and self.current.clip:
+                self.current.detail = "Nenhum trecho foi salvo. Confira a duração e a disponibilidade da faixa ou vídeo."
+            elif not self.current.detail or self.current.detail == "Iniciando…":
+                self.current.detail = "Não foi possível concluir. Veja os detalhes e tente novamente."
+        self.status_label.setText(self.current.state + " · " + self.current.title)
+        self.library.save()
         self.current = None
+        self.progress_motion.stop()
         self.progress.hide()
         self.cancel.hide()
         self.refresh()
@@ -603,12 +877,20 @@ class Window(QMainWindow):
     def cancel_current(self):
         if self.process and self.process.state() != QProcess.ProcessState.NotRunning:
             self.cancel_requested = True
-            self.process.terminate()
-            QTimer.singleShot(3000, self.kill_if_running)
+            self.stop_process(self.process)
 
-    def kill_if_running(self):
-        if self.process and self.process.state() != QProcess.ProcessState.NotRunning:
-            self.process.kill()
+    def stop_process(self, process: QProcess):
+        self.signal_process(process, signal.SIGTERM)
+        QTimer.singleShot(3000, lambda: self.signal_process(process, signal.SIGKILL)
+                          if self.process is process else None)
+
+    @staticmethod
+    def signal_process(process: QProcess, sig: int):
+        if pid := process.processId():
+            try:
+                os.killpg(pid, sig)
+            except ProcessLookupError:
+                pass
 
     def toggle_pause(self):
         self.library.paused = not self.library.paused
@@ -645,25 +927,24 @@ class Window(QMainWindow):
         self.queue_list.clear()
         entries = [i for i in self.library.items if i.state in ("Na fila", "Baixando", "Falhou", "Cancelado", "Interrompido")]
         for entry in entries:
-            row = QListWidgetItem(f"{entry.title or entry.url}\n{entry.source} · {entry.fmt} · {entry.state}" +
+            trim = f" · {entry.clip.title}" if entry.clip else ""
+            row = QListWidgetItem(f"{entry.title or entry.url}\n{entry.source} · {entry.fmt}{trim} · {entry.state}" +
                                   (f" · {entry.detail[:90]}" if entry.detail else ""))
             row.setData(Qt.ItemDataRole.UserRole, entry.id)
             row.setToolTip(entry.url)
             self.queue_list.addItem(row)
             if entry.id == selected_id:
                 self.queue_list.setCurrentItem(row)
-        self.queue_frame.setVisible(bool(entries))
+        self.reveal(self.queue_frame, bool(entries))
         self.pause.setText("Continuar fila" if self.library.paused else "Pausar fila")
 
     def refresh(self):
         self.refresh_queue()
-        has_pending = any(i.state == "Na fila" for i in self.library.items)
-        self.primary.setEnabled(bool(self.url_input.toPlainText().strip()) or has_pending)
-        self.primary.setText("↓  Baixar e continuar fila" if has_pending else "↓  Baixar")
+        self.update_clip()
 
     def toggle_details(self):
         showing = not self.details.isVisible()
-        self.details.setVisible(showing)
+        self.reveal(self.details, showing)
         self.detail_toggle.setText(("⌄" if showing else "›") + "  Detalhes e ferramentas")
 
     def open_history(self):
@@ -672,11 +953,14 @@ class Window(QMainWindow):
     def closeEvent(self, event):
         if self.process and self.current:
             self.process.blockSignals(True)
-            self.process.kill()
+            self.signal_process(self.process, signal.SIGKILL)
             self.process.waitForFinished(2000)
             self.current.state = "Interrompido"
             self.current.detail = "Interrompido ao fechar. Tente novamente."
             self.library.paused = True
+        if self.match_directory:
+            self.match_directory.cleanup()
+            self.match_directory = None
         self.library.save()
         super().closeEvent(event)
 
@@ -710,13 +994,61 @@ def main():
     window.show()
     if "--smoke" in sys.argv:
         def finish_smoke():
+            window.set_source("YouTube")
+            window.url_input.setPlainText("https://youtu.be/trecho-teste")
+            window.clip_toggle.setChecked(True)
+            window.preview_timer.stop()
+            window.show_preview(window.preview_serial, {"title": "Vídeo de demonstração", "creator": "Caeser",
+                                                        "duration": 166})
+            window.clip_start.setText("1:20")
+            window.clip_end.setText("1:10")
+            if window.primary.isEnabled():
+                app.exit(1)
+                return
+            window.clip_end.setText("1:50")
+            if not window.primary.isEnabled() or "0:30" not in window.clip_feedback.text():
+                app.exit(1)
+                return
             destination = os.environ.get("CAESER_SMOKE_SCREENSHOT")
             if destination:
-                window.grab().save(destination)
-            window.set_source("Spotify")
-            dialog = HistoryDialog(window.library, window)
-            QTimer.singleShot(200, dialog.accept)
-            dialog.exec()
-            app.quit()
+                window.resize(860, 1050)
+            def confirm_spotify():
+                if destination and not window.grab().save(destination):
+                    app.exit(1)
+                    return
+                window.set_source("Spotify")
+                window.url_input.setPlainText("spotify:album:0VjIjW4GlUZAMYd2vXMi3b")
+                window.preview_timer.stop()
+                if window.clip_title.text() != "Cortar áudio" or window.primary.isEnabled():
+                    app.exit(1)
+                    return
+                dialog = HistoryDialog(window.library, window)
+                QTimer.singleShot(150, dialog.accept)
+                dialog.exec()
+                app.quit()
+            QTimer.singleShot(450, confirm_spotify)
         QTimer.singleShot(1200, finish_smoke)
+    elif "--smoke-clip-download" in sys.argv:
+        def run_clips():
+            window.library.destination = os.environ["CAESER_SMOKE_DESTINATION"]
+            for fmt in ("MP4", "MP3"):
+                window.fmt.setCurrentText(fmt)
+                window.url_input.setPlainText(os.environ["CAESER_SMOKE_VIDEO"])
+                window.clip_toggle.setChecked(True)
+                window.preview_timer.stop()
+                window.clip_start.setText("0:03")
+                window.clip_end.setText("0:07")
+                window.enqueue()
+            timer = QTimer(window)
+            def check_clips():
+                if window.current or any(item.state == "Na fila" for item in window.library.items):
+                    return
+                ok = {item.fmt for item in window.library.items if item.state == "Concluído"} == {"MP4", "MP3"}
+                if not ok:
+                    print(window.details.toPlainText(), file=sys.stderr)
+                app.exit(0 if ok else 1)
+            timer.timeout.connect(check_clips)
+            timer.start(100)
+            QTimer.singleShot(75_000, lambda: app.exit(1))
+        QTimer.singleShot(0, run_clips)
     return app.exec()
