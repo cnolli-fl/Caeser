@@ -38,7 +38,8 @@ def main(package: Path):
                 worker.join()
 
         for extension in ("mp3", "mp4"):
-            filename = output / f"sample [3-7s].{extension}"
+            kind = " áudio" if extension == "mp3" else ""
+            filename = output / f"sample [3-7s{kind}].{extension}"
             info = json.loads(subprocess.check_output([
                 "ffprobe", "-v", "error", "-show_entries", "stream=codec_name:format=duration",
                 "-of", "json", str(filename),

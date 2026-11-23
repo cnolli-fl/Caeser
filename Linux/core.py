@@ -215,7 +215,8 @@ class Download:
             raise ValueError("A faixa precisa ser localizada no YouTube antes de cortar.")
         template = "%(title)s.%(ext)s"
         if self.clip:
-            template = f"%(title)s [{self.clip.start}-{self.clip.end}s].%(ext)s"
+            kind = " áudio" if self.fmt == "MP3" else ""
+            template = f"%(title)s [{self.clip.start}-{self.clip.end}s{kind}].%(ext)s"
         args = ["--ignore-config", "--newline", "--no-quiet", "--progress", "--no-playlist",
                 "--no-overwrites", "--no-simulate", "--print", "before_dl:CAESER_TITLE:%(title)j",
                 "--print", "after_move:CAESER_FILE:%(filepath)j",

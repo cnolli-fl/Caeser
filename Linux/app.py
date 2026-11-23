@@ -75,6 +75,7 @@ def asset(name: str) -> Path:
 
 def label(text: str, size: int = 13, bold: bool = False, muted: bool = False) -> QLabel:
     widget = QLabel(text)
+    widget.setTextFormat(Qt.TextFormat.PlainText)
     font = widget.font()
     font.setPointSize(size)
     font.setBold(bold)
@@ -857,7 +858,7 @@ class Window(QMainWindow):
                 return
         if self.cancel_requested:
             self.current.state, self.current.detail = "Cancelado", "Download cancelado."
-        elif code == 0 and (not self.current.clip or self.current.files):
+        elif code == 0 and (not self.current.clip or any(Path(path).is_file() for path in self.current.files)):
             self.current.state, self.current.detail = "Concluído", "Salvo em " + self.current.destination
         else:
             self.current.state = "Falhou"
