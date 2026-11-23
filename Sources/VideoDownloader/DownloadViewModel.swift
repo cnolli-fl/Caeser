@@ -4,6 +4,7 @@ import SwiftUI
 
 @MainActor
 final class DownloadViewModel: ObservableObject {
+    @Published var fileName = ""
     @Published var urlText = "" {
         didSet {
             errorMessage = nil
@@ -18,6 +19,9 @@ final class DownloadViewModel: ObservableObject {
     }
     @Published var quality: VideoQuality = .best { didSet { savePreferences() } }
     @Published var format: VideoFormat = .automatic { didSet { savePreferences() } }
+    @Published var trimEnabled = false
+    @Published var trimStart = ""
+    @Published var trimEnd = ""
     @Published var destinationURL: URL { didSet { savePreferences() } }
     @Published private(set) var preview: MediaPreview?
     @Published private(set) var isLoadingPreview = false
@@ -41,6 +45,7 @@ final class DownloadViewModel: ObservableObject {
 
     private var downloadProcess: (any DownloadRunning)?
     private var previewTask: Task<Void, Never>?
+    private var spotifyTrimTask: Task<Void, Never>?
     private var previewID = UUID()
     private var activeID: UUID?
     private var runID = UUID()
@@ -51,6 +56,7 @@ final class DownloadViewModel: ObservableObject {
     private let previewLoader: @Sendable (URL, DownloadSource, DependencyInfo) async throws -> MediaPreview
     private var wasCancelled = false
     private var activeSource: DownloadSource = .video
+    private var usesSpotifyProcess = false
     private var activeTool = "yt-dlp"
     private var operation: Operation = .download
     private var errorReportDirectory: URL?
@@ -88,8 +94,21 @@ final class DownloadViewModel: ObservableObject {
 
     var isBusy: Bool { isDownloading || isInstalling }
     var effectiveFormat: VideoFormat { source == .spotify ? .mp3 : format }
+    var trimFormat: VideoFormat { effectiveFormat == .mp3 ? .mp3 : .mp4 }
+    var trimSelection: Result<VideoTrim, Error> {
+        Result {
+            guard inputLinkCount <= 1 else { throw VideoTrim.ValidationError.singleLink }
+            if source == .spotify,
+               let url = try? DownloadInput.validatedURL(urlText, source: .spotify),
+               !url.path.hasPrefix("/track/") {
+                throw VideoTrim.ValidationError.singleTrack
+            }
+            return try VideoTrim(startText: trimStart, endText: trimEnd, duration: preview?.duration)
+        }
+    }
     var canStartDownload: Bool {
-        !isInstalling && !urlText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        if trimEnabled, case .failure = trimSelection { return false }
+        return !isInstalling && !urlText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
     }
     var dependenciesReady: Bool { dependencyInfo.isReady(for: source) }
     var dependencyMessage: String {
@@ -196,8 +215,10 @@ final class DownloadViewModel: ObservableObject {
     func startDownload() {
         guard canStartDownload else { return }
         do {
+            let trim = trimEnabled ? try trimSelection.get() : nil
             let requests = try DownloadBatch.requests(text: urlText, source: source, quality: quality,
-                                                      format: format, destination: destinationURL, preview: preview)
+                                                      format: trim == nil ? format : trimFormat, destination: destinationURL,
+                                                      preview: preview, trim: trim, fileName: fileName)
             var additions: [QueueItem] = []
             var skipped = 0
             for request in requests {
@@ -216,6 +237,10 @@ final class DownloadViewModel: ObservableObject {
             savePreferences()
             persistLibrary()
             urlText = ""
+            fileName = ""
+            trimEnabled = false
+            trimStart = ""
+            trimEnd = ""
             inputMessage = skipped > 0 ? "\(skipped) link(s) já estavam na fila ou no histórico. Para repetir um download, use o Histórico." : nil
             startNextIfNeeded()
         } catch { inputMessage = error.localizedDescription }
@@ -259,6 +284,7 @@ final class DownloadViewModel: ObservableObject {
 
     func stopForQuit() {
         previewTask?.cancel()
+        spotifyTrimTask?.cancel()
         library.isPaused = true
         persistLibrary()
         downloadProcess?.cancel()
@@ -288,6 +314,7 @@ final class DownloadViewModel: ObservableObject {
         let request = item.request
         let source = request.source, destinationURL = request.destination
         let quality = request.quality, format = request.format, url = request.url
+        let isSpotifyTrim = source == .spotify && request.trim != nil
         errorMessage = nil
         refreshDependencies()
         if DependencyLocator.isBundledDistribution && !dependencyInfo.isReady(for: source) {
@@ -300,14 +327,14 @@ final class DownloadViewModel: ObservableObject {
             return false
         }
         let executable: URL
-        var arguments: [String]
+        let arguments: [String]
         do {
             try FileManager.default.createDirectory(at: destinationURL, withIntermediateDirectories: true)
             guard FileManager.default.isWritableFile(atPath: destinationURL.path) else {
                 showError("Esta pasta não permite salvar arquivos. Escolha outra pasta de destino.")
                 return false
             }
-            if source == .spotify {
+            if source == .spotify && !isSpotifyTrim {
                 guard let spotDL = dependencyInfo.spotDL else {
                     showError("Instale o suporte ao Spotify no botão abaixo e tente novamente.")
                     return false
@@ -320,7 +347,7 @@ final class DownloadViewModel: ObservableObject {
                 arguments = SpotifyDownloadOptions(
                     url: url, ffmpeg: ffmpeg,
                     errorReport: directory.appendingPathComponent("errors.txt"),
-                    matchedURL: PreviewParser.youtubeURL(request.preview?.matchedURL?.absoluteString)
+                    matchedURL: PreviewParser.youtubeURL(request.preview?.matchedURL?.absoluteString), fileName: request.fileName
                 ).arguments
             } else {
                 guard let ytDLP = dependencyInfo.ytDLP else {
@@ -328,9 +355,8 @@ final class DownloadViewModel: ObservableObject {
                     return false
                 }
                 executable = ytDLP
-                arguments = DownloadOptions(url: url, destination: destinationURL, quality: quality, format: format).arguments
-                // Pass the exact FFmpeg location even when Xcode has a minimal PATH.
-                arguments.insert(contentsOf: ["--ffmpeg-location", ffmpeg.deletingLastPathComponent().path], at: 0)
+                arguments = DownloadOptions(url: url, destination: destinationURL, quality: quality,
+                                            format: format, trim: request.trim, ffmpeg: ffmpeg, fileName: request.fileName).arguments
             }
         } catch {
             showError("Não consegui preparar a pasta de destino: \(error.localizedDescription)")
@@ -338,18 +364,58 @@ final class DownloadViewModel: ObservableObject {
         }
 
         activeSource = source
-        activeTool = source == .spotify ? "spotDL" : "yt-dlp"
+        usesSpotifyProcess = source == .spotify && !isSpotifyTrim
+        activeTool = usesSpotifyProcess ? "spotDL" : "yt-dlp"
         operation = .download
         isDownloading = true
         resetRun()
         lastDestination = destinationURL
-        statusMessage = source == .spotify ? "Identificando as músicas do Spotify…" : "Preparando download…"
+        statusMessage = source == .spotify ? "Identificando as músicas do Spotify…"
+            : (request.trim == nil ? "Preparando download…" : "Preparando o trecho…")
         appendLog(source == .spotify
             ? "Spotify identifica as músicas. O áudio será buscado no YouTube e salvo em MP3."
             : "Iniciando yt-dlp…")
         appendLog("Destino: \(destinationURL.path)")
-        run(executable: executable, arguments: arguments)
+        if let trim = request.trim { appendLog("Trecho: \(trim.title)") }
+        if isSpotifyTrim {
+            startSpotifyTrim(request, ytDLP: executable, ffmpeg: ffmpeg)
+        } else {
+            run(executable: executable, arguments: arguments)
+        }
         return true
+    }
+
+    private func startSpotifyTrim(_ request: DownloadRequest, ytDLP: URL, ffmpeg: URL) {
+        if let match = PreviewParser.youtubeURL(request.preview?.matchedURL?.absoluteString) {
+            runSpotifyTrim(request, match: match, ytDLP: ytDLP, ffmpeg: ffmpeg)
+            return
+        }
+
+        let tools = dependencyInfo, load = previewLoader
+        spotifyTrimTask = Task { [weak self] in
+            do {
+                let metadata = try await load(request.url, .spotify, tools)
+                try Task.checkCancellation()
+                guard let self else { return }
+                guard let match = PreviewParser.youtubeURL(metadata.matchedURL?.absoluteString) else {
+                    self.finish(outcome: .failed("Não encontrei uma versão desta faixa no YouTube."))
+                    return
+                }
+                self.updateActive { $0.title = metadata.title }
+                self.runSpotifyTrim(request, match: match, ytDLP: ytDLP, ffmpeg: ffmpeg)
+            } catch {
+                self?.finish(outcome: .failed("Não consegui localizar a faixa no YouTube. Confira se o link é público."))
+            }
+        }
+    }
+
+    private func runSpotifyTrim(_ request: DownloadRequest, match: URL, ytDLP: URL, ffmpeg: URL) {
+        spotifyTrimTask = nil
+        statusMessage = "Preparando o trecho de áudio…"
+        updateActive { $0.detail = statusMessage }
+        let options = DownloadOptions(url: match, destination: request.destination, quality: request.quality,
+                                      format: .mp3, trim: request.trim, ffmpeg: ffmpeg, fileName: request.fileName)
+        run(executable: ytDLP, arguments: options.arguments)
     }
 
     func installSpotifySupport() {
@@ -389,6 +455,7 @@ final class DownloadViewModel: ObservableObject {
         wasCancelled = true
         statusMessage = "Cancelando…"
         updateActive { $0.detail = "Cancelando…" }
+        spotifyTrimTask?.cancel()
         downloadProcess?.cancel()
     }
 
@@ -470,7 +537,7 @@ final class DownloadViewModel: ObservableObject {
             return
         }
 
-        if activeSource == .spotify {
+        if usesSpotifyProcess {
             let event = SpotifyLogEvent(line: clean)
             if event.isError { spotifyError = event.message }
             if let completed = event.completed, let total = event.total, total > 0 {
@@ -500,10 +567,15 @@ final class DownloadViewModel: ObservableObject {
         } else if clean.contains("[ExtractAudio]") {
             progress = nil
             statusMessage = "Convertendo para MP3…"
+        } else if clean.hasPrefix("[info]"), clean.contains("time ranges") {
+            progress = nil
+            statusMessage = "Baixando e cortando o trecho…"
         }
     }
 
     private func finish(outcome: ProcessOutcome) {
+        let resolvingSpotifyTrim = spotifyTrimTask != nil
+        spotifyTrimTask = nil
         downloadProcess = nil
         if !wasCancelled, case .exited(0) = outcome, operation == .createEnvironment {
             operation = .installSpotify
@@ -530,13 +602,13 @@ final class DownloadViewModel: ObservableObject {
             if !installing, activeID != nil {
                 // spotDL logs completion rather than machine-readable final paths. A single
                 // track's stable Spotify ID identifies its output without guessing a title.
-                if succeeded, activeSource == .spotify,
+                if succeeded, usesSpotifyProcess,
                    let item = library.items.first(where: { $0.id == activeID }),
                    item.request.url.path.contains("/track/"),
                    let files = try? FileManager.default.contentsOfDirectory(at: item.request.destination,
                                                                           includingPropertiesForKeys: nil) {
-                    let suffix = "[\(item.request.url.lastPathComponent)].mp3"
-                    updateActive { $0.files = files.filter { $0.lastPathComponent.hasSuffix(suffix) } }
+                    let suffix = item.request.fileName.map { $0 + ".mp3" } ?? "[\(item.request.url.lastPathComponent)].mp3"
+                    updateActive { $0.files = files.filter { $0.lastPathComponent == suffix || (item.request.fileName == nil && $0.lastPathComponent.hasSuffix(suffix)) } }
                 }
                 updateActive {
                     $0.status = wasCancelled ? .cancelled : (succeeded ? .completed : .failed)
@@ -558,14 +630,20 @@ final class DownloadViewModel: ObservableObject {
         switch outcome {
         case .failed(let message):
             progress = nil
-            showError("Não consegui iniciar \(activeTool): \(message)")
+            showError(resolvingSpotifyTrim ? message : "Não consegui iniciar \(activeTool): \(message)")
         case .exited(let status):
+            let item = library.items.first(where: { $0.id == activeID })
+            if status == 0, let item, item.request.trim != nil, item.files.isEmpty {
+                progress = nil
+                showError("Nenhum trecho foi salvo. Confira se o intervalo cabe na duração e se o conteúdo está disponível.")
+                return
+            }
             let reportedError = (report?.isEmpty == false ? report : nil)
                 ?? (report == nil ? spotifyError : nil)
-                ?? (!installing && activeSource == .spotify && spotifyProcessedTracks == 0
+                ?? (!installing && usesSpotifyProcess && spotifyProcessedTracks == 0
                     ? "Nenhuma música foi processada. Confira se o link aponta para uma música ou coleção pública disponível."
                     : nil)
-            if status == 0 && (installing || activeSource != .spotify || reportedError == nil) {
+            if status == 0 && (installing || !usesSpotifyProcess || reportedError == nil) {
                 progress = 1
                 succeeded = true
                 statusMessage = installing ? "Spotify pronto para usar" : "Download concluído"

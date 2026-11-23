@@ -129,6 +129,13 @@
                                 <TextBlock Grid.Row="2" Grid.ColumnSpan="2" Text="Converte a melhor faixa de áudio disponível para MP3 em qualidade máxima."
                                     Visibility="{Binding AudioQualityVisibility}" Style="{StaticResource CaeserHelp}" />
                             </Grid>
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="Nome do arquivo" FontWeight="SemiBold" Foreground="{ThemeResource CaeserForeground}" />
+                                <TextBox Text="{Binding FileName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                    PlaceholderText="Opcional · usar o título original" CornerRadius="8"
+                                    AutomationProperties.Name="Nome do arquivo, opcional" />
+                                <TextBlock Text="A extensão acompanha o formato escolhido." Style="{StaticResource CaeserHelp}" />
+                            </StackPanel>
                             <StackPanel x:Name="SpotifyExplanation" Visibility="{Binding SpotifyVisibility}" Spacing="12">
                                 <StackPanel Orientation="Horizontal" Spacing="10">
                                     <BitmapIcon UriSource="ms-appx:///Assets/SpotifyMark.png" Width="30" Height="20"

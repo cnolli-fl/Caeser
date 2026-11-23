@@ -1,7 +1,7 @@
 import SwiftUI
 
 enum AppRelease {
-    static let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "3.1.2"
+    static let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "3.2.0"
 }
 
 /// Local, versioned notes: opening the app never needs a network request for this screen.
@@ -17,6 +17,13 @@ struct ReleaseHighlights {
     var pageURL: URL { URL(string: "https://github.com/cnolli-fl/Caeser/releases/tag/v\(version)")! }
     var items: [Item] {
         switch version {
+        case "3.2.0":
+            return [
+                Item(symbol: "pencil", title: "Escolha o nome do arquivo",
+                     detail: "Defina um nome para o vídeo ou a música antes de adicionar à fila. A extensão acompanha o formato escolhido."),
+                Item(symbol: "scissors", title: "Salve só o trecho que precisa",
+                     detail: "Escolha o início e o fim para cortar vídeos e músicas, com o intervalo salvo na fila e no histórico.")
+            ]
         case "3.1.2":
             return [
                 Item(symbol: "clock.arrow.circlepath", title: "Histórico com visual renovado",

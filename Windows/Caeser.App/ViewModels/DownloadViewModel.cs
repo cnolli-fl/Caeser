@@ -73,6 +73,7 @@ public sealed partial class DownloadViewModel : INotifyPropertyChanged
     { get => quality; set { if (value != null && quality != value) { quality = value; SavePreferences(); Changed(); } } }
     public Choice<VideoFormat> Format
     { get => format; set { if (value != null && format != value) { format = value; SavePreferences(); Changed(); } } }
+    public string FileName { get; set; } = "";
     public string Destination { get; private set; }
     public string? LastDestination { get; private set; }
     public bool IsBusy { get; private set; }
@@ -153,7 +154,7 @@ public sealed partial class DownloadViewModel : INotifyPropertyChanged
                 Succeeded = true; Status = "Download concluído"; item.State = QueueState.Completed;
                 if (request.Source == DownloadSource.Spotify && request.Url.AbsolutePath.Contains("/track/"))
                 {
-                    var suffix = $"[{request.Url.Segments.Last()}].mp3";
+                    var suffix = request.FileName == null ? $"[{request.Url.Segments.Last()}].mp3" : request.FileName + ".mp3";
                     item.Files = Directory.EnumerateFiles(request.Destination).Where(f => f.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)).ToList();
                 }
             }

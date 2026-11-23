@@ -1,3 +1,13 @@
+# Atualização em desenvolvimento
+
+Mac 3.2.0, Windows 2.4.0 e Linux 0.3.0.
+
+- Campo opcional para escolher o nome do vídeo ou da música.
+- A extensão acompanha o formato escolhido, com validação de nomes e suporte a acentos.
+- Nome preservado na fila, no histórico e ao tentar novamente.
+- O nome personalizado se aplica a um vídeo ou faixa por vez.
+- Integração do corte de vídeo e música já preparado no Mac e no Linux.
+
 # Mudanças
 
 ## Windows 2.3.0 — 2026-10-28

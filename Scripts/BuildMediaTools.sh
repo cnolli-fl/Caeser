@@ -18,7 +18,8 @@ tar -xf "$task_cache/ffmpeg-9.0.2.tar.xz" -C "$task_cache"
     cd "$task_cache/ffmpeg-9.0.2"
     ./configure --prefix="$task_prefix" --enable-shared --disable-static --install-name-dir=@rpath \
         --disable-autodetect --disable-doc --disable-debug --disable-ffplay \
-        --enable-securetransport --disable-encoders --enable-encoder=libmp3lame,aac,mjpeg,png \
+        --enable-securetransport --enable-videotoolbox --disable-encoders \
+        --enable-encoder=libmp3lame,aac,mjpeg,png,h264_videotoolbox \
         --enable-libmp3lame --extra-cflags="-I$task_prefix/include" --extra-ldflags="-L$task_prefix/lib"
     make -j8
     make install

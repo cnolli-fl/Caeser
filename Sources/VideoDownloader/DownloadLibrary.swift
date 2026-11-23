@@ -7,6 +7,8 @@ struct DownloadRequest: Codable, Equatable, Sendable {
     let format: VideoFormat
     let destination: URL
     var preview: MediaPreview?
+    var trim: VideoTrim? = nil
+    var fileName: String? = nil
 
     var duplicateKey: String {
         // YouTube share/watch URLs identify the same video even with tracking parameters.
@@ -18,7 +20,7 @@ struct DownloadRequest: Codable, Equatable, Sendable {
         let identity = videoID.map { "youtube:\($0)" } ?? url.absoluteString
         return [identity, source.rawValue, format.rawValue,
                 format == .mp3 ? "audio" : quality.rawValue,
-                destination.standardizedFileURL.path].joined(separator: "\n")
+                destination.standardizedFileURL.path, trim?.argument ?? "", fileName ?? ""].joined(separator: "\n")
     }
 }
 
@@ -107,17 +109,28 @@ enum DownloadBatch {
     }
 
     static func requests(text: String, source: DownloadSource, quality: VideoQuality,
-                         format: VideoFormat, destination: URL, preview: MediaPreview?) throws -> [DownloadRequest] {
+                         format: VideoFormat, destination: URL, preview: MediaPreview?,
+                         trim: VideoTrim? = nil, fileName: String = "") throws -> [DownloadRequest] {
+        let name = try OutputName.validated(fileName)
         let links = links(in: text)
         guard !links.isEmpty else { throw DownloadInput.InputError.invalidURL }
+        if name != nil, links.count != 1 { throw OutputName.NameError.single }
         guard links.count <= 50 else { throw LibraryError.tooManyLinks }
+        if trim != nil, links.count != 1 {
+            throw VideoTrim.ValidationError.singleLink
+        }
         // Validate the entire batch before adding anything, so errors never produce a partial batch.
         return try links.map { text in
             let itemSource = links.count == 1 ? source : (DownloadInput.isSpotify(text) ? .spotify : .video)
             let url = try DownloadInput.validatedURL(text, source: itemSource)
+            if name != nil, itemSource == .spotify, !url.path.hasPrefix("/track/") { throw OutputName.NameError.single }
+            if trim != nil, itemSource == .spotify, !url.path.hasPrefix("/track/") {
+                throw VideoTrim.ValidationError.singleTrack
+            }
             return DownloadRequest(url: url, source: itemSource, quality: quality,
                                    format: itemSource == .spotify ? .mp3 : format, destination: destination,
-                                   preview: links.count == 1 && preview?.originalURL == url ? preview : nil)
+                                   preview: links.count == 1 && preview?.originalURL == url ? preview : nil,
+                                   trim: trim, fileName: name)
         }
     }
 }

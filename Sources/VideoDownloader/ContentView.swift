@@ -12,7 +12,17 @@ struct ContentView: View {
     @Environment(\.colorScheme) private var colorScheme
     @Environment(\.scenePhase) private var scenePhase
     @FocusState private var linkFocused: Bool
+    @FocusState private var focusedTrimField: String?
     @State private var showDetails = false
+    private var panelMotion: Animation? { reduceMotion ? nil : .smooth(duration: 0.28) }
+    private var panelTransition: AnyTransition {
+        reduceMotion ? .identity : .opacity.combined(with: .offset(y: 5))
+    }
+
+    private var showsActivity: Bool {
+        viewModel.isInstalling || (viewModel.queuedItems.isEmpty &&
+            (viewModel.hasResult || viewModel.errorMessage != nil))
+    }
 
     var body: some View {
         ZStack {
@@ -23,10 +33,10 @@ struct ContentView: View {
                     downloadForm
                     if !viewModel.queuedItems.isEmpty {
                         DownloadQueueView(model: viewModel)
+                            .transition(panelTransition)
                     }
-                    if viewModel.isInstalling || (viewModel.queuedItems.isEmpty &&
-                        (viewModel.hasResult || viewModel.errorMessage != nil)) {
-                        activity
+                    if showsActivity {
+                        activity.transition(panelTransition)
                     }
                     if let message = viewModel.persistenceMessage {
                         Label(message, systemImage: "exclamationmark.circle")
@@ -34,6 +44,8 @@ struct ContentView: View {
                     }
                     details
                 }
+                .animation(panelMotion, value: viewModel.queuedItems.isEmpty)
+                .animation(panelMotion, value: showsActivity)
                 .padding(32)
                 .frame(maxWidth: 800)
                 .frame(maxWidth: .infinity)
@@ -60,9 +72,12 @@ struct ContentView: View {
                         .keyboardShortcut(.cancelAction)
                         .buttonStyle(.glass)
                 } else {
-                    Button(downloadActionTitle,
-                           systemImage: viewModel.errorMessage == nil ? "arrow.down" : "arrow.clockwise") {
+                    Button {
                         viewModel.startDownload()
+                    } label: {
+                        Label(downloadActionTitle, systemImage: viewModel.errorMessage == nil ? "arrow.down" : "arrow.clockwise")
+                            .contentTransition(reduceMotion ? .identity : .opacity)
+                            .animation(panelMotion, value: downloadActionTitle)
                     }
                         .labelStyle(.titleAndIcon)
                         .keyboardShortcut(.defaultAction)
@@ -84,6 +99,7 @@ struct ContentView: View {
 
     private var downloadActionTitle: String {
         if viewModel.isQueuePaused { return "Baixar e continuar fila" }
+        if viewModel.trimEnabled { return viewModel.isDownloading ? "Adicionar trecho à fila" : "Baixar trecho" }
         if viewModel.isDownloading { return "Adicionar e baixar" }
         if viewModel.inputLinkCount > 1 { return "Baixar todos" }
         return viewModel.effectiveFormat == .mp3 ? "Baixar MP3" : "Baixar"
@@ -167,8 +183,10 @@ struct ContentView: View {
                         Text("Buscando prévia…").font(.callout).foregroundStyle(OceanPalette.secondaryText)
                     }
                     .frame(minHeight: 32).accessibilityElement(children: .combine)
+                    .transition(panelTransition)
                 } else if let preview = viewModel.preview {
                     MediaPreviewView(preview: preview, source: viewModel.source)
+                        .transition(panelTransition)
                 } else if let error = viewModel.previewError {
                     HStack(alignment: .top, spacing: 12) {
                         Text(error).font(.callout).foregroundStyle(OceanPalette.secondaryText)
@@ -177,7 +195,26 @@ struct ContentView: View {
                         Button("Tentar prévia") { viewModel.schedulePreview(immediate: true) }
                             .buttonStyle(.borderless).frame(minHeight: 28)
                     }
+                    .transition(panelTransition)
                 }
+            }
+            .animation(panelMotion, value: viewModel.isLoadingPreview)
+            .animation(panelMotion, value: viewModel.preview?.originalURL)
+            .animation(panelMotion, value: viewModel.previewError)
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text("Nome do arquivo").font(.headline)
+                TextField("Opcional · usar o título original", text: $viewModel.fileName)
+                    .textFieldStyle(.plain)
+                    .padding(10)
+                    .background(OceanPalette.selectionTrack, in: RoundedRectangle(cornerRadius: 8))
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 8).strokeBorder(OceanPalette.border.opacity(0.7))
+                            .allowsHitTesting(false)
+                    }
+                    .accessibilityLabel("Nome do arquivo, opcional")
+                Text("A extensão acompanha o formato escolhido.")
+                    .font(.callout).foregroundStyle(OceanPalette.secondaryText)
             }
 
             Divider()
@@ -189,8 +226,9 @@ struct ContentView: View {
                     videoOptions.transition(.opacity)
                 }
             }
-            .animation(reduceMotion ? nil : .easeInOut(duration: 0.18), value: viewModel.source)
+            .animation(panelMotion, value: viewModel.source)
 
+            trimOptions
             Divider()
             destination
         }
@@ -219,7 +257,8 @@ struct ContentView: View {
                     .background(.quaternary, in: Capsule())
             }
             .font(.body.weight(.medium))
-            Text("O áudio vem do YouTube. O MP3 inclui capa, artista e álbum.")
+                Text(viewModel.trimEnabled ? "O trecho usa a versão da faixa encontrada no YouTube."
+                     : "O áudio vem do YouTube. O MP3 inclui capa, artista e álbum.")
                 .font(.callout).foregroundStyle(OceanPalette.secondaryText)
                 .fixedSize(horizontal: false, vertical: true)
             Label("Melhor áudio disponível",
@@ -250,10 +289,19 @@ struct ContentView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 VStack(alignment: .leading, spacing: 9) {
                     Text("Formato").font(.headline)
-                    Picker("Formato", selection: $viewModel.format) {
-                        ForEach(VideoFormat.allCases) { Text($0.rawValue).tag($0) }
+                    if viewModel.trimEnabled {
+                        Picker("Formato do trecho", selection: Binding(get: { viewModel.trimFormat },
+                                                                        set: { viewModel.format = $0 })) {
+                            Text("MP4").tag(VideoFormat.mp4)
+                            Text("MP3").tag(VideoFormat.mp3)
+                        }
+                        .labelsHidden().controlSize(.large)
+                    } else {
+                        Picker("Formato", selection: $viewModel.format) {
+                            ForEach(VideoFormat.allCases) { Text($0.rawValue).tag($0) }
+                        }
+                        .labelsHidden().controlSize(.large)
                     }
-                    .labelsHidden().controlSize(.large)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -262,6 +310,125 @@ struct ContentView: View {
                     .font(.callout).foregroundStyle(OceanPalette.secondaryText)
             }
         }
+        .animation(panelMotion, value: viewModel.format)
+    }
+
+    private var trimOptions: some View {
+        let audio = viewModel.trimFormat == .mp3
+        let title = audio ? "Cortar áudio" : "Cortar vídeo"
+        let shape = RoundedRectangle(cornerRadius: 16)
+        return VStack(alignment: .leading, spacing: 14) {
+            Toggle(isOn: $viewModel.trimEnabled) {
+                HStack(spacing: 10) {
+                    Image(systemName: "scissors")
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(OceanPalette.accent)
+                        .frame(width: 30, height: 30)
+                        .background(OceanPalette.selectionTrack, in: RoundedRectangle(cornerRadius: 8))
+                        .accessibilityHidden(true)
+                    Text(title).font(.headline)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .toggleStyle(.switch)
+            .accessibilityLabel(title)
+            .accessibilityIdentifier("trim-toggle")
+
+            if viewModel.trimEnabled {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .top, spacing: 16) {
+                        trimTimeField("Início", example: "1:20", text: $viewModel.trimStart, id: "trim-start")
+                        trimTimeField("Fim", example: "1:50", text: $viewModel.trimEnd, id: "trim-end")
+                        Spacer(minLength: 4)
+                        Text(viewModel.trimFormat.rawValue)
+                            .font(.callout.weight(.medium).monospacedDigit())
+                            .foregroundStyle(OceanPalette.secondaryText)
+                            .padding(.horizontal, 9).padding(.vertical, 5)
+                            .background(OceanPalette.selectionTrack, in: Capsule())
+                            .accessibilityLabel("Formato do trecho: \(viewModel.trimFormat.rawValue)")
+                            .contentTransition(reduceMotion ? .identity : .opacity)
+                    }
+                    switch viewModel.trimSelection {
+                    case .success(let trim):
+                        if let duration = viewModel.preview?.duration, duration.isFinite, duration > 0 {
+                            trimTimeline(trim, fullDuration: duration)
+                        }
+                        HStack(spacing: 6) {
+                            Image(systemName: "clock").accessibilityHidden(true)
+                            Text("Duração do trecho")
+                            Text(VideoTrim.timestamp(trim.duration))
+                                .fontWeight(.semibold).monospacedDigit()
+                                .contentTransition(reduceMotion ? .identity : .numericText(value: Double(trim.duration)))
+                                .animation(panelMotion, value: trim.duration)
+                        }
+                        .font(.callout)
+                        .foregroundStyle(OceanPalette.secondaryText)
+                        .accessibilityElement(children: .combine)
+                    case .failure(let error):
+                        let restriction = error as? VideoTrim.ValidationError
+                        if restriction == .singleLink || restriction == .singleTrack ||
+                            (!viewModel.trimStart.isEmpty && !viewModel.trimEnd.isEmpty) {
+                            Label(error.localizedDescription, systemImage: "exclamationmark.circle")
+                                .font(.callout).foregroundStyle(OceanPalette.secondaryText)
+                        } else {
+                            Text("Use minutos e segundos, como 1:20.")
+                                .font(.callout).foregroundStyle(OceanPalette.secondaryText)
+                        }
+                    }
+                }
+                .fixedSize(horizontal: false, vertical: true)
+                .transition(panelTransition)
+            }
+        }
+        .padding(14)
+        .background(viewModel.trimEnabled ? OceanPalette.trimPanel : OceanPalette.canvas, in: shape)
+        .overlay {
+            shape.strokeBorder(OceanPalette.border.opacity(contrast == .increased ? 1 : 0.56),
+                               lineWidth: contrast == .increased ? 1.5 : 1)
+                .allowsHitTesting(false)
+        }
+        .animation(panelMotion, value: viewModel.trimEnabled)
+        .animation(panelMotion, value: viewModel.preview?.duration)
+    }
+
+    private func trimTimeline(_ trim: VideoTrim, fullDuration: Double) -> some View {
+        GeometryReader { geometry in
+            let start = geometry.size.width * min(Double(trim.start) / fullDuration, 1)
+            let end = geometry.size.width * min(Double(trim.end) / fullDuration, 1)
+            ZStack(alignment: .leading) {
+                Capsule().fill(OceanPalette.selectionTrack)
+                Capsule().fill(OceanPalette.accent)
+                    .frame(width: max(0, end - start))
+                    .offset(x: start)
+            }
+        }
+        .frame(height: 5)
+        .accessibilityHidden(true)
+        .animation(panelMotion, value: trim)
+        .transition(panelTransition)
+    }
+
+    private func trimTimeField(_ label: String, example: String, text: Binding<String>, id: String) -> some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(label).font(.callout.weight(.medium)).accessibilityHidden(true)
+            TextField(label, text: text, prompt: Text(example))
+                .textFieldStyle(.plain)
+                .font(.body.monospacedDigit())
+                .frame(minHeight: 32)
+                .padding(.horizontal, 10)
+                .background(OceanPalette.selectionTrack, in: RoundedRectangle(cornerRadius: 8))
+                .overlay {
+                    RoundedRectangle(cornerRadius: 8)
+                        .strokeBorder(focusedTrimField == id ? OceanPalette.accent : OceanPalette.border,
+                                      lineWidth: focusedTrimField == id || contrast == .increased ? 1.5 : 1)
+                        .allowsHitTesting(false)
+                }
+                .focused($focusedTrimField, equals: id)
+                .accessibilityLabel(label)
+                .accessibilityIdentifier(id)
+                .onSubmit { viewModel.startDownload() }
+        }
+        .frame(width: 120, alignment: .leading)
     }
 
     private var destination: some View {
@@ -309,6 +476,7 @@ struct ContentView: View {
                 ProgressView(value: viewModel.progress)
                     .progressViewStyle(.linear)
                     .accessibilityLabel(viewModel.statusMessage)
+                    .animation(panelMotion, value: viewModel.progress)
                 HStack {
                     Text(viewModel.speedText)
                     Spacer()
@@ -345,7 +513,7 @@ struct ContentView: View {
                 Spacer(minLength: 0)
             }
 
-            DisclosureGroup("Detalhes e ferramentas", isExpanded: $showDetails) {
+            DisclosureGroup("Detalhes e ferramentas", isExpanded: $showDetails.animation(panelMotion)) {
                 VStack(alignment: .leading, spacing: 14) {
                     HStack(spacing: 16) {
                         toolLabel("yt-dlp", url: viewModel.dependencyInfo.ytDLP)
@@ -599,6 +767,7 @@ enum OceanPalette {
     static let secondaryText = rgb(0xCFDFF5)
     static let surface = canvas
     static let selectionTrack = rgb(0x244580)
+    static let trimPanel = rgb(0x173574)
     static let border = rgb(0x6086BB)
     static let aqua = rgb(0x63D5E9)
 

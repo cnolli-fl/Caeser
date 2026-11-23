@@ -82,11 +82,67 @@ enum VideoFormat: String, CaseIterable, Identifiable, Codable, Sendable {
     var id: String { rawValue }
 }
 
+struct VideoTrim: Codable, Equatable, Sendable {
+    let start: Int
+    let end: Int
+
+    init(startText: String, endText: String, duration: Double? = nil) throws {
+        guard let start = Self.seconds(startText), let end = Self.seconds(endText) else {
+            throw ValidationError.invalidTime
+        }
+        guard end > start else { throw ValidationError.invalidOrder }
+        if let duration, duration.isFinite, duration > 0,
+           Double(start) >= duration || Double(end) > duration.rounded(.up) {
+            throw ValidationError.outsideMedia
+        }
+        self.start = start
+        self.end = end
+    }
+
+    var duration: Int { end - start }
+    var argument: String { "*\(start)-\(end)" }
+    var title: String { "\(Self.timestamp(start)) – \(Self.timestamp(end))" }
+
+    static func timestamp(_ seconds: Int) -> String {
+        seconds >= 3600
+            ? String(format: "%d:%02d:%02d", seconds / 3600, seconds / 60 % 60, seconds % 60)
+            : String(format: "%d:%02d", seconds / 60, seconds % 60)
+    }
+
+    private static func seconds(_ text: String) -> Int? {
+        let parts = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            .split(separator: ":", omittingEmptySubsequences: false)
+        guard (2...3).contains(parts.count),
+              parts.allSatisfy({ !$0.isEmpty && $0.utf8.allSatisfy { (48...57).contains($0) } }) else { return nil }
+        let values = parts.compactMap { Int($0) }
+        guard values.count == parts.count, values[0] <= 8_760,
+              values.dropFirst().allSatisfy({ $0 < 60 }) else { return nil }
+        return values.reduce(0) { $0 * 60 + $1 }
+    }
+
+    enum ValidationError: LocalizedError {
+        case invalidTime, invalidOrder, outsideMedia, singleLink, singleTrack
+
+        var errorDescription: String? {
+            switch self {
+            case .invalidTime: "Use mm:ss ou h:mm:ss. Exemplo: 1:20."
+            case .invalidOrder: "O fim precisa ser depois do início."
+            case .outsideMedia: "Escolha um trecho dentro da duração do vídeo ou da música."
+            case .singleLink: "Para cortar, deixe apenas um link no campo."
+            case .singleTrack: "Para cortar uma música do Spotify, cole o link de uma faixa."
+            }
+        }
+    }
+}
+
 struct DownloadOptions {
     let url: URL
     let destination: URL
     let quality: VideoQuality
     let format: VideoFormat
+    var trim: VideoTrim? = nil
+    var ffmpeg: URL? = nil
+    var fileName: String? = nil
 
     var arguments: [String] {
         var args = [
@@ -99,7 +155,7 @@ struct DownloadOptions {
             "--print", "before_dl:CAESER_TITLE:%(title)j",
             "--print", "after_move:CAESER_FILE:%(filepath)j",
             "--paths", destination.path,
-            "-o", "%(title)s.%(ext)s",
+            "-o", fileName.map { $0.replacingOccurrences(of: "%", with: "%%") + ".%(ext)s" } ?? trim.map { "%(title)s [\($0.start)-\($0.end)s].%(ext)s" } ?? "%(title)s.%(ext)s",
             "--progress-template",
             "download:%(progress._percent_str)s|%(progress._downloaded_bytes_str)s|%(progress._total_bytes_str)s|%(progress._speed_str)s|%(progress._eta)s"
         ]
@@ -110,6 +166,9 @@ struct DownloadOptions {
         switch (format, height) {
         case (.mp3, _):
             formatSelector = "bestaudio/best"
+        case (.mp4, _) where trim != nil:
+            let limit = height.map { "[height<=\($0)]" } ?? ""
+            formatSelector = "bv\(limit)[ext=mp4]+ba[ext=m4a]/b\(limit)[ext=mp4]"
         case (.automatic, nil):
             formatSelector = "bv*+ba/b"
         case (.automatic, let height?):
@@ -141,7 +200,21 @@ struct DownloadOptions {
             ]
         }
 
+        if let trim {
+            args += ["--match-filters", "!is_live & duration >? \(trim.end - 1)",
+                     "--download-sections", trim.argument, "--force-keyframes-at-cuts"]
+            if format == .mp3 {
+                // Stream copying can include audio from before the seek point. Encode the
+                // selected range directly to MP3; extraction then only fixes the extension.
+                args += ["--downloader-args", "ffmpeg_o:-vn -c:a libmp3lame -q:a 0 -f mp3", "--add-metadata"]
+            } else {
+                args += ["--downloader-args", "ffmpeg_o:-c:v h264_videotoolbox -q:v 65 -c:a aac"]
+            }
+        }
         args += ["--", url.absoluteString]
+        if let ffmpeg {
+            args.insert(contentsOf: ["--ffmpeg-location", ffmpeg.deletingLastPathComponent().path], at: 0)
+        }
         return args
     }
 }
@@ -151,6 +224,7 @@ struct SpotifyDownloadOptions {
     let ffmpeg: URL
     let errorReport: URL
     var matchedURL: URL? = nil
+    var fileName: String? = nil
 
     var arguments: [String] {
         // Resolve the template in the subprocess working directory. A folder named
@@ -161,7 +235,7 @@ struct SpotifyDownloadOptions {
             "--audio", "youtube", "youtube-music",
             "--format", "mp3", "--bitrate", "0",
             "--ffmpeg", ffmpeg.path,
-            "--output", "{artists} - {title} [{track-id}].{output-ext}",
+            "--output", fileName.map { $0 + ".{output-ext}" } ?? "{artists} - {title} [{track-id}].{output-ext}",
             "--threads", "1", "--overwrite", "skip",
             "--simple-tui", "--headless", "--max-retries", "2",
             "--log-level", "INFO", "--log-format", "SPOTDL|%(levelname)s|%(message)s",
@@ -226,6 +300,35 @@ struct SpotifyLogEvent: Equatable {
         } else {
             completed = nil
             total = nil
+        }
+    }
+}
+
+enum OutputName {
+    static func validated(_ text: String) throws -> String? {
+        var name = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !name.isEmpty else { return nil }
+        for ext in [".mp4", ".mp3", ".webm", ".m4a", ".mkv"] where name.lowercased().hasSuffix(ext) {
+            name = String(name.dropLast(ext.count))
+            break
+        }
+        let reserved = name.components(separatedBy: ".")[0].uppercased()
+        guard !name.isEmpty, name.count <= 120, name != ".", name != "..",
+              !name.hasSuffix("."), !name.hasSuffix(" "),
+              name.rangeOfCharacter(from: CharacterSet(charactersIn: "/\\:*?\"<>|{}").union(.controlCharacters)) == nil,
+              !["CON", "PRN", "AUX", "NUL"].contains(reserved),
+              !(1...9).contains(where: { reserved == "COM\($0)" || reserved == "LPT\($0)" }) else {
+            throw NameError.invalid
+        }
+        return name
+    }
+    enum NameError: LocalizedError {
+        case invalid, single
+        var errorDescription: String? {
+            switch self {
+            case .invalid: "Escolha um nome de até 120 caracteres, sem barras ou caracteres especiais de arquivo."
+            case .single: "Para escolher um nome, cole apenas o link de um vídeo ou de uma faixa."
+            }
         }
     }
 }

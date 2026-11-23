@@ -1,0 +1,77 @@
+name: Caeser Linux AppImage
+
+on:
+  push:
+    branches: ['codex/linux-*', 'codex/windows-custom-filenames']
+    paths:
+      - 'Linux/**'
+      - 'Sources/VideoDownloader/Resources/**'
+      - '.github/workflows/caeser-linux.yml'
+  pull_request:
+    paths:
+      - 'Linux/**'
+      - 'Sources/VideoDownloader/Resources/**'
+      - '.github/workflows/caeser-linux.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: ubuntu-24.04
+            arch: x86_64
+          - runner: ubuntu-24.04-arm
+            arch: aarch64
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install AppImage desktop validator
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y desktop-file-utils squashfs-tools libegl1 libopengl0 libxkbcommon-x11-0 libxcb-cursor0 ffmpeg
+      - name: Verify core behavior
+        run: PYTHONPATH=Linux python3 -m unittest discover -s Linux/tests -v
+      - name: Build AppImage
+        run: bash Linux/build-appimage.sh
+      - name: Smoke test bundled tools and interface
+        run: |
+          set -euo pipefail
+          package="Linux/dist/Caeser-$(<Linux/VERSION)-Linux-${{ matrix.arch }}.AppImage"
+          export XDG_DATA_HOME="$RUNNER_TEMP/caeser-ui"
+          APPIMAGE_EXTRACT_AND_RUN=1 "$package" --tool yt-dlp --version
+          APPIMAGE_EXTRACT_AND_RUN=1 "$package" --tool spotdl --version
+          python3 Linux/tests/test_packaged_audio.py "$package"
+          python3 Linux/tests/test_packaged_clips.py "$package"
+          CAESER_SMOKE_SCREENSHOT="$RUNNER_TEMP/caeser-linux.png" QT_QPA_PLATFORM=offscreen APPIMAGE_EXTRACT_AND_RUN=1 "$package" --smoke
+          test -s "$RUNNER_TEMP/caeser-linux.png"
+          sha256sum -c "$package.sha256"
+      - name: Smoke test Fedora 44 runtime
+        run: |
+          docker run --rm -v "$PWD:/project:ro" -w /project fedora:44 bash -lc '
+            dnf install -y fuse-libs fontconfig libxkbcommon mesa-libGL mesa-libEGL >/dev/null
+            package="Linux/dist/Caeser-$(<Linux/VERSION)-Linux-${{ matrix.arch }}.AppImage"
+            APPIMAGE_EXTRACT_AND_RUN=1 "$package" --tool yt-dlp --version
+            APPIMAGE_EXTRACT_AND_RUN=1 QT_QPA_PLATFORM=offscreen "$package" --smoke
+          '
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Caeser-Linux-${{ matrix.arch }}
+          path: |
+            Linux/dist/*.AppImage
+            Linux/dist/*.sha256
+          if-no-files-found: error
+          retention-days: 14
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Caeser-Linux-preview-${{ matrix.arch }}
+          path: ${{ runner.temp }}/caeser-linux.png
+          retention-days: 14

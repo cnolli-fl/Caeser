@@ -286,3 +286,7 @@ O código Swift e C# deste projeto é open source sob a [licença MIT](LICENSE).
 Projeto pessoal de **Caio Nolli**.
 
 [GitHub](https://github.com/cnolli-fl) · [LinkedIn](https://www.linkedin.com/in/caio-nolli-843580388/)
+
+### Nome do arquivo
+
+O campo opcional **Nome do arquivo** define como salvar um vídeo ou uma música. Deixe vazio para usar o título original. A extensão acompanha o formato selecionado. Para escolher um nome, use um único link de vídeo ou de faixa do Spotify. O nome é salvo na fila e no histórico.

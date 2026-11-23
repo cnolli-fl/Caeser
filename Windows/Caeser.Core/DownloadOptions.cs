@@ -54,7 +54,7 @@ public static partial class DownloadInput
 
 public sealed record DownloadRequest(
     Uri Url, string Destination, DownloadSource Source,
-    VideoQuality Quality = VideoQuality.Best, VideoFormat Format = VideoFormat.Automatic, Uri? MatchedUrl = null)
+    VideoQuality Quality = VideoQuality.Best, VideoFormat Format = VideoFormat.Automatic, Uri? MatchedUrl = null, string? FileName = null)
 {
     public IReadOnlyList<string> VideoArguments(string toolsDirectory)
     {
@@ -66,7 +66,7 @@ public sealed record DownloadRequest(
             "--print", "after_move:CAESER_FILE:%(filepath)j",
             "--ffmpeg-location", toolsDirectory,
             "--js-runtimes", $"deno:{Path.Combine(toolsDirectory, "deno.exe")}",
-            "--paths", Destination, "-o", "%(title)s.%(ext)s",
+            "--paths", Destination, "-o", FileName == null ? "%(title)s.%(ext)s" : FileName.Replace("%", "%%") + ".%(ext)s",
             "--progress-template",
             "download:download:%(progress._percent_str)s|%(progress._downloaded_bytes_str)s|%(progress._total_bytes_str)s|%(progress._speed_str)s|%(progress._eta)s",
             "-f", FormatSelector()
@@ -87,7 +87,7 @@ public sealed record DownloadRequest(
         "--audio", "youtube", "youtube-music",
         "--format", "mp3", "--bitrate", "0",
         "--ffmpeg", ffmpeg,
-        "--output", "{artists} - {title} [{track-id}].{output-ext}",
+        "--output", FileName == null ? "{artists} - {title} [{track-id}].{output-ext}" : FileName + ".{output-ext}",
         "--threads", "1", "--overwrite", "skip",
         "--simple-tui", "--headless", "--max-retries", "2",
         "--log-level", "INFO", "--log-format", "SPOTDL|%(levelname)s|%(message)s",
@@ -111,5 +111,24 @@ public sealed record DownloadRequest(
             VideoFormat.WebM => $"bv*{h}[ext=webm]+ba[ext=webm]/bv*{h}+ba/b{h}",
             _ => $"bv*{h}+ba/b{h}"
         };
+    }
+}
+
+public static class OutputName
+{
+    public static string? Validate(string? text)
+    {
+        var name = text?.Trim() ?? "";
+        if (name.Length == 0) return null;
+        foreach (var extension in new[] { ".mp4", ".mp3", ".webm", ".m4a", ".mkv" })
+            if (name.EndsWith(extension, StringComparison.OrdinalIgnoreCase))
+            { name = name[..^extension.Length]; break; }
+        var stem = name.Split('.')[0].ToUpperInvariant();
+        if (name.Length is 0 or > 120 || name is "." or ".." || name.EndsWith('.') || name.EndsWith(' ') ||
+            name.Any(c => char.IsControl(c) || "/\\:*?\"<>|{}".Contains(c)) ||
+            new[] { "CON", "PRN", "AUX", "NUL" }.Contains(stem) ||
+            Enumerable.Range(1, 9).Any(n => stem == $"COM{n}" || stem == $"LPT{n}"))
+            throw new ArgumentException("Escolha um nome de até 120 caracteres, sem barras ou caracteres especiais de arquivo.");
+        return name;
     }
 }

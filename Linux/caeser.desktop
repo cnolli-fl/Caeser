@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Name=Caeser
+Comment=Vídeos e músicas. Do link à sua pasta.
+Exec=caeser
+Icon=caeser
+Categories=AudioVideo;Network;
+Terminal=false
+StartupNotify=true

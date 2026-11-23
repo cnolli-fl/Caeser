@@ -154,13 +154,15 @@ private final class LibraryHarness {
     let directory = FileManager.default.temporaryDirectory.appendingPathComponent("Caeser-tests-\(UUID())")
     var processes: [FakeDownloadProcess] = []
     var defaults: UserDefaults { UserDefaults(suiteName: suite)! }
-    func model() -> DownloadViewModel {
+    func model(previewLoader: @escaping @Sendable (URL, DownloadSource, DependencyInfo) async throws -> MediaPreview = {
+        _, _, _ in throw CancellationError()
+    }) -> DownloadViewModel {
         DownloadViewModel(defaults: defaults, locateTools: {
             DependencyInfo(ytDLP: URL(fileURLWithPath: "/fake/yt-dlp"), ffmpeg: URL(fileURLWithPath: "/fake/ffmpeg"),
                            spotDL: URL(fileURLWithPath: "/fake/spotdl"))
         }, makeProcess: { [self] in
             let process = FakeDownloadProcess(); processes.append(process); return process
-        }, previewLoader: { _, _, _ in throw CancellationError() })
+        }, previewLoader: previewLoader)
     }
     func cleanup() {
         defaults.removePersistentDomain(forName: suite)
@@ -176,6 +178,63 @@ struct QueueExecutionTests {
             try await Task.sleep(for: .milliseconds(10))
         }
         #expect(condition())
+    }
+
+    @Test func clipRangeIsValidatedAndSurvivesQueueRestart() throws {
+        let h = LibraryHarness(); defer { h.cleanup() }
+        let model = h.model()
+        model.destinationURL = h.directory
+        model.urlText = videoLink.absoluteString
+        model.trimEnabled = true
+        model.trimStart = "1:20"
+        model.trimEnd = "1:10"
+        #expect(!model.canStartDownload)
+        model.startDownload()
+        #expect(model.queuedItems.isEmpty)
+
+        model.trimEnd = "1:50"
+        model.urlText += "\nhttps://youtu.be/another"
+        #expect(!model.canStartDownload)
+        model.urlText = videoLink.absoluteString
+        model.startDownload()
+        let request = try #require(model.queuedItems.first?.request)
+        #expect(request.format == .mp4)
+        #expect(request.trim?.duration == 30)
+        #expect(h.processes.first?.arguments.contains("*80-110") == true)
+        #expect(!model.trimEnabled)
+
+        let reopened = h.model()
+        let restored = try #require(reopened.history.first?.request)
+        #expect(restored == request)
+        #expect(restored.duplicateKey != DownloadRequest(url: request.url, source: .video, quality: request.quality,
+                                                       format: .mp4, destination: request.destination).duplicateKey)
+    }
+
+    @Test func spotifyClipResolvesTrackAndQueuesOnlyTheMatchingAudioRange() async throws {
+        let h = LibraryHarness(); defer { h.cleanup() }
+        let match = URL(string: "https://www.youtube.com/watch?v=fixture")!
+        let model = h.model { url, _, _ in
+            MediaPreview(originalURL: url, title: "Música de teste", creator: "Artista",
+                         artworkURL: nil, duration: 180, matchedURL: match)
+        }
+        model.destinationURL = h.directory
+        model.trimEnabled = true
+        model.trimStart = "0:10"
+        model.trimEnd = "0:40"
+        model.urlText = "https://open.spotify.com/album/4cOdK2wGLETKBW3PvgPWqT"
+        #expect(!model.canStartDownload)
+        model.urlText = "https://open.spotify.com/track/4cOdK2wGLETKBW3PvgPWqT"
+        model.startDownload()
+        try await eventually { h.processes.count == 1 }
+        let args = try #require(h.processes.first?.arguments)
+        #expect(args.last == match.absoluteString)
+        #expect(args.contains("*10-40"))
+        #expect(args.contains("--audio-quality"))
+        #expect(model.queuedItems.first?.request.source == .spotify)
+        h.processes.first?.emit(#"CAESER_FILE:"/fixture/trecho.mp3""#)
+        h.processes.first?.finish(0)
+        try await eventually { model.history.first?.status == .completed }
+        #expect(model.history.first?.files.first?.lastPathComponent == "trecho.mp3")
     }
 
     @Test func serialQueuePreservesSettingsAndContinuesAfterFailure() async throws {

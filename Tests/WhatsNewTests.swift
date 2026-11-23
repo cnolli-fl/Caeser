@@ -65,9 +65,9 @@ struct WhatsNewTests {
 
     @Test func unknownReleaseHasNoStaleFeaturesAndInvalidVersionDoesNotOpen() throws {
         try withDefaults { defaults in
-            let future = WhatsNewModel(defaults: defaults, version: "3.2.0")
+            let future = WhatsNewModel(defaults: defaults, version: "99.0.0")
             #expect(future.highlights.items.count == 1)
-            #expect(future.highlights.pageURL.absoluteString == "https://github.com/cnolli-fl/Caeser/releases/tag/v3.2.0")
+            #expect(future.highlights.pageURL.absoluteString == "https://github.com/cnolli-fl/Caeser/releases/tag/v99.0.0")
             #expect(!WhatsNewModel(defaults: defaults, version: "invalid").requestAutomaticPresentation())
         }
     }

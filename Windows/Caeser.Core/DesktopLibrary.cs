@@ -22,7 +22,7 @@ public sealed class LibraryItem : System.ComponentModel.INotifyPropertyChanged
     public List<string> Files { get; set; } = [];
     public DateTimeOffset Created { get; set; } = DateTimeOffset.Now;
     public bool Pending => State is QueueState.Waiting or QueueState.Downloading;
-    public string Description => $"{(Request.Source == DownloadSource.Spotify ? "Spotify" : "YouTube")} · {FormatLabel} · {Detail}";
+    public string Description => $"{(Request.Source == DownloadSource.Spotify ? "Spotify" : "YouTube")} · {FormatLabel}{(Request.FileName == null ? "" : " · " + Request.FileName)} · {Detail}";
     private string FormatLabel => Request.Format switch { VideoFormat.Automatic => "Automático", VideoFormat.Mp3 => "MP3", VideoFormat.Mp4 => "MP4", _ => "WebM" };
 }
 public sealed class DesktopLibrary
@@ -68,19 +68,23 @@ public sealed class DesktopLibrary
                 .FirstOrDefault(x => x.StartsWith("v=", StringComparison.Ordinal))?[2..];
             if (!string.IsNullOrEmpty(id)) identity = "youtube:" + id;
         }
-        return $"{identity}\n{request.Source}\n{request.Format}\n{(request.Format == VideoFormat.Mp3 ? "audio" : request.Quality.ToString())}\n{Path.GetFullPath(request.Destination).ToUpperInvariant()}";
+        return $"{identity}\n{request.Source}\n{request.Format}\n{(request.Format == VideoFormat.Mp3 ? "audio" : request.Quality.ToString())}\n{Path.GetFullPath(request.Destination).ToUpperInvariant()}\n{request.FileName?.ToUpperInvariant()}";
     }
     public static IReadOnlyList<DownloadRequest> Batch(string text, DownloadSource source, string destination,
-        VideoQuality quality, VideoFormat format, MediaPreview? preview)
+        VideoQuality quality, VideoFormat format, MediaPreview? preview, string? fileName = null)
     {
+        var name = OutputName.Validate(fileName);
         var links = text.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
         if (links.Length is 0 or > 50) throw new ArgumentException("Cole de 1 a 50 links por vez, um por linha.");
+        if (name != null && links.Length != 1) throw new ArgumentException("Para escolher um nome, cole apenas o link de um vídeo ou de uma faixa.");
         return links.Select(link =>
         {
             var origin = links.Length == 1 ? source : DownloadInput.IsSpotify(link) ? DownloadSource.Spotify : DownloadSource.Video;
             var url = DownloadInput.Validate(link, origin);
+            if (name != null && origin == DownloadSource.Spotify && !url.AbsolutePath.StartsWith("/track/"))
+                throw new ArgumentException("Para escolher um nome, cole o link de uma faixa do Spotify.");
             return new DownloadRequest(url, destination, origin, quality, origin == DownloadSource.Spotify ? VideoFormat.Mp3 : format,
-                preview?.OriginalUrl == url && links.Length == 1 ? preview.MatchedUrl : null);
+                preview?.OriginalUrl == url && links.Length == 1 ? preview.MatchedUrl : null, name);
         }).ToArray();
     }
 }

@@ -159,3 +159,7 @@ As notas da release e o README devem apresentar links separados para **Baixar pa
 A publicação Windows não renomeia arquivos de Mac nem reaproveita seus binários. Antes de publicar qualquer atualização, executar os testes, conferir versões e checksums e preservar os instaladores das releases anteriores.
 
 Referência: [releases e arquivos de distribuição no GitHub](https://docs.github.com/en/repositories/releasing-projects-on-github/about-releases).
+
+### Nome do arquivo
+
+O campo opcional **Nome do arquivo** define como salvar um vídeo ou uma música. Deixe vazio para usar o título original. A extensão acompanha o formato selecionado. Para escolher um nome, use um único link de vídeo ou de faixa do Spotify. O nome é salvo na fila e no histórico.

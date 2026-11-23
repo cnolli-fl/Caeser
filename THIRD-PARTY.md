@@ -30,7 +30,8 @@ altera Homebrew, Python ou ferramentas do sistema no computador do usuário.
 FFmpeg e FFprobe compartilham suas bibliotecas dentro de `Tools/Lib`, evitando
 duas cópias do mesmo código. São compilados com LAME estático, sem detecção automática de
 bibliotecas externas e sem `--enable-gpl` ou `--enable-nonfree`. A configuração
-habilita a codificação MP3 VBR, AAC e imagens para capas, além dos decodificadores,
+habilita a codificação MP3 VBR, AAC, imagens para capas e H.264 via VideoToolbox
+para salvar trechos em MP4, além dos decodificadores,
 demuxers e muxers internos. HTTPS usa o Secure Transport do macOS, sem OpenSSL
 externo, preservando os protocolos de rede usados por alguns sites compatíveis.
 

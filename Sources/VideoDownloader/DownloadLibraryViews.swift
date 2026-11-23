@@ -1,19 +1,22 @@
 import SwiftUI
 
 struct MediaArtwork: View {
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     let url: URL?
     var width: CGFloat = 64
     var height: CGFloat = 64
     var body: some View {
         AsyncImage(url: url) { phase in
-            if let image = phase.image {
-                image.resizable().scaledToFill()
-            } else {
-                ZStack {
-                    Color(nsColor: .quaternaryLabelColor).opacity(0.25)
+            ZStack {
+                Color(nsColor: .quaternaryLabelColor).opacity(0.25)
+                if let image = phase.image {
+                    image.resizable().scaledToFill()
+                        .transition(reduceMotion ? .identity : .opacity)
+                } else {
                     Image(systemName: "music.note.tv").font(.title2).foregroundStyle(.secondary)
                 }
             }
+            .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: phase.image != nil)
         }
         .frame(width: width, height: height)
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
@@ -72,12 +75,16 @@ struct MediaPreviewView: View {
 
 struct DownloadQueueView: View {
     @ObservedObject var model: DownloadViewModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var expanded = false
+    private var queueMotion: Animation? { reduceMotion ? nil : .smooth(duration: 0.25) }
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
                 Text("Fila de downloads").font(.title3.weight(.semibold)).accessibilityAddTraits(.isHeader)
                 Text("\(model.queuedItems.count)").font(.callout.monospacedDigit()).foregroundStyle(.secondary)
+                    .contentTransition(reduceMotion ? .identity : .numericText(value: Double(model.queuedItems.count)))
+                    .animation(queueMotion, value: model.queuedItems.count)
                 Spacer()
                 Button(model.isQueuePaused ? "Continuar" : "Pausar fila",
                        systemImage: model.isQueuePaused ? "play" : "pause") { model.toggleQueuePause() }
@@ -92,15 +99,18 @@ struct DownloadQueueView: View {
             VStack(spacing: 14) {
                 ForEach(visible) { item in
                     queueRow(item)
+                        .transition(reduceMotion ? .identity : .opacity)
                     if item.id != visible.last?.id { Divider() }
                 }
             }
+            .animation(queueMotion, value: visible.map(\.id))
             if model.queuedItems.count > 4 {
                 Button(expanded ? "Mostrar menos" : "Mostrar mais \(model.queuedItems.count - 4)",
                        systemImage: expanded ? "chevron.up" : "chevron.down") { expanded.toggle() }
                     .buttonStyle(.borderless).frame(minHeight: 28)
             }
         }
+        .animation(queueMotion, value: model.isQueuePaused)
         .padding(.horizontal, 4)
     }
 
@@ -109,11 +119,13 @@ struct DownloadQueueView: View {
             MediaArtwork(url: item.request.preview?.artworkURL, width: 44, height: 44)
             VStack(alignment: .leading, spacing: 6) {
                 Text(item.title).font(.body.weight(.medium)).lineLimit(2).help(item.title)
-                Text("\(item.request.source.rawValue) · \(item.request.format.rawValue)")
+                Text([item.request.source.rawValue, item.request.format.rawValue, item.request.trim?.title, item.request.fileName]
+                    .compactMap { $0 }.joined(separator: " · "))
                     .font(.callout).foregroundStyle(.secondary)
                 if item.status == .downloading {
                     ProgressView(value: item.progress).progressViewStyle(.linear)
                         .accessibilityLabel("Progresso de \(item.title)")
+                        .animation(queueMotion, value: item.progress)
                     HStack {
                         Text(item.detail)
                         Spacer(minLength: 6)
@@ -215,6 +227,10 @@ struct DownloadHistoryView: View {
                     Text("·")
                     Text(item.finishedAt ?? item.createdAt, format: .dateTime.day().month().hour().minute())
                         .monospacedDigit()
+                    if let trim = item.request.trim {
+                        Text("·")
+                        Text(trim.title).monospacedDigit()
+                    }
                 }
                 .font(.callout).foregroundStyle(OceanPalette.secondaryText).lineLimit(1)
                 if item.status == .failed || item.status == .interrupted {

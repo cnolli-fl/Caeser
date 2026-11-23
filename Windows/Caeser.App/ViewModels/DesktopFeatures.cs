@@ -112,10 +112,10 @@ public sealed partial class DownloadViewModel
     {
         try
         {
-            var requests = DesktopLibrary.Batch(text, source, Destination, quality.Value, format.Value, Preview);
+            var requests = DesktopLibrary.Batch(text, source, Destination, quality.Value, format.Value, Preview, FileName);
             var additions = library.AddToQueue(requests, Preview);
             SavePreferences(); Persist();
-            UrlText = ""; if (additions < requests.Count) PreviewMessage = "Links repetidos foram ignorados. Use o Histórico para baixar novamente.";
+            FileName = ""; UrlText = ""; if (additions < requests.Count) PreviewMessage = "Links repetidos foram ignorados. Use o Histórico para baixar novamente.";
             RefreshLibrary(); PumpQueue();
         }
         catch (ArgumentException e) { ReportError(e.Message); }
