@@ -38,10 +38,11 @@ public sealed class DownloadSession(ToolLocator tools, IProcessRunner runner)
                 {
                     temporary = Path.Combine(Path.GetTempPath(), $"Caeser-{Guid.NewGuid():N}");
                     Directory.CreateDirectory(temporary);
-                    arguments.InsertRange(0, new[] { "--paths", "temp:" + temporary });
+                    arguments.InsertRange(0, new[] { "--paths", temporary, "--paths", "temp:" + temporary });
                 }
                 command = new(tools.Tool("yt-dlp.exe"), arguments, request.Destination, tools.EnvironmentVariables());
             }
+            var namedFiles = new List<string>();
             var gate = new object();
             var result = await runner.RunAsync(command, line =>
             {
@@ -49,7 +50,13 @@ public sealed class DownloadSession(ToolLocator tools, IProcessRunner runner)
                 lock (gate)
                 {
                     var clean = progress.Receive(line, request.Source);
-                    if (clean.Length > 0) output(clean);
+                    if (request.FileName != null && request.Source == DownloadSource.Video &&
+                        clean.StartsWith("CAESER_FILE:", StringComparison.Ordinal))
+                    {
+                        var path = System.Text.Json.JsonSerializer.Deserialize<string>(clean["CAESER_FILE:".Length..]);
+                        if (path != null) namedFiles.Add(path);
+                    }
+                    else if (clean.Length > 0) output(clean);
                 }
             }, cancellationToken).ConfigureAwait(false);
             if (result.Cancelled || cancellationToken.IsCancellationRequested) return new(false, true, null);
@@ -62,12 +69,22 @@ public sealed class DownloadSession(ToolLocator tools, IProcessRunner runner)
                 errors = new string(text, 0, length);
             }
             var error = progress.CompletionError(result.ExitCode, request.Source, errors);
+            if (error == null && request.FileName != null && request.Source == DownloadSource.Video)
+            {
+                if (namedFiles.Count == 0) return new(false, false, "Nenhum arquivo foi salvo. Confira o link e tente novamente.");
+                foreach (var source in namedFiles)
+                {
+                    var destination = Path.Combine(request.Destination, Path.GetFileName(source));
+                    if (!File.Exists(destination)) File.Move(source, destination);
+                    output("CAESER_FILE:" + System.Text.Json.JsonSerializer.Serialize(destination));
+                }
+            }
             return new(error == null, false, error);
         }
         catch (OperationCanceledException) { return new(false, true, null); }
         catch (UnauthorizedAccessException)
         { return new(false, false, "Esta pasta não permite salvar arquivos. Escolha outra pasta de destino."); }
-        catch (Exception e) when (e is IOException or System.ComponentModel.Win32Exception or TimeoutException)
+        catch (Exception e) when (e is IOException or System.ComponentModel.Win32Exception or TimeoutException or System.Text.Json.JsonException)
         { return new(false, false, $"Não consegui concluir o download: {e.Message}"); }
         finally
         {

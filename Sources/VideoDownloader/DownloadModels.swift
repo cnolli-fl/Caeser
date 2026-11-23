@@ -212,7 +212,7 @@ struct DownloadOptions {
                 args += ["--downloader-args", "ffmpeg_o:-c:v h264_videotoolbox -q:v 65 -c:a aac"]
             }
         }
-        if let temporaryDirectory { args += ["--paths", "temp:" + temporaryDirectory.path] }
+        if let temporaryDirectory { args += ["--paths", temporaryDirectory.path, "--paths", "temp:" + temporaryDirectory.path] }
         args += ["--", url.absoluteString]
         if let ffmpeg {
             args.insert(contentsOf: ["--ffmpeg-location", ffmpeg.deletingLastPathComponent().path], at: 0)

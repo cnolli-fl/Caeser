@@ -793,7 +793,7 @@ class Window(QMainWindow):
                 self.process_finished(-1, QProcess.ExitStatus.CrashExit)
                 return
             position = command.index("--ffmpeg-location")
-            command[position:position] = ["--paths", "temp:" + self.download_directory.name]
+            command[position:position] = ["--paths", self.download_directory.name, "--paths", "temp:" + self.download_directory.name]
         process.start(command[0], command[1:])
         if not process.waitForStarted(5000):
             self.process_finished(-1, QProcess.ExitStatus.CrashExit)
@@ -877,6 +877,20 @@ class Window(QMainWindow):
                 self.status_label.setText(self.current.detail)
                 self.launch_process(self.current.command(match))
                 return
+        if code == 0 and not self.cancel_requested and self.download_directory:
+            try:
+                saved = []
+                for source in self.current.files:
+                    destination = Path(self.current.destination) / Path(source).name
+                    if not destination.is_file():
+                        Path(source).rename(destination)
+                    saved.append(str(destination))
+                if not saved:
+                    raise OSError("Nenhum arquivo foi salvo.")
+                self.current.files = saved
+            except OSError:
+                code = -1
+                self.current.detail = "Não consegui salvar o arquivo com o nome escolhido. Confira a pasta de destino."
         if code == 0 and not self.cancel_requested and self.current.source == "Spotify" and not self.current.clip:
             if self.current.file_name:
                 saved = Path(self.current.destination) / (self.current.file_name + ".mp3")

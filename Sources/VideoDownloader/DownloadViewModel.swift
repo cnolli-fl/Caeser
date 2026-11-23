@@ -632,6 +632,23 @@ final class DownloadViewModel: ObservableObject {
             appendLog(statusMessage)
             return
         }
+        if case .exited(0) = outcome, !usesSpotifyProcess,
+           let item = library.items.first(where: { $0.id == activeID }), item.request.fileName != nil {
+            do {
+                guard !item.files.isEmpty else { throw CocoaError(.fileNoSuchFile) }
+                let saved = try item.files.map { source in
+                    let destination = item.request.destination.appendingPathComponent(source.lastPathComponent)
+                    if !FileManager.default.fileExists(atPath: destination.path) {
+                        try FileManager.default.moveItem(at: source, to: destination)
+                    }
+                    return destination
+                }
+                updateActive { $0.files = saved }
+            } catch {
+                showError("Não consegui salvar o arquivo com o nome escolhido. Confira a pasta de destino.")
+                return
+            }
+        }
         switch outcome {
         case .failed(let message):
             progress = nil
