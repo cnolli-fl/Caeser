@@ -792,7 +792,8 @@ class Window(QMainWindow):
                 self.current.detail = str(error)
                 self.process_finished(-1, QProcess.ExitStatus.CrashExit)
                 return
-            command = command[:1] + ["--paths", "temp:" + self.download_directory.name] + command[1:]
+            position = command.index("--ffmpeg-location")
+            command[position:position] = ["--paths", "temp:" + self.download_directory.name]
         process.start(command[0], command[1:])
         if not process.waitForStarted(5000):
             self.process_finished(-1, QProcess.ExitStatus.CrashExit)
