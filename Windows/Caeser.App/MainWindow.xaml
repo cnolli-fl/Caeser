@@ -131,7 +131,7 @@
                             </Grid>
                             <StackPanel Spacing="8">
                                 <TextBlock Text="Nome do arquivo" FontWeight="SemiBold" Foreground="{ThemeResource CaeserForeground}" />
-                                <TextBox Text="{Binding FileName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                <TextBox x:Name="FileNameInput" Text="{Binding FileName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
                                     PlaceholderText="Opcional · usar o título original" CornerRadius="8"
                                     AutomationProperties.Name="Nome do arquivo, opcional" />
                                 <TextBlock Text="A extensão acompanha o formato escolhido." Style="{StaticResource CaeserHelp}" />

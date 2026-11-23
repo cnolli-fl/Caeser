@@ -22,6 +22,7 @@ struct DesktopIntegrationTests {
         model.destinationURL = destination
         model.format = format
         model.urlText = try #require(environment["CAESER_TRIM_TEST_URL"])
+        model.fileName = format == .mp3 ? "Minha música 100%" : "Meu vídeo 100%"
         model.trimEnabled = true
         model.trimStart = "1:20"
         model.trimEnd = "1:50"
@@ -35,6 +36,7 @@ struct DesktopIntegrationTests {
         #expect(item.status == .completed, "\(model.logLines.joined(separator: "\n"))")
         let clip = try #require(item.files.first)
         #expect(clip.pathExtension == format.rawValue.lowercased())
+        #expect(clip.deletingPathExtension().lastPathComponent == (format == .mp3 ? "Minha música 100%" : "Meu vídeo 100%"))
         let asset = AVURLAsset(url: clip)
         let hasVideo = try await !asset.loadTracks(withMediaType: .video).isEmpty
         #expect(hasVideo == (format == .mp4))

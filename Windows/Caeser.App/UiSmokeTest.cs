@@ -30,6 +30,13 @@ internal static class UiSmokeTest
         // as a normal Windows desktop instead of silently skipping it.
         selector.MotionEnabledOverride = true;
         await Task.Delay(700); // Root.Loaded precedes the first activated desktop frame.
+        var fileName = (TextBox)root.FindName("FileNameInput");
+        fileName.Text = "Minha música 100%";
+        await Task.Delay(50);
+        if (model.FileName != fileName.Text)
+            throw new InvalidOperationException("O campo de nome não atualizou as opções do download.");
+        fileName.Text = "";
+
         await ClickSourceAsync(window, root, selector, model, "SpotifyButton", DownloadSource.Spotify);
         await ClickSourceAsync(window, root, selector, model, "YouTubeButton", DownloadSource.Video);
         // Interrupt an in-flight animation repeatedly, not just at rest.
@@ -395,8 +402,8 @@ internal static class UiSmokeTest
             content.RequestedTheme = theme;
             notes.Activate();
             await Task.Delay(350);
-            if (((TextBlock)content.FindName("VersionLabel")).Text != "Caeser para Windows · 2.3.0" ||
-                ((ItemsControl)content.FindName("Highlights")).Items.Count != 3)
+            if (((TextBlock)content.FindName("VersionLabel")).Text != "Caeser para Windows · " + store.VersionText ||
+                ((ItemsControl)content.FindName("Highlights")).Items.Count != store.Highlights.Count)
                 throw new InvalidOperationException("As novidades não renderizaram a versão e os itens corretos.");
             var button = (Button)content.FindName("ContinueButton");
             if (!button.IsEnabled || button.ActualHeight < 32)
