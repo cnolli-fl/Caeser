@@ -247,6 +247,7 @@ class Window(QMainWindow):
         self.current: Download | None = None
         self.process: QProcess | None = None
         self.match_directory: tempfile.TemporaryDirectory | None = None
+        self.download_directory: tempfile.TemporaryDirectory | None = None
         self.output_buffer = ""
         self.preview_serial = 0
         self.preview: dict | None = None
@@ -784,6 +785,14 @@ class Window(QMainWindow):
         self.details.append("Executando " + ("spotDL" if self.match_directory or
                             self.current.source == "Spotify" and not self.current.clip else "yt-dlp"))
         self.output_buffer = ""
+        if self.current.file_name and "--ffmpeg-location" in command:
+            try:
+                self.download_directory = tempfile.TemporaryDirectory(prefix="caeser-media-")
+            except OSError as error:
+                self.current.detail = str(error)
+                self.process_finished(-1, QProcess.ExitStatus.CrashExit)
+                return
+            command = command[:1] + ["--paths", "temp:" + self.download_directory.name] + command[1:]
         process.start(command[0], command[1:])
         if not process.waitForStarted(5000):
             self.process_finished(-1, QProcess.ExitStatus.CrashExit)
@@ -888,6 +897,9 @@ class Window(QMainWindow):
                 self.current.detail = "Não foi possível concluir. Veja os detalhes e tente novamente."
         self.status_label.setText(self.current.state + " · " + self.current.title)
         self.library.save()
+        if self.download_directory:
+            self.download_directory.cleanup()
+            self.download_directory = None
         self.current = None
         self.progress_motion.stop()
         self.progress.hide()
@@ -982,6 +994,9 @@ class Window(QMainWindow):
         if self.match_directory:
             self.match_directory.cleanup()
             self.match_directory = None
+        if self.download_directory:
+            self.download_directory.cleanup()
+            self.download_directory = None
         self.library.save()
         super().closeEvent(event)
 
@@ -1057,7 +1072,7 @@ def main():
                 window.url_input.setPlainText(os.environ["CAESER_SMOKE_VIDEO"])
                 window.clip_toggle.setChecked(True)
                 window.preview_timer.stop()
-                window.file_name.setText("Trecho áudio 100%" if fmt == "MP3" else "Trecho vídeo 100%")
+                window.file_name.setText("Meu trecho 100%")
                 window.clip_start.setText("0:03")
                 window.clip_end.setText("0:07")
                 window.enqueue()

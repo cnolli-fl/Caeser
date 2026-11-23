@@ -38,8 +38,7 @@ def main(package: Path):
                 worker.join()
 
         for extension in ("mp3", "mp4"):
-            kind = "áudio" if extension == "mp3" else "vídeo"
-            filename = output / f"Trecho {kind} 100%.{extension}"
+            filename = output / f"Meu trecho 100%.{extension}"
             info = json.loads(subprocess.check_output([
                 "ffprobe", "-v", "error", "-show_entries", "stream=codec_name:format=duration",
                 "-of", "json", str(filename),
@@ -52,7 +51,7 @@ def main(package: Path):
             print(f"Trecho {extension}: {duration:.3f}s · {', '.join(sorted(codecs))}")
 
         first_pixel = subprocess.check_output([
-            "ffmpeg", "-v", "error", "-i", str(output / "Trecho vídeo 100%.mp4"), "-frames:v", "1",
+            "ffmpeg", "-v", "error", "-i", str(output / "Meu trecho 100%.mp4"), "-frames:v", "1",
             "-vf", "scale=1:1", "-pix_fmt", "rgb24", "-f", "rawvideo", "-",
         ], timeout=10)
         if len(first_pixel) != 3 or first_pixel[2] <= first_pixel[0]:

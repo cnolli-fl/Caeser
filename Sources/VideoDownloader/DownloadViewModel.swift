@@ -354,9 +354,14 @@ final class DownloadViewModel: ObservableObject {
                     showError("Instale o yt-dlp com brew install yt-dlp e clique em Verificar ferramentas.")
                     return false
                 }
+                if request.fileName != nil {
+                    let directory = FileManager.default.temporaryDirectory.appendingPathComponent("Caeser-\(UUID())")
+                    try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
+                    errorReportDirectory = directory
+                }
                 executable = ytDLP
                 arguments = DownloadOptions(url: url, destination: destinationURL, quality: quality,
-                                            format: format, trim: request.trim, ffmpeg: ffmpeg, fileName: request.fileName).arguments
+                                            format: format, trim: request.trim, ffmpeg: ffmpeg, fileName: request.fileName, temporaryDirectory: errorReportDirectory).arguments
             }
         } catch {
             showError("Não consegui preparar a pasta de destino: \(error.localizedDescription)")
@@ -414,7 +419,7 @@ final class DownloadViewModel: ObservableObject {
         statusMessage = "Preparando o trecho de áudio…"
         updateActive { $0.detail = statusMessage }
         let options = DownloadOptions(url: match, destination: request.destination, quality: request.quality,
-                                      format: .mp3, trim: request.trim, ffmpeg: ffmpeg, fileName: request.fileName)
+                                      format: .mp3, trim: request.trim, ffmpeg: ffmpeg, fileName: request.fileName, temporaryDirectory: errorReportDirectory)
         run(executable: ytDLP, arguments: options.arguments)
     }
 

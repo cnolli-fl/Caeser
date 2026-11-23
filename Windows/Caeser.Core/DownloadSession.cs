@@ -32,8 +32,16 @@ public sealed class DownloadSession(ToolLocator tools, IProcessRunner runner)
                     request.Destination, tools.EnvironmentVariables());
             }
             else
-                command = new(tools.Tool("yt-dlp.exe"), request.VideoArguments(tools.ToolsDirectory),
-                    request.Destination, tools.EnvironmentVariables());
+            {
+                var arguments = request.VideoArguments(tools.ToolsDirectory).ToList();
+                if (request.FileName != null)
+                {
+                    temporary = Path.Combine(Path.GetTempPath(), $"Caeser-{Guid.NewGuid():N}");
+                    Directory.CreateDirectory(temporary);
+                    arguments.InsertRange(0, new[] { "--paths", "temp:" + temporary });
+                }
+                command = new(tools.Tool("yt-dlp.exe"), arguments, request.Destination, tools.EnvironmentVariables());
+            }
             var gate = new object();
             var result = await runner.RunAsync(command, line =>
             {

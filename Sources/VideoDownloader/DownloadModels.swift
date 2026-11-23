@@ -143,6 +143,7 @@ struct DownloadOptions {
     var trim: VideoTrim? = nil
     var ffmpeg: URL? = nil
     var fileName: String? = nil
+    var temporaryDirectory: URL? = nil
 
     var arguments: [String] {
         var args = [
@@ -211,6 +212,7 @@ struct DownloadOptions {
                 args += ["--downloader-args", "ffmpeg_o:-c:v h264_videotoolbox -q:v 65 -c:a aac"]
             }
         }
+        if let temporaryDirectory { args += ["--paths", "temp:" + temporaryDirectory.path] }
         args += ["--", url.absoluteString]
         if let ffmpeg {
             args.insert(contentsOf: ["--ffmpeg-location", ffmpeg.deletingLastPathComponent().path], at: 0)
