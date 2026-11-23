@@ -11,7 +11,7 @@ if [[ "$(uname -s)" != Linux || ( "$arch" != x86_64 && "$arch" != aarch64 ) ]]; 
 fi
 
 python_bin="${PYTHON_BIN:-python3}"
-version="${CAESER_LINUX_VERSION:-0.1.0}"
+version="${CAESER_LINUX_VERSION:-$(<"$root_dir/Linux/VERSION")}"
 build_dir="$root_dir/Linux/.build"
 app_dir="$build_dir/Caeser.AppDir"
 dist_dir="$root_dir/Linux/dist"

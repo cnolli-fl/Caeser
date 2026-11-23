@@ -1,9 +1,7 @@
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch
-
-from core import Download, Library, batch_urls, selector, validate_url
+from core import Download, Library, batch_urls, clip_source, parse_clip, selector, spotify_match, validate_url
 
 
 class CoreTests(unittest.TestCase):
@@ -37,6 +35,34 @@ class CoreTests(unittest.TestCase):
             reopened = Library(path)
             self.assertEqual(reopened.items[0].state, "Interrompido")
             self.assertTrue(reopened.paused)
+
+    def test_preserves_distinct_ranges_in_the_saved_queue(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "library.json"
+            lib = Library(path)
+            url = "https://youtu.be/abc"
+            first = Download(url, "YouTube", folder, fmt="MP4", clip=parse_clip("1:20", "1:50"))
+            second = Download(url, "YouTube", folder, fmt="MP4", clip=parse_clip("1:50", "2:00"))
+            self.assertEqual(lib.add([first, second, first]), 2)
+            self.assertEqual([item.clip for item in Library(path).items], [first.clip, second.clip])
+            for start, end in (("1:20", "1:20"), ("1:60", "2:10"), ("-1:00", "2:00"), ("1:20", "2:00")):
+                with self.assertRaises(ValueError):
+                    parse_clip(start, end, duration=110)
+
+    def test_spotify_clip_follows_the_matched_track(self):
+        link = "https://open.spotify.com/track/0VjIjW4GlUZAMYd2vXMi3b"
+        clip_source(batch_urls(link, "Spotify"))
+        with self.assertRaises(ValueError):
+            clip_source(batch_urls(link.replace("track", "album"), "Spotify"))
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "track.spotdl"
+            path.write_text('[{"download_url": "https://youtu.be/example"}]')
+            matched = spotify_match(path)
+            item = Download(link, "Spotify", folder, fmt="MP3", clip=parse_clip("1:20", "1:50"))
+            command = item.command(matched)
+            self.assertEqual(command[-1], "https://youtu.be/example")
+            self.assertIn("*80-110", command)
+            self.assertIn("ffmpeg_o:-vn -c:a libmp3lame -q:a 0 -f mp3", command)
 
 
 if __name__ == "__main__":

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
 import sys
@@ -91,12 +92,85 @@ def batch_urls(text: str, source: str) -> list[tuple[str, str]]:
     return result
 
 
-def selector(quality: str, fmt: str) -> str:
+def timestamp(seconds: int) -> str:
+    minutes, remainder = divmod(seconds, 60)
+    hours, minutes_in_hour = divmod(minutes, 60)
+    return f"{hours}:{minutes_in_hour:02}:{remainder:02}" if hours else f"{minutes}:{remainder:02}"
+
+
+@dataclass(frozen=True)
+class Clip:
+    start: int
+    end: int
+
+    def __post_init__(self):
+        if type(self.start) is not int or type(self.end) is not int or not 0 <= self.start < self.end:
+            raise ValueError("O fim precisa ser depois do início.")
+
+    @property
+    def title(self) -> str:
+        return f"{timestamp(self.start)} – {timestamp(self.end)}"
+
+
+def parse_clip(start: str, end: str, duration: float | None = None) -> Clip:
+    def seconds(value: str) -> int:
+        parts = value.strip().split(":")
+        if (len(parts) not in (2, 3) or not re.fullmatch(r"[0-9]{1,5}(:[0-9]{1,2}){1,2}", value.strip())
+                or any(int(part) >= 60 for part in parts[1:])):
+            raise ValueError("Use mm:ss ou h:mm:ss, como 1:20.")
+        result = 0
+        for part in parts:
+            result = result * 60 + int(part)
+        return result
+
+    clip = Clip(seconds(start), seconds(end))
+    if duration is not None and math.isfinite(duration) and duration > 0:
+        if clip.start >= duration or clip.end > math.ceil(duration):
+            raise ValueError("Escolha um trecho dentro da duração disponível.")
+    return clip
+
+
+def clip_source(links: list[tuple[str, str]]) -> None:
+    if len(links) != 1:
+        raise ValueError("Para cortar, deixe apenas um link no campo.")
+    url, source = links[0]
+    if source == "Spotify" and not urlparse(url).path.startswith("/track/"):
+        raise ValueError("Para cortar no Spotify, cole o link de uma faixa.")
+    if source == "YouTube" and urlparse(url).hostname in ("www.youtube.com", "youtube.com", "m.youtube.com", "music.youtube.com"):
+        if urlparse(url).path == "/playlist":
+            raise ValueError("Para cortar no YouTube, cole o link de um vídeo.")
+
+
+def spotify_match_command(url: str, metadata: Path) -> list[str]:
+    return tool_command("spotdl") + [
+        "save", url, "--save-file", str(metadata), "--preload", "--audio", "youtube", "youtube-music",
+        "--ffmpeg", tool_path("ffmpeg"), "--threads", "1", "--headless", "--simple-tui", "--max-retries", "1",
+        "--log-level", "ERROR", "--lyrics"]
+
+
+def spotify_match(metadata: Path) -> str:
+    if metadata.stat().st_size > 128_000:
+        raise ValueError("A faixa não pôde ser identificada.")
+    rows = json.loads(metadata.read_text(encoding="utf-8"))
+    match = next((row.get("download_url") for row in rows
+                  if isinstance(row, dict) and isinstance(row.get("download_url"), str)), None)
+    if match:
+        url = urlparse(match)
+        if url.scheme == "https" and url.netloc.lower() in (
+            "www.youtube.com", "youtube.com", "m.youtube.com", "music.youtube.com", "youtu.be"
+        ):
+            return match
+    raise ValueError("Não encontrei uma versão da faixa no YouTube.")
+
+
+def selector(quality: str, fmt: str, clip: Clip | None = None) -> str:
     height = QUALITY_HEIGHT.get(quality)
     h = f"[height<={height}]" if height else ""
     if fmt == "MP3":
         return "bestaudio/best"
     if fmt == "MP4":
+        if clip:
+            return f"bv{h}[ext=mp4]+ba[ext=m4a]/b{h}[ext=mp4]"
         return f"bv*{h}[ext=mp4][vcodec^=avc1]+ba[ext=m4a]/bv*{h}[ext=mp4]+ba[ext=m4a]/b{h}[ext=mp4]/b{h}"
     if fmt == "WebM":
         return f"bv*{h}[ext=webm]+ba[ext=webm]/bv*{h}+ba/b{h}"
@@ -117,8 +191,9 @@ class Download:
     detail: str = ""
     files: list[str] = field(default_factory=list)
     id: str = field(default_factory=lambda: uuid.uuid4().hex)
+    clip: Clip | None = None
 
-    def key(self) -> tuple[str, str, str, str, str]:
+    def key(self) -> tuple[str, str, str, str, str, Clip | None]:
         p = urlparse(self.url)
         identity = self.url
         if p.hostname in ("www.youtube.com", "youtube.com", "m.youtube.com", "music.youtube.com"):
@@ -126,23 +201,29 @@ class Download:
         elif p.hostname == "youtu.be":
             identity = p.path.strip("/")
         return (identity, self.source, self.fmt,
-                "audio" if self.fmt == "MP3" else self.quality, str(Path(self.destination).resolve()))
+                "audio" if self.fmt == "MP3" else self.quality, str(Path(self.destination).resolve()), self.clip)
 
-    def command(self) -> list[str]:
-        if self.source == "Spotify":
+    def command(self, matched_url: str | None = None) -> list[str]:
+        if self.source == "Spotify" and self.clip is None:
             return tool_command("spotdl") + [
                 "download", self.url, "--audio", "youtube", "youtube-music",
                 "--format", "mp3", "--bitrate", "0", "--ffmpeg", tool_path("ffmpeg"),
                 "--output", "{artists} - {title} [{track-id}].{output-ext}",
                 "--threads", "1", "--overwrite", "skip", "--simple-tui", "--headless",
                 "--max-retries", "2", "--log-level", "INFO", "--lyrics"]
+        if self.source == "Spotify" and matched_url is None:
+            raise ValueError("A faixa precisa ser localizada no YouTube antes de cortar.")
+        template = "%(title)s.%(ext)s"
+        if self.clip:
+            kind = " áudio" if self.fmt == "MP3" else ""
+            template = f"%(title)s [{self.clip.start}-{self.clip.end}s{kind}].%(ext)s"
         args = ["--ignore-config", "--newline", "--no-quiet", "--progress", "--no-playlist",
                 "--no-overwrites", "--no-simulate", "--print", "before_dl:CAESER_TITLE:%(title)j",
                 "--print", "after_move:CAESER_FILE:%(filepath)j",
                 "--ffmpeg-location", str(Path(tool_path("ffmpeg")).parent),
-                "--paths", self.destination, "-o", "%(title)s.%(ext)s",
+                "--paths", self.destination, "-o", template,
                 "--progress-template", "download:download:%(progress._percent_str)s|%(progress._downloaded_bytes_str)s|%(progress._total_bytes_str)s|%(progress._speed_str)s|%(progress._eta)s",
-                "-f", selector(self.quality, self.fmt)]
+                "-f", selector(self.quality, self.fmt, self.clip)]
         deno = Path(tool_path("deno"))
         if deno.is_file():
             args += ["--js-runtimes", f"deno:{deno}"]
@@ -152,7 +233,15 @@ class Download:
             args += ["--merge-output-format", "webm"]
         elif self.fmt == "MP3":
             args += ["-x", "--audio-format", "mp3", "--audio-quality", "0"]
-        return tool_command("yt-dlp") + args + ["--", self.url]
+        if self.clip:
+            args += ["--match-filters", f"!is_live & duration >? {self.clip.end - 1}",
+                     "--download-sections", f"*{self.clip.start}-{self.clip.end}", "--force-keyframes-at-cuts"]
+            if self.fmt == "MP3":
+                # Encode at the seek point so Opus/WebM doesn't include packets from before the cut.
+                args += ["--downloader-args", "ffmpeg_o:-vn -c:a libmp3lame -q:a 0 -f mp3", "--add-metadata"]
+            else:
+                args += ["--downloader-args", "ffmpeg_o:-c:v libx264 -preset veryfast -crf 18 -c:a aac"]
+        return tool_command("yt-dlp") + args + ["--", matched_url or self.url]
 
 
 class Library:
@@ -166,7 +255,8 @@ class Library:
     def load(self) -> None:
         try:
             raw = json.loads(self.path.read_text(encoding="utf-8"))
-            self.items = [Download(**row) for row in raw.get("items", [])]
+            self.items = [Download(**{**row, "clip": Clip(**row["clip"]) if row.get("clip") else None})
+                          for row in raw.get("items", [])]
             self.destination = raw.get("destination", self.destination)
             self.paused = bool(raw.get("paused", False))
             for item in self.items:
