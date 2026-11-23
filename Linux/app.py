@@ -867,6 +867,15 @@ class Window(QMainWindow):
                 self.status_label.setText(self.current.detail)
                 self.launch_process(self.current.command(match))
                 return
+        if code == 0 and not self.cancel_requested and self.current.source == "Spotify" and not self.current.clip:
+            if self.current.file_name:
+                saved = Path(self.current.destination) / (self.current.file_name + ".mp3")
+                if saved.is_file():
+                    self.current.files = [str(saved)]
+            elif "/track/" in self.current.url:
+                track_id = self.current.url.rsplit("/", 1)[-1]
+                self.current.files = [str(path) for path in Path(self.current.destination).glob("*.mp3")
+                                      if path.name.endswith(f"[{track_id}].mp3")]
         if self.cancel_requested:
             self.current.state, self.current.detail = "Cancelado", "Download cancelado."
         elif code == 0 and (not self.current.clip or any(Path(path).is_file() for path in self.current.files)):

@@ -155,7 +155,7 @@ public sealed partial class DownloadViewModel : INotifyPropertyChanged
                 if (request.Source == DownloadSource.Spotify && request.Url.AbsolutePath.Contains("/track/"))
                 {
                     var suffix = request.FileName == null ? $"[{request.Url.Segments.Last()}].mp3" : request.FileName + ".mp3";
-                    item.Files = Directory.EnumerateFiles(request.Destination).Where(f => f.EndsWith(suffix, StringComparison.OrdinalIgnoreCase)).ToList();
+                    item.Files = Directory.EnumerateFiles(request.Destination).Where(f => request.FileName == null ? f.EndsWith(suffix, StringComparison.OrdinalIgnoreCase) : Path.GetFileName(f).Equals(suffix, StringComparison.OrdinalIgnoreCase)).ToList();
                 }
             }
             else

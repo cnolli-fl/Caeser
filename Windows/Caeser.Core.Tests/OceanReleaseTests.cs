@@ -13,13 +13,13 @@ public class OceanReleaseTests
         Assert.True(first.RequestAutomaticPresentation());
         Assert.False(first.RequestAutomaticPresentation());
         // A request alone is not proof that the window was displayed.
-        Assert.True(new WhatsNewStore(folder.Path).RequestAutomaticPresentation());
+        Assert.True(new WhatsNewStore(folder.Path, "2.3.0").RequestAutomaticPresentation());
         first.MarkPresented();
-        Assert.False(new WhatsNewStore(folder.Path).RequestAutomaticPresentation());
+        Assert.False(new WhatsNewStore(folder.Path, "2.3.0").RequestAutomaticPresentation());
         var older = new WhatsNewStore(folder.Path, "2.2.1");
         Assert.False(older.RequestAutomaticPresentation());
         older.MarkPresented();
-        Assert.False(new WhatsNewStore(folder.Path).RequestAutomaticPresentation());
+        Assert.False(new WhatsNewStore(folder.Path, "2.3.0").RequestAutomaticPresentation());
         Assert.True(new WhatsNewStore(folder.Path, "2.4.0").RequestAutomaticPresentation());
     }
     [Fact]
@@ -29,11 +29,11 @@ public class OceanReleaseTests
         var library = Path.Combine(folder.Path, "library.json");
         File.WriteAllText(library, "existing history and preferences");
         File.WriteAllText(Path.Combine(folder.Path, "whats-new.json"), "{broken");
-        var notes = new WhatsNewStore(folder.Path);
+        var notes = new WhatsNewStore(folder.Path, "2.3.0");
         Assert.True(notes.RequestAutomaticPresentation());
         notes.MarkPresented();
         Assert.Equal("existing history and preferences", File.ReadAllText(library));
-        Assert.False(new WhatsNewStore(folder.Path).RequestAutomaticPresentation());
+        Assert.False(new WhatsNewStore(folder.Path, "2.3.0").RequestAutomaticPresentation());
         Assert.Equal(3, notes.Highlights.Count);
         Assert.Equal("https://github.com/cnolli-fl/Caeser/releases/tag/windows-v2.3.0", notes.NotesUrl.AbsoluteUri);
         Assert.Single(new WhatsNewStore(folder.Path, "2.4.0").Highlights);
