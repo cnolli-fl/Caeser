@@ -49,6 +49,24 @@ class CoreTests(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     parse_clip(start, end, duration=110)
 
+    def test_open_ended_clip_is_saved_and_uses_the_media_end(self):
+        with tempfile.TemporaryDirectory() as folder:
+            path = Path(folder) / "library.json"
+            clip = parse_clip("1:20", " ", duration=110)
+            self.assertIsNone(clip.end)
+            self.assertEqual(clip.title, "1:20 até o fim")
+            item = Download("https://youtu.be/abc", "YouTube", folder, fmt="MP3", clip=clip)
+            lib = Library(path)
+            lib.add([item])
+            restored = Library(path).items[0]
+            self.assertEqual(restored.clip, clip)
+            args = restored.command()
+            self.assertIn("*80-inf", args)
+            self.assertIn("!is_live & duration >? 80", args)
+            self.assertIn("[80s até o fim áudio]", args[args.index("-o") + 1])
+        with self.assertRaises(ValueError):
+            parse_clip("1:50", "", duration=110)
+
     def test_spotify_clip_follows_the_matched_track(self):
         link = "https://open.spotify.com/track/0VjIjW4GlUZAMYd2vXMi3b"
         clip_source(batch_urls(link, "Spotify"))

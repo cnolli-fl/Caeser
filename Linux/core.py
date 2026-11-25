@@ -118,14 +118,18 @@ def timestamp(seconds: int) -> str:
 @dataclass(frozen=True)
 class Clip:
     start: int
-    end: int
+    end: int | None = None
 
     def __post_init__(self):
-        if type(self.start) is not int or type(self.end) is not int or not 0 <= self.start < self.end:
+        if type(self.start) is not int or self.start < 0:
+            raise ValueError("Informe um início válido.")
+        if self.end is not None and (type(self.end) is not int or self.end <= self.start):
             raise ValueError("O fim precisa ser depois do início.")
 
     @property
     def title(self) -> str:
+        if self.end is None:
+            return f"{timestamp(self.start)} até o fim"
         return f"{timestamp(self.start)} – {timestamp(self.end)}"
 
 
@@ -140,9 +144,9 @@ def parse_clip(start: str, end: str, duration: float | None = None) -> Clip:
             result = result * 60 + int(part)
         return result
 
-    clip = Clip(seconds(start), seconds(end))
+    clip = Clip(seconds(start), seconds(end) if end.strip() else None)
     if duration is not None and math.isfinite(duration) and duration > 0:
-        if clip.start >= duration or clip.end > math.ceil(duration):
+        if clip.start >= duration or (clip.end is not None and clip.end > math.ceil(duration)):
             raise ValueError("Escolha um trecho dentro da duração disponível.")
     return clip
 
@@ -234,7 +238,9 @@ class Download:
         template = "%(title)s.%(ext)s"
         if self.clip:
             kind = " áudio" if self.fmt == "MP3" else ""
-            template = f"%(title)s [{self.clip.start}-{self.clip.end}s{kind}].%(ext)s"
+            interval = (f"{self.clip.start}s até o fim" if self.clip.end is None
+                        else f"{self.clip.start}-{self.clip.end}s")
+            template = f"%(title)s [{interval}{kind}].%(ext)s"
         if self.file_name:
             template = self.file_name.replace("%", "%%") + ".%(ext)s"
         args = ["--ignore-config", "--newline", "--no-quiet", "--progress", "--no-playlist",
@@ -254,8 +260,11 @@ class Download:
         elif self.fmt == "MP3":
             args += ["-x", "--audio-format", "mp3", "--audio-quality", "0"]
         if self.clip:
-            args += ["--match-filters", f"!is_live & duration >? {self.clip.end - 1}",
-                     "--download-sections", f"*{self.clip.start}-{self.clip.end}", "--force-keyframes-at-cuts"]
+            end = self.clip.end
+            minimum_duration = end - 1 if end is not None else self.clip.start
+            args += ["--match-filters", f"!is_live & duration >? {minimum_duration}",
+                     "--download-sections", f"*{self.clip.start}-{end if end is not None else 'inf'}",
+                     "--force-keyframes-at-cuts"]
             if self.fmt == "MP3":
                 # Encode at the seek point so Opus/WebM doesn't include packets from before the cut.
                 args += ["--downloader-args", "ffmpeg_o:-vn -c:a libmp3lame -q:a 0 -f mp3", "--add-metadata"]

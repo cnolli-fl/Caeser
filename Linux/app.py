@@ -47,6 +47,7 @@ QLabel#muted {{ color: {MUTED}; }}
 QTextEdit, QLineEdit, QComboBox, QListWidget {{ background: {FIELD}; border: 1px solid {BORDER}; border-radius: 9px; padding: 8px; selection-background-color: {STRONG}; font-size: 13px; }}
 QTextEdit:focus, QLineEdit:focus, QComboBox:focus, QPushButton:focus {{ border: 2px solid {ACCENT}; }}
 QComboBox {{ min-height: 22px; padding-left: 12px; }}
+QComboBox:disabled {{ color: #A5B7DB; background: #1B366F; border-color: #385587; }}
 QComboBox::drop-down {{ border: none; width: 28px; }}
 QComboBox QAbstractItemView {{ background: {FIELD}; color: {TEXT}; selection-background-color: {STRONG}; }}
 QPushButton {{ background: {FIELD}; border: 1px solid transparent; border-radius: 10px; padding: 8px 14px; min-height: 22px; font-size: 13px; }}
@@ -66,7 +67,12 @@ QPushButton#details:hover {{ color: {TEXT}; }}
 QProgressBar {{ background: {FIELD}; border: none; border-radius: 5px; height: 9px; text-align: center; }}
 QProgressBar::chunk {{ background: {ACCENT}; border-radius: 5px; }}
 QScrollBar:vertical {{ background: transparent; width: 9px; }}
-QScrollBar::handle:vertical {{ background: {BORDER}; border-radius: 4px; min-height: 20px; }}
+QScrollBar:horizontal {{ background: transparent; height: 9px; }}
+QScrollBar::handle {{ background: {BORDER}; border-radius: 4px; }}
+QScrollBar::handle:vertical {{ min-height: 20px; }}
+QScrollBar::handle:horizontal {{ min-width: 20px; }}
+QScrollBar::add-line, QScrollBar::sub-line {{ width: 0; height: 0; border: none; background: transparent; }}
+QScrollBar::add-page, QScrollBar::sub-page, QAbstractScrollArea::corner {{ background: transparent; }}
 """
 
 
@@ -117,7 +123,8 @@ class ClipTimeline(QWidget):
         self.update()
 
     def set_selection(self, clip: Clip, duration: float):
-        start, end = min(1, clip.start / duration), min(1, clip.end / duration)
+        start = min(1, clip.start / duration)
+        end = 1.0 if clip.end is None else min(1, clip.end / duration)
         target = QRectF(start, 0, end - start, 1)
         self.animation.stop()
         duration_ms = motion_duration(self)
@@ -381,8 +388,11 @@ class Window(QMainWindow):
         opts.setContentsMargins(0, 9, 0, 9)
         opts.setSpacing(20)
         quality_col = QVBoxLayout()
-        quality_col.addWidget(label("Qualidade", 13, True))
+        quality_title = label("Qualidade", 13, True)
+        quality_col.addWidget(quality_title)
         self.quality = QComboBox()
+        quality_title.setBuddy(self.quality)
+        self.quality.setAccessibleName("Qualidade do vídeo")
         self.quality.addItems(QUALITY_HEIGHT.keys())
         quality_col.addWidget(self.quality)
         opts.addLayout(quality_col, 1)
@@ -500,7 +510,7 @@ class Window(QMainWindow):
         fields = QHBoxLayout()
         fields.setSpacing(14)
         self.clip_start, self.clip_end = QLineEdit(), QLineEdit()
-        for caption, example, field in (("Início", "1:20", self.clip_start), ("Fim", "1:50", self.clip_end)):
+        for caption, example, field in (("Início", "1:20", self.clip_start), ("Fim", "Até o fim", self.clip_end)):
             column = QVBoxLayout()
             column.setSpacing(5)
             title = label(caption, 11, True)
@@ -515,6 +525,7 @@ class Window(QMainWindow):
             column.addWidget(title)
             column.addWidget(field)
             fields.addLayout(column)
+        self.clip_end.setAccessibleDescription("Opcional. Deixe em branco para baixar até o fim.")
         fields.addStretch()
         self.clip_format = label("MP4", 10, True)
         self.clip_format.setObjectName("clipFormat")
@@ -573,8 +584,11 @@ class Window(QMainWindow):
         audio = self.source() == "Spotify" or self.fmt.currentText() == "MP3"
         self.clip_title.setText("Cortar áudio" if audio else "Cortar vídeo")
         active = self.clip_toggle.isChecked()
-        self.clip_toggle.setText("Ativado" if active else "Ativar")
-        self.clip_toggle.setAccessibleName(self.clip_title.text())
+        action = "Desativar" if active else "Ativar"
+        self.clip_toggle.setText(action)
+        self.clip_toggle.setAccessibleName(f"{action} corte de {'áudio' if audio else 'vídeo'}")
+        self.quality.setEnabled(not audio)
+        self.quality.setToolTip("O MP3 usa o melhor áudio disponível." if audio else "")
         self.clip_format.setText("MP3" if audio else "MP4")
         self.clip_format.setAccessibleName("Formato do trecho: " + self.clip_format.text())
         if self.source() == "Spotify":
@@ -589,9 +603,12 @@ class Window(QMainWindow):
                 self.clip_timeline.hide()
                 self.clip_feedback.setText("Use minutos e segundos, como 1:20."
                                            if str(error).startswith("Use mm:ss") and
-                                           not (self.clip_start.text() and self.clip_end.text()) else str(error))
+                                           not self.clip_start.text().strip() else str(error))
             else:
-                self.clip_feedback.setText("Duração do trecho  ·  " + timestamp(clip.end - clip.start))
+                if clip.end is None:
+                    self.clip_feedback.setText(f"De {timestamp(clip.start)} até o fim.")
+                else:
+                    self.clip_feedback.setText("Duração do trecho  ·  " + timestamp(clip.end - clip.start))
                 if duration := self.media_duration():
                     self.clip_timeline.set_selection(clip, duration)
                 else:
@@ -1068,6 +1085,25 @@ def main():
             if not window.primary.isEnabled() or "0:30" not in window.clip_feedback.text():
                 app.exit(1)
                 return
+            window.quality.setCurrentText("1440p")
+            window.fmt.setCurrentText("MP3")
+            window.clip_end.clear()
+            if (window.quality.isEnabled() or not window.primary.isEnabled()
+                    or window.clip_toggle.text() != "Desativar"
+                    or "até o fim" not in window.clip_feedback.text()):
+                app.exit(1)
+                return
+            window.clip_toggle.click()
+            if window.clip_toggle.text() != "Ativar":
+                app.exit(1)
+                return
+            window.fmt.setCurrentText("MP4")
+            if not window.quality.isEnabled() or window.quality.currentText() != "1440p":
+                app.exit(1)
+                return
+            window.clip_toggle.click()
+            window.preview_timer.stop()
+            window.fmt.setCurrentText("MP3")
             destination = os.environ.get("CAESER_SMOKE_SCREENSHOT")
             if destination:
                 window.resize(860, 1050)
@@ -1090,20 +1126,22 @@ def main():
     elif "--smoke-clip-download" in sys.argv:
         def run_clips():
             window.library.destination = os.environ["CAESER_SMOKE_DESTINATION"]
-            for fmt in ("MP4", "MP3"):
-                window.fmt.setCurrentText(fmt)
-                window.url_input.setPlainText(os.environ["CAESER_SMOKE_VIDEO"])
-                window.clip_toggle.setChecked(True)
-                window.preview_timer.stop()
-                window.file_name.setText("Meu trecho 100%")
-                window.clip_start.setText("0:03")
-                window.clip_end.setText("0:07")
-                window.enqueue()
+            for name, end in (("Meu trecho 100%", "0:07"), ("Meu final 100%", "")):
+                for fmt in ("MP4", "MP3"):
+                    window.fmt.setCurrentText(fmt)
+                    window.url_input.setPlainText(os.environ["CAESER_SMOKE_VIDEO"])
+                    window.clip_toggle.setChecked(True)
+                    window.preview_timer.stop()
+                    window.file_name.setText(name)
+                    window.clip_start.setText("0:03")
+                    window.clip_end.setText(end)
+                    window.enqueue()
             timer = QTimer(window)
             def check_clips():
                 if window.current or any(item.state == "Na fila" for item in window.library.items):
                     return
-                ok = {item.fmt for item in window.library.items if item.state == "Concluído"} == {"MP4", "MP3"}
+                completed = {(item.fmt, item.clip.end) for item in window.library.items if item.state == "Concluído"}
+                ok = completed == {("MP4", 7), ("MP3", 7), ("MP4", None), ("MP3", None)}
                 if not ok:
                     print(window.details.toPlainText(), file=sys.stderr)
                 app.exit(0 if ok else 1)

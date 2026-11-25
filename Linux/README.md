@@ -25,6 +25,8 @@ A partir da versão 0.3.0, abra **Atualizações** e selecione **Baixar e instal
 
 Para sair da versão 0.1.0 ou 0.2.0, baixe e abra o AppImage novo uma vez. A fila, o histórico e a pasta de destino são carregados da mesma biblioteca local.
 
+Para cortar até o fim, preencha o **Início** e deixe **Fim** em branco. Ao escolher MP3, o Caeser usa o melhor áudio disponível e desativa a seleção de qualidade de vídeo.
+
 ## Desenvolvimento
 
 No Fedora 44, instale Python 3.12 ou 3.13 e as dependências do sistema para PySide6. Para gerar o AppImage, instale também `desktop-file-utils`. Crie um ambiente virtual e instale `Linux/requirements.txt` para desenvolver. A edição de desenvolvimento procura FFmpeg e Deno no `PATH`.

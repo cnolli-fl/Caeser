@@ -37,18 +37,19 @@ def main(package: Path):
                 server.shutdown()
                 worker.join()
 
-        for extension in ("mp3", "mp4"):
-            filename = output / f"Meu trecho 100%.{extension}"
-            info = json.loads(subprocess.check_output([
-                "ffprobe", "-v", "error", "-show_entries", "stream=codec_name:format=duration",
-                "-of", "json", str(filename),
-            ], timeout=10))
-            duration = float(info["format"]["duration"])
-            codecs = {stream["codec_name"] for stream in info["streams"]}
-            expected_codecs = {"h264", "aac"} if extension == "mp4" else {"mp3"}
-            if abs(duration - 4) > 0.18 or codecs != expected_codecs:
-                raise RuntimeError(f"Trecho {extension} inválido: {duration}s · {codecs}")
-            print(f"Trecho {extension}: {duration:.3f}s · {', '.join(sorted(codecs))}")
+        for name, expected_duration in (("Meu trecho 100%", 4), ("Meu final 100%", 6)):
+            for extension in ("mp3", "mp4"):
+                filename = output / f"{name}.{extension}"
+                info = json.loads(subprocess.check_output([
+                    "ffprobe", "-v", "error", "-show_entries", "stream=codec_name:format=duration",
+                    "-of", "json", str(filename),
+                ], timeout=10))
+                duration = float(info["format"]["duration"])
+                codecs = {stream["codec_name"] for stream in info["streams"]}
+                expected_codecs = {"h264", "aac"} if extension == "mp4" else {"mp3"}
+                if abs(duration - expected_duration) > 0.18 or codecs != expected_codecs:
+                    raise RuntimeError(f"Trecho {extension} inválido: {duration}s · {codecs}")
+                print(f"{filename.name}: {duration:.3f}s · {', '.join(sorted(codecs))}")
 
         first_pixel = subprocess.check_output([
             "ffmpeg", "-v", "error", "-i", str(output / "Meu trecho 100%.mp4"), "-frames:v", "1",
