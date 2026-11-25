@@ -43,7 +43,7 @@ jobs:
       - name: Build AppImage
         run: bash Linux/build-appimage.sh
       - name: Verify Linux update controls
-        run: QT_QPA_PLATFORM=offscreen PYTHONPATH=Linux Linux/.build/venv/bin/python Linux/tests/test_update_dialog.py
+        run: QT_QPA_PLATFORM=offscreen PYTHONPATH=Linux Linux/.build/venv/bin/python Linux/tests/smoke_update_dialog.py
       - name: Smoke test bundled tools and interface
         run: |
           set -euo pipefail
