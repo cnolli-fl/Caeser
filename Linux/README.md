@@ -4,7 +4,7 @@ Edição para Fedora 44 KDE Plasma em **x86_64 (Intel/AMD) ou aarch64 (ARM64)**,
 
 ## Usar o AppImage
 
-Baixe o arquivo `.AppImage` na [release Linux 0.2.0](https://github.com/cnolli-fl/Caeser/releases/tag/linux-v0.2.0), clique com o botão direito no Dolphin, abra **Propriedades → Permissões**, marque **É executável** e abra o arquivo. Pelo terminal:
+Baixe o arquivo `.AppImage` na [página de versões](https://github.com/cnolli-fl/Caeser/releases), clique com o botão direito no Dolphin, abra **Propriedades → Permissões**, marque **É executável** e abra o arquivo. Pelo terminal:
 
 ```bash
 chmod +x Caeser-*-Linux-*.AppImage
@@ -18,6 +18,12 @@ Para salvar apenas um intervalo, ative **Cortar vídeo** ou **Cortar áudio** e 
 Os testes automáticos verificam a inicialização no Fedora 44 e confirmam o início e a duração de trechos MP3/MP4 gerados pelo AppImage em ambas as arquiteturas. Para reduzir as animações fora do KDE, inicie com `CAESER_REDUCE_MOTION=1`.
 
 Os downloads e o histórico ficam no computador. A biblioteca é salva em `${XDG_DATA_HOME:-~/.local/share}/Caeser/library.json`. O Caeser não pede login do Spotify.
+
+## Atualizar
+
+A partir da versão 0.3.0, abra **Atualizações** e selecione **Baixar e instalar** quando houver uma versão nova. Feche o Caeser e abra o mesmo AppImage para usar a versão instalada. É preciso ter permissão de escrita na pasta em que o AppImage foi salvo.
+
+Para sair da versão 0.1.0 ou 0.2.0, baixe e abra o AppImage novo uma vez. A fila, o histórico e a pasta de destino são carregados da mesma biblioteca local.
 
 ## Desenvolvimento
 

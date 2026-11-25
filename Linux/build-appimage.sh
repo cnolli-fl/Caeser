@@ -16,6 +16,7 @@ build_dir="$root_dir/Linux/.build"
 app_dir="$build_dir/Caeser.AppDir"
 dist_dir="$root_dir/Linux/dist"
 mkdir -p "$build_dir" "$dist_dir"
+printf '%s\n' "$version" > "$build_dir/VERSION"
 
 "$python_bin" -m venv "$build_dir/venv"
 "$build_dir/venv/bin/python" -m pip install --upgrade pip
@@ -25,6 +26,7 @@ mkdir -p "$build_dir" "$dist_dir"
   --name caeser --distpath "$build_dir/pyinstaller-dist" --workpath "$build_dir/pyinstaller-work" \
   --specpath "$build_dir" --paths Linux \
   --collect-all yt_dlp --collect-all spotdl --collect-all pykakasi \
+  --add-data "$build_dir/VERSION:." \
   --add-data "$root_dir/Sources/VideoDownloader/Resources:assets/Sources/VideoDownloader/Resources" \
   Linux/launcher.py
 

@@ -28,6 +28,8 @@ from core import (Clip, Download, FORMATS, Library, QUALITY_HEIGHT, batch_urls, 
                   parse_clip, spotify_match, spotify_match_command, timestamp, tool_command,
                   tool_environment, tool_path, validate_url)
 
+from update_dialog import UpdateDialog
+
 
 BG, SURFACE, FIELD, BORDER = "#0D2666", "#102D6C", "#244580", "#6086BB"
 TEXT, MUTED, ACCENT, STRONG = "#FFFFFF", "#CFDFF5", "#94D2FF", "#0099FF"
@@ -281,9 +283,9 @@ class Window(QMainWindow):
         history.setAccessibleName("Abrir histórico")
         history.clicked.connect(self.open_history)
         toolbar.addWidget(history)
-        updates = QPushButton("↻  Atualizações")
-        updates.clicked.connect(lambda: QDesktopServices.openUrl(QUrl("https://github.com/cnolli-fl/Caeser/releases")))
-        toolbar.addWidget(updates)
+        self.updates = QPushButton("↻  Atualizações")
+        self.updates.clicked.connect(self.open_updates)
+        toolbar.addWidget(self.updates)
         self.primary = QPushButton("↓  Baixar e continuar fila")
         self.primary.setObjectName("primary")
         self.primary.clicked.connect(self.enqueue)
@@ -994,6 +996,12 @@ class Window(QMainWindow):
         showing = not self.details.isVisible()
         self.reveal(self.details, showing)
         self.detail_toggle.setText(("⌄" if showing else "›") + "  Detalhes e ferramentas")
+
+    def open_updates(self):
+        dialog = UpdateDialog(self)
+        dialog.check()
+        dialog.exec()
+        dialog.deleteLater()
 
     def open_history(self):
         HistoryDialog(self.library, self).exec()
