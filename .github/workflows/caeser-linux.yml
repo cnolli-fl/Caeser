@@ -1,79 +1,65 @@
-name: Caeser Linux AppImage
+name: Publish verified Caeser Linux 0.4.0
 
 on:
-  push:
-    branches: ['codex/linux-*', 'codex/windows-custom-filenames']
-    paths:
-      - 'Linux/**'
-      - 'Sources/VideoDownloader/Resources/**'
-      - '.github/workflows/caeser-linux.yml'
-  pull_request:
-    paths:
-      - 'Linux/**'
-      - 'Sources/VideoDownloader/Resources/**'
-      - '.github/workflows/caeser-linux.yml'
   workflow_dispatch:
 
 permissions:
-  contents: read
+  actions: read
+  contents: write
+
+concurrency:
+  group: caeser-linux-v0.4.0
+  cancel-in-progress: false
 
 jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runner: ubuntu-24.04
-            arch: x86_64
-          - runner: ubuntu-24.04-arm
-            arch: aarch64
-    runs-on: ${{ matrix.runner }}
-    timeout-minutes: 50
+  publish:
+    if: github.repository == 'cnolli-fl/Caeser' && github.ref == 'refs/heads/codex/release-linux-0.4.0'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: cnolli-fl/Caeser
+      BUILD_RUN: '45615939426'
+      TESTED_SHA: 13743560008cdda10561794bb64eb4ccd31a8c4d
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-      - name: Install AppImage desktop validator
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y desktop-file-utils squashfs-tools libegl1 libopengl0 libxkbcommon-x11-0 libxcb-cursor0 ffmpeg
-      - name: Verify core behavior
-        run: PYTHONPATH=Linux python3 -m unittest discover -s Linux/tests -v
-      - name: Build AppImage
-        run: bash Linux/build-appimage.sh
-      - name: Verify Linux update controls
-        run: QT_QPA_PLATFORM=offscreen PYTHONPATH=Linux Linux/.build/venv/bin/python Linux/tests/smoke_update_dialog.py
-      - name: Smoke test bundled tools and interface
+      - name: Confirm the exact build passed
         run: |
           set -euo pipefail
-          package="Linux/dist/Caeser-$(<Linux/VERSION)-Linux-${{ matrix.arch }}.AppImage"
-          export XDG_DATA_HOME="$RUNNER_TEMP/caeser-ui"
-          APPIMAGE_EXTRACT_AND_RUN=1 "$package" --tool yt-dlp --version
-          APPIMAGE_EXTRACT_AND_RUN=1 "$package" --tool spotdl --version
-          python3 Linux/tests/test_packaged_audio.py "$package"
-          python3 Linux/tests/test_packaged_clips.py "$package"
-          CAESER_SMOKE_SCREENSHOT="$RUNNER_TEMP/caeser-linux.png" QT_QPA_PLATFORM=offscreen APPIMAGE_EXTRACT_AND_RUN=1 "$package" --smoke
-          test -s "$RUNNER_TEMP/caeser-linux.png"
-          sha256sum -c "$package.sha256"
-      - name: Smoke test Fedora 44 runtime
+          gh run view "$BUILD_RUN" --json headSha,conclusion --jq '[.headSha, .conclusion] | @tsv' |
+            awk -v sha="$TESTED_SHA" '$1 == sha && $2 == "success" {found=1} END {exit !found}'
+      - uses: actions/download-artifact@v4
+        with:
+          name: Caeser-Linux-x86_64
+          github-token: ${{ github.token }}
+          run-id: 45615939426
+          path: release/x86_64
+      - uses: actions/download-artifact@v4
+        with:
+          name: Caeser-Linux-aarch64
+          github-token: ${{ github.token }}
+          run-id: 45615939426
+          path: release/aarch64
+      - name: Verify and publish
         run: |
-          docker run --rm -v "$PWD:/project:ro" -w /project fedora:44 bash -lc '
-            dnf install -y fuse-libs fontconfig libxkbcommon mesa-libGL mesa-libEGL >/dev/null
-            package="Linux/dist/Caeser-$(<Linux/VERSION)-Linux-${{ matrix.arch }}.AppImage"
-            APPIMAGE_EXTRACT_AND_RUN=1 "$package" --tool yt-dlp --version
-            APPIMAGE_EXTRACT_AND_RUN=1 QT_QPA_PLATFORM=offscreen "$package" --smoke
-          '
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Caeser-Linux-${{ matrix.arch }}
-          path: |
-            Linux/dist/*.AppImage
-            Linux/dist/*.sha256
-          if-no-files-found: error
-          retention-days: 14
-      - uses: actions/upload-artifact@v4
-        with:
-          name: Caeser-Linux-preview-${{ matrix.arch }}
-          path: ${{ runner.temp }}/caeser-linux.png
-          retention-days: 14
+          set -euo pipefail
+          assets=()
+          for arch in x86_64 aarch64; do
+            asset="release/$arch/Caeser-0.4.0-Linux-$arch.AppImage"
+            expected="$(awk 'NR==1 {print $1}' "$asset.sha256")"
+            actual="$(sha256sum "$asset" | awk '{print $1}')"
+            test "$actual" = "$expected"
+            assets+=("$asset")
+            printf '\n- %s SHA-256: `%s`' "$arch" "$actual" >> release-notes.md
+          done
+          printf '\n' >> release-notes.md
+          gh release create linux-v0.4.0 "${assets[@]}" --target "$TESTED_SHA" \
+            --title "Caeser 0.4.0 · Linux (Fedora KDE)" --notes-file release-notes.md \
+            --prerelease --latest=false
+          gh api repos/cnolli-fl/Caeser/releases/tags/linux-v0.4.0 > published.json
+          jq -e '.draft == false and .prerelease == true and (.assets | length == 2)' published.json
+          for asset in "${assets[@]}"; do
+            actual="$(sha256sum "$asset" | awk '{print $1}')"
+            jq -e --arg name "${asset##*/}" --arg digest "sha256:$actual" \
+              '.assets | any(.name == $name and .digest == $digest and .state == "uploaded")' published.json
+          done
